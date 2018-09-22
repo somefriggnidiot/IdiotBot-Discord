@@ -1,0 +1,40 @@
+<Configuration status="INFO" name="IdiotBot-Discord">
+
+  <Properties>
+    <Property name="LOG_DIR">logging/logs</Property>
+    <Property name="ARCHIVE">${LOG_DIR}/archive</Property>
+    <Property name="PATTERN">[%p] %d{yyyy-MM-dd HH:mm:ss.SSS} %m%n</Property>
+    <Property name="FILE_NAME">idiotbot-discord</Property>
+  </Properties>
+
+  <Appenders>
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout pattern="${PATTERN}"/>
+    </Console>
+
+    <RollingFile name="fileWriter"
+      fileName="${LOG_DIR}/${FILE_NAME}.log"
+      filePattern="${ARCHIVE}/${FILE_NAME}-%d{yyyy-MM-dd-HHmm}.log.gz">
+      <PatternLayout pattern="${PATTERN}"/>
+      <Policies>
+        <OnStartupTriggeringPolicy/>
+        <CronTriggeringPolicy schedule="0 0 0,12 * * ?" />
+        <SizeBasedTriggeringPolicy size="50MB"/>
+      </Policies>
+    </RollingFile>
+  </Appenders>
+
+  <Loggers>
+    <Root level="INFO">
+      <AppenderRef ref="fileWriter"/>
+      <AppenderRef ref="STDOUT"/>
+    </Root>
+    <Logger name="com.somefriggnidiot.discord.Main" level="TRACE" additivity="false">
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+    <Logger name="com.somefriggnidiot.discord.Error" level="ERROR" additivity="true">
+      <AppenderRef ref="STDOUT"/>
+      <AppenderRef ref="fileWriter"/>
+    </Logger>
+  </Loggers>
+</Configuration>
