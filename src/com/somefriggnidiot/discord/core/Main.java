@@ -49,6 +49,10 @@ public class Main {
             .build();
 
          jda.awaitReady();
+
+         logger.info(String.format("I'm live in %s guilds, serving %s users!",
+             jda.getGuilds().size(),
+             jda.getUsers().size()));
       } catch (LoginException e) {
          logger.error("Error logging in to Discord.", e);
       } catch (InterruptedException e2) {
