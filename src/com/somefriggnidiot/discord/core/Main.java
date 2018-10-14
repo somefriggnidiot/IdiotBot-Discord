@@ -7,6 +7,8 @@ import com.somefriggnidiot.discord.commands.channels.InviteToPrivateChannelComma
 import com.somefriggnidiot.discord.commands.fun.DogCommand;
 import com.somefriggnidiot.discord.commands.fun.DogeCommand;
 import com.somefriggnidiot.discord.commands.KarmaCommand;
+import com.somefriggnidiot.discord.commands.moderation.GetWarningsCommand;
+import com.somefriggnidiot.discord.commands.moderation.WarningCommand;
 import com.somefriggnidiot.discord.events.GuildMemberListener;
 import com.somefriggnidiot.discord.events.GuildVoiceListener;
 import com.somefriggnidiot.discord.events.MessageListener;
@@ -37,7 +39,9 @@ public class Main {
              .addCommand(new DogeCommand())
              .addCommand(new KarmaCommand())
              .addCommand(new CreatePrivateChannelCommand(waiter))
-             .addCommand(new InviteToPrivateChannelCommand());
+             .addCommand(new InviteToPrivateChannelCommand())
+             .addCommand(new WarningCommand())
+             .addCommand(new GetWarningsCommand());
 
          JDA jda = new JDABuilder(args[0])
             .addEventListener(new MessageListener())
