@@ -25,7 +25,7 @@ public class InviteToPrivateChannelCommand extends Command {
 
    public InviteToPrivateChannelCommand() {
       this.name = "inviteToPrivateChannel";
-      this.help = "Creates a private voice channel for use by a user and those invited to it.";
+      this.help = "Grants a user access to your private voice channel.";
       this.arguments = "<user>";
       this.aliases = new String[] {"i2pc", "ipc", "inv", "invite"};
       this.botPermissions = new Permission[]{Permission.MANAGE_SERVER, Permission.MANAGE_CHANNEL};
