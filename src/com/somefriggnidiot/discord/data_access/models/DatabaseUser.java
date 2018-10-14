@@ -1,8 +1,16 @@
 package com.somefriggnidiot.discord.data_access.models;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import net.dv8tion.jda.core.entities.Channel;
+import javax.persistence.OneToMany;
 
 @Entity
 public class DatabaseUser {
@@ -11,6 +19,7 @@ public class DatabaseUser {
    private final Long userId;
    private Integer karma;
    private Long privateChannelId;
+   private List<String> warningIds;
 
    public DatabaseUser(Long userId) {
       this.userId = userId;
@@ -41,5 +50,14 @@ public class DatabaseUser {
    public DatabaseUser withPrivateChannel(Long channelId) {
       this.privateChannelId = channelId;
       return this;
+   }
+
+   public void addWarning(String warning) {
+      if (warningIds == null) warningIds = new ArrayList<>();
+      warningIds.add(warning);
+   }
+
+   public List<String> getWarnings() {
+      return warningIds;
    }
 }

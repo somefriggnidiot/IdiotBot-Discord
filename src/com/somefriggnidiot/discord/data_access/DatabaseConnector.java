@@ -10,6 +10,7 @@ import javax.persistence.Persistence;
 public class DatabaseConnector {
 
    private static final String DATABASE_USER_TABLE = "./db/database_users.odb";
+   private static final String USER_WARNING_TABLE = "./db/user_warnings.odb";
    private EntityManagerFactory managerFactory;
    private EntityManager manager;
 
@@ -22,6 +23,9 @@ public class DatabaseConnector {
    public EntityManager getEntityManager(Table table) {
       if (table == Table.DATABASE_USER) {
          this.managerFactory = Persistence.createEntityManagerFactory(DATABASE_USER_TABLE);
+         this.manager = managerFactory.createEntityManager();
+      } else if (table == Table.USER_WARNING) {
+         this.managerFactory = Persistence.createEntityManagerFactory(USER_WARNING_TABLE);
          this.manager = managerFactory.createEntityManager();
       }
 
@@ -40,6 +44,6 @@ public class DatabaseConnector {
     * Existing database tables in use by this program.
     */
    public enum Table {
-      DATABASE_USER
+      DATABASE_USER, USER_WARNING
    }
 }
