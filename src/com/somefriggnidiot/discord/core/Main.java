@@ -8,6 +8,7 @@ import com.somefriggnidiot.discord.commands.fun.DogCommand;
 import com.somefriggnidiot.discord.commands.fun.DogeCommand;
 import com.somefriggnidiot.discord.commands.KarmaCommand;
 import com.somefriggnidiot.discord.commands.moderation.GetWarningsCommand;
+import com.somefriggnidiot.discord.commands.moderation.SoftBanCommand;
 import com.somefriggnidiot.discord.commands.moderation.WarningCommand;
 import com.somefriggnidiot.discord.events.GuildMemberListener;
 import com.somefriggnidiot.discord.events.GuildVoiceListener;
@@ -41,7 +42,8 @@ public class Main {
              .addCommand(new CreatePrivateChannelCommand(waiter))
              .addCommand(new InviteToPrivateChannelCommand())
              .addCommand(new WarningCommand())
-             .addCommand(new GetWarningsCommand());
+             .addCommand(new GetWarningsCommand())
+             .addCommand(new SoftBanCommand());
 
          JDA jda = new JDABuilder(args[0])
             .addEventListener(new MessageListener())
