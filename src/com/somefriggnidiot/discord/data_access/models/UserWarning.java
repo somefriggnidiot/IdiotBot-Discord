@@ -6,16 +6,17 @@ import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+@SuppressWarnings({"FieldCanBeLocal", "CanBeFinal"})
 @Entity
 public class UserWarning {
 
    @Id
    private final String id;
-   private Long userId;
-   private Timestamp timestamp;
+   private final Long userId;
+   private final Timestamp timestamp;
    private String reason;
    private Timestamp expires;
-   private Long warnerId;
+   private final Long warnerId;
 
    public UserWarning(Long userId, String reason, Long warnerId) {
       this.id = UUID.randomUUID().toString();
