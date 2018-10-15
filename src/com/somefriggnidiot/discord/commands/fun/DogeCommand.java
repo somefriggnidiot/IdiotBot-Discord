@@ -18,6 +18,8 @@ public class DogeCommand extends Command {
       this.help = "Returns doges.";
       this.botPermissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
       this.guildOnly = false;
+      this.cooldown = 1;
+      this.cooldownScope = CooldownScope.USER;
    }
 
    @Override
@@ -31,6 +33,8 @@ public class DogeCommand extends Command {
             event.reply(new EmbedBuilder()
                 .setColor(Color.BLACK)
                 .setImage(hr.getBody().getObject().getString("message"))
+                .setFooter("Provided to you by IdiotBot. The most idiotic of bots.",
+                    "http://www.foundinaction.com/wp-content/uploads/2018/08/Neon_600x600_Transparent.png")
                 .build());
          }
 

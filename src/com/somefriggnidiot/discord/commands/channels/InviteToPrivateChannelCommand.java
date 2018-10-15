@@ -29,6 +29,9 @@ public class InviteToPrivateChannelCommand extends Command {
       this.arguments = "<user>";
       this.aliases = new String[] {"i2pc", "ipc", "inv", "invite"};
       this.botPermissions = new Permission[]{Permission.MANAGE_SERVER, Permission.MANAGE_CHANNEL};
+      this.category = new Category("VIP");
+      this.cooldown = 1;
+      this.cooldownScope = CooldownScope.USER;
    }
 
    @Override

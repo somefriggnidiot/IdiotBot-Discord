@@ -30,16 +30,8 @@ public class UserWarning {
       return id;
    }
 
-   public Long getUserId() {
-      return userId;
-   }
-
    public String getReason() {
       return reason;
-   }
-
-   public void setReason(String reason) {
-      this.reason = reason;
    }
 
    public Timestamp getExpires() {

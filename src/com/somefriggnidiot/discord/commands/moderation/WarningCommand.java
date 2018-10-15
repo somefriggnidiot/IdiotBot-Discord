@@ -19,6 +19,8 @@ public class WarningCommand extends Command {
       this.help = "Adds a warning to a user.";
       this.arguments = "<user> <reason>";
       this.requiredRole = "Staff";
+      this.cooldown = 1;
+      this.cooldownScope = CooldownScope.USER;
    }
 
    @Override

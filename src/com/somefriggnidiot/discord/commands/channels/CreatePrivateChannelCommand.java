@@ -31,6 +31,9 @@ public class CreatePrivateChannelCommand extends Command {
       this.aliases = new String[] {"cpc", "createprivatechannel"};
       this.ownerCommand = true;
       this.botPermissions = new Permission[]{Permission.MANAGE_SERVER, Permission.MANAGE_CHANNEL};
+      this.category = new Category("VIP");
+      this.cooldown = 1;
+      this.cooldownScope = CooldownScope.USER;
    }
 
    @Override

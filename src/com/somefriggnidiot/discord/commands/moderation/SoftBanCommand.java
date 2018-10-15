@@ -19,10 +19,13 @@ public class SoftBanCommand extends Command {
       this.name = "softban";
       this.category = new Category("Moderation");
       this.help = "Soft-bans the mentioned user. While the soft ban is in place, the user cannot "
-          + "speak or type until it is lifted.";
+          + "speak or type until it is lifted. A soft-banned user will automatically receive a "
+          + "warning for their ban.";
       this.arguments = "<user> <duration in minutes> <reason>";
       this.requiredRole = "Staff";
       this.aliases = new String[] {"sb"};
+      this.cooldown = 1;
+      this.cooldownScope = CooldownScope.USER;
    }
 
    @Override
