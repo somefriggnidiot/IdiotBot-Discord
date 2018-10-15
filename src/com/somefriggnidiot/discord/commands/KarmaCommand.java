@@ -2,11 +2,8 @@ package com.somefriggnidiot.discord.commands;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import com.somefriggnidiot.discord.data_access.DatabaseConnector;
-import com.somefriggnidiot.discord.data_access.DatabaseConnector.Table;
-import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.events.MessageListener;
-import javax.persistence.EntityManager;
+import com.somefriggnidiot.discord.util.KarmaUtil;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.User;
 import org.slf4j.Logger;
@@ -28,35 +25,12 @@ public class KarmaCommand extends Command {
    @Override
    protected void execute(final CommandEvent event) {
       User user = event.getMessage().getMentionedUsers().get(0);
-      Integer karma = updateDatabase(user);
+      Integer karma = KarmaUtil.updateUser(user);
       event.reply(String.format("%s now has %s karma!", user.getName(), karma));
 
       logger.info(String.format("[%s] Karma given to %s by %s.",
           event.getGuild(),
           event.getMessage().getMentionedUsers().get(0).getName(),
           event.getAuthor().getName()));
-   }
-
-   private Integer updateDatabase(User user) {
-      DatabaseConnector connector = new DatabaseConnector();
-      EntityManager em = connector.getEntityManager(Table.DATABASE_USER);
-      Integer karma = 0;
-
-      DatabaseUser dbu = em.find(DatabaseUser.class, user.getIdLong());
-
-      if (dbu != null) {
-         em.getTransaction().begin();
-         karma = dbu.getKarma();
-         dbu.setKarma(++karma);
-         em.getTransaction().commit();
-      } else {
-         dbu = new DatabaseUser(user.getIdLong()).withKarma(1);
-
-         em.getTransaction().begin();
-         em.persist(dbu);
-         em.getTransaction().commit();
-         karma = 1;
-      }
-      return karma;
    }
 }

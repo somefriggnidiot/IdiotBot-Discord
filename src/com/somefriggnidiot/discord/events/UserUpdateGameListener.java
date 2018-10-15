@@ -44,6 +44,7 @@ public class UserUpdateGameListener extends ListenerAdapter {
          }
       } catch (IllegalArgumentException e) {
          logger.error(String.format("Excption thrown with %s on %s", event.getUser(), event.getGuild()));
+         logger.error(e.toString());
       }
    }
 

@@ -11,7 +11,6 @@ public class DatabaseConnector {
 
    private static final String DATABASE_USER_TABLE = "./db/database_users.odb";
    private static final String USER_WARNING_TABLE = "./db/user_warnings.odb";
-   private EntityManagerFactory managerFactory;
    private EntityManager manager;
 
    /**
@@ -21,23 +20,16 @@ public class DatabaseConnector {
     * @return an {@code EntityManager} that manages transactions to the provided {@code Table}.
     */
    public EntityManager getEntityManager(Table table) {
+      EntityManagerFactory managerFactory;
       if (table == Table.DATABASE_USER) {
-         this.managerFactory = Persistence.createEntityManagerFactory(DATABASE_USER_TABLE);
+         managerFactory = Persistence.createEntityManagerFactory(DATABASE_USER_TABLE);
          this.manager = managerFactory.createEntityManager();
       } else if (table == Table.USER_WARNING) {
-         this.managerFactory = Persistence.createEntityManagerFactory(USER_WARNING_TABLE);
+         managerFactory = Persistence.createEntityManagerFactory(USER_WARNING_TABLE);
          this.manager = managerFactory.createEntityManager();
       }
 
       return manager;
-   }
-
-   /**
-    * Closes the connection this {@link DatabaseConnector} is utilizing.
-    */
-   public void close() {
-      manager.close();
-      managerFactory.close();
    }
 
    /**

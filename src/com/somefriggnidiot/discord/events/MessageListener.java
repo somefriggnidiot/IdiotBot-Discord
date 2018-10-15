@@ -1,7 +1,5 @@
 package com.somefriggnidiot.discord.events;
 
-import com.somefriggnidiot.discord.util.KarmaUpdate;
-import java.util.List;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
