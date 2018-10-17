@@ -27,6 +27,7 @@ public class Main {
    private final static Logger logger = LoggerFactory.getLogger(Main.class);
 
    public static void  main(String[] args) {
+      System.setProperty("log4j.configurationFile", "./resources/log4j2.xml");
       EventWaiter waiter = new EventWaiter();
 
       try {
