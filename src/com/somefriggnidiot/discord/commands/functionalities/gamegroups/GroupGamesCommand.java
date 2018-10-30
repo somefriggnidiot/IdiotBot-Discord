@@ -24,9 +24,9 @@ public class GroupGamesCommand extends Command {
    private final Logger logger = LoggerFactory.getLogger(MessageListener.class);
    private EmbedBuilder eb;
 
-   public GroupGamesCommand(){
-      this.name = "groupgames";
-      this.aliases = new String[]{"groupbygame", "gamegroups", "gamegroupings"};
+   public GroupGamesCommand() {
+      this.name = "gamegroups";
+      this.aliases = new String[]{"groupbygame", "groupgames", "gamegroupings"};
       this.arguments = "<toggle/status/enable/disable>";
       this.category = new Category("Functionality");
       this.help = "Toggles whether or not this guild groups mambers by what game they are playing"
@@ -50,23 +50,28 @@ public class GroupGamesCommand extends Command {
               "http://www.foundinaction.com/wp-content/uploads/2018/08/"
                   + "Neon_600x600_Transparent.png");
 
-      switch (args[1]) {
-         case "info":
-         case "status":
-            printInfo(event);
-            return;
-         case "toggle":
-            toggle(event, !gi.isGroupingGames());
-            return;
-         case "enable":
-            toggle(event, true);
-            return;
-         case "disable":
-            toggle(event, false);
-            return;
-         default:
-            //INVALID ARGS
-            return;
+      try {
+         switch (args[1]) {
+            case "toggle":
+               toggle(event, !gi.isGroupingGames());
+               return;
+            case "enable":
+            case "on":
+            case "start":
+               toggle(event, true);
+               return;
+            case "disable":
+            case "off":
+            case "stop":
+               toggle(event, false);
+               return;
+            case "info":
+            case "status":
+            default:
+               printInfo(event);
+         }
+      } catch (ArrayIndexOutOfBoundsException e) {
+         printInfo(event);
       }
    }
 
@@ -124,21 +129,27 @@ public class GroupGamesCommand extends Command {
 
       HashMap<String, String> mappings = gi.getGameGroupMappings();
       eb.addBlankField(false);
-      HashMap<String, String> gameList = new HashMap<>();
 
-      for (String mappingKey : mappings.keySet()) {
-         String role = mappings.get(mappingKey);
-         String games = gameList.get(role);
-         if (games == null || games.isEmpty()) {
-            games = mappingKey;
-         } else {
-            games += ", " + mappingKey;
+      if (mappings == null || mappings.isEmpty()) {
+         eb.addField("Active Game Groups", "There are currently no active game groups.", true);
+      } else {
+         HashMap<String, String> gameList = new HashMap<>();
+
+         eb.addField("Active Game Groups", "", false);
+         for (String mappingKey : mappings.keySet()) {
+            String role = mappings.get(mappingKey);
+            String games = gameList.get(role);
+            if (games == null || games.isEmpty()) {
+               games = mappingKey;
+            } else {
+               games += ", " + mappingKey;
+            }
+            gameList.put(role, games);
          }
-         gameList.put(role, games);
-      }
 
-      for (String role : gameList.keySet()) {
-         eb.addField(role, gameList.get(role), false);
+         for (String role : gameList.keySet()) {
+            eb.addField(role, gameList.get(role), true);
+         }
       }
 
       //Send message.

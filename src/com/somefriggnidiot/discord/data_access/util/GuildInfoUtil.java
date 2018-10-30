@@ -6,6 +6,7 @@ import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import javax.persistence.EntityManager;
 
 public class GuildInfoUtil {
+
    static EntityManager em = new DatabaseConnector().getEntityManager(Table.GUILD_INFO);
 
    public static GuildInfo getGuildInfo(Long guildId) {

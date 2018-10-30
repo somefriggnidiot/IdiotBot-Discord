@@ -2,8 +2,8 @@ package com.somefriggnidiot.discord.commands.moderation;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import com.somefriggnidiot.discord.events.MessageListener;
 import com.somefriggnidiot.discord.data_access.util.UserWarningUtil;
+import com.somefriggnidiot.discord.events.MessageListener;
 import net.dv8tion.jda.core.entities.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,8 @@ public class WarningCommand extends Command {
       User target = event.getMessage().getMentionedUsers().get(0);
       String reason = event.getMessage().getContentDisplay().split("\\s", 3)[2];
 
-      Integer totalWarnings = UserWarningUtil.warnUser(target, reason, event.getAuthor().getIdLong());
+      Integer totalWarnings = UserWarningUtil
+          .warnUser(target, reason, event.getAuthor().getIdLong());
 
       logger.info(String.format("[%s] %s has warned %s for \"%s\". %s now has %s warnings.",
           event.getGuild(),

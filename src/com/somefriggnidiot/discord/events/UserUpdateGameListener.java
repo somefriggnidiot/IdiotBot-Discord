@@ -19,12 +19,14 @@ public class UserUpdateGameListener extends ListenerAdapter {
       GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild().getIdLong());
       final HashMap<String, String> groupMappings = gi.getGameGroupMappings();
 
-      if(gi.isGroupingGames()) {
+      if (gi.isGroupingGames()) {
 
          try {
             if (event.getNewGame() != null && event.getOldGame() != null) {
                // started playing from another game, ignore updates to same game
-               if (event.getNewGame().getName().equalsIgnoreCase(event.getOldGame().getName())) return;
+               if (event.getNewGame().getName().equalsIgnoreCase(event.getOldGame().getName())) {
+                  return;
+               }
 
                handleSwap(event, groupMappings, event.getOldGame().getName(), event.getNewGame()
                    .getName());
@@ -36,7 +38,8 @@ public class UserUpdateGameListener extends ListenerAdapter {
                handleRoleAssignment(event, groupMappings, event.getOldGame().getName(), false);
             }
          } catch (IllegalArgumentException e) {
-            logger.error(String.format("Excption thrown with %s on %s", event.getUser(), event.getGuild()));
+            logger.error(
+                String.format("Excption thrown with %s on %s", event.getUser(), event.getGuild()));
             logger.error("Trace: ", e);
          }
       }
@@ -48,7 +51,9 @@ public class UserUpdateGameListener extends ListenerAdapter {
 
    private void handleRoleAssignment(UserUpdateGameEvent event, HashMap<String, String> gameMap,
        String gameName, Boolean assign) {
-      if (!isValidGame(gameMap, gameName)) return;
+      if (!isValidGame(gameMap, gameName)) {
+         return;
+      }
       String groupName = gameMap.get(gameName);
 
       // Get role
@@ -94,17 +99,21 @@ public class UserUpdateGameListener extends ListenerAdapter {
 
    private void handleSwap(UserUpdateGameEvent event, HashMap<String, String> gameMap,
        String oldGameName, String newGameName) {
-      if (!isValidGame(gameMap, oldGameName) && !isValidGame(gameMap, newGameName)) return;
+      if (!isValidGame(gameMap, oldGameName) && !isValidGame(gameMap, newGameName)) {
+         return;
+      }
 
       //Check for old role.
       Role oldRole = null;
       try {
          oldRole = event.getGuild().getRolesByName(oldGameName, false).get(0);
       } catch (IndexOutOfBoundsException e) {
-         logger.debug(String.format("[%s] Role not found for \"%s\"", event.getGuild(), oldGameName));
+         logger
+             .debug(String.format("[%s] Role not found for \"%s\"", event.getGuild(), oldGameName));
       }
       if (oldRole == null) {
-         logger.warn(String.format("[%s] Role not found for \"%s\"", event.getGuild(), oldGameName));
+         logger
+             .warn(String.format("[%s] Role not found for \"%s\"", event.getGuild(), oldGameName));
          return;
       } else {
          //Log it
@@ -126,10 +135,12 @@ public class UserUpdateGameListener extends ListenerAdapter {
       try {
          newRole = event.getGuild().getRolesByName(newGameName, false).get(0);
       } catch (IndexOutOfBoundsException e) {
-         logger.debug(String.format("[%s] Role not found for \"%s\"", event.getGuild(), newGameName));
+         logger
+             .debug(String.format("[%s] Role not found for \"%s\"", event.getGuild(), newGameName));
       }
       if (newRole == null) {
-         logger.warn(String.format("[%s] Role not found for \"%s\"", event.getGuild(), newGameName));
+         logger
+             .warn(String.format("[%s] Role not found for \"%s\"", event.getGuild(), newGameName));
       } else {
          //Log it
          logger.info(String.format("%s has started playing %s in %s.",
