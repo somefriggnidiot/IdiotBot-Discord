@@ -10,6 +10,7 @@ import com.somefriggnidiot.discord.commands.fun.DogCommand;
 import com.somefriggnidiot.discord.commands.fun.DogeCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.AddGameGroupCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.GroupGamesCommand;
+import com.somefriggnidiot.discord.commands.functionalities.gamegroups.RemoveGameGroupCommand;
 import com.somefriggnidiot.discord.commands.moderation.GetWarningsCommand;
 import com.somefriggnidiot.discord.commands.moderation.SoftBanCommand;
 import com.somefriggnidiot.discord.commands.moderation.WarningCommand;
@@ -52,7 +53,8 @@ public class Main {
              .addCommand(new GetWarningsCommand())
              .addCommand(new SoftBanCommand())
              .addCommand(new GroupGamesCommand())
-             .addCommand(new AddGameGroupCommand());
+             .addCommand(new AddGameGroupCommand())
+             .addCommand(new RemoveGameGroupCommand());
 
          JDA jda = new JDABuilder(args[0])
              .addEventListener(new MessageListener())

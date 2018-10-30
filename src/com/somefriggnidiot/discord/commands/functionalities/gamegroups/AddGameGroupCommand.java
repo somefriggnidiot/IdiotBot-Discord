@@ -4,6 +4,7 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.MessageListener;
+import net.dv8tion.jda.core.Permission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +25,7 @@ public class AddGameGroupCommand extends Command {
           + ". This can be used to \"group\" members in the member sidebar by the game they're "
           + "playing by creating a unique role for each game and setting that role to be "
           + "displayed separately.";
+      this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE, Permission.MESSAGE_READ};
    }
 
    @Override
@@ -33,6 +35,10 @@ public class AddGameGroupCommand extends Command {
 
       try {
          GuildInfoUtil.addGameRoleMapping(event.getGuild().getIdLong(), args[0], args[1]);
+         event.reply(String.format("New game group created!\nUsers playing \"%s\" will now be "
+             + "added to the role \"%s\".",
+             args[0],
+             args[1]));
       } catch (Exception e) {
          logger.error(String.format("[%s] Error adding game role mapping: "
              + "\nGameName: \"%s\"\nRoleName: \"%s\"",

@@ -30,13 +30,16 @@ public class GuildInfoUtil {
       em.getTransaction().commit();
    }
 
-   public static void removeRoleMapping(Long guildId, String gameName) {
+   public static Boolean removeRoleMapping(Long guildId, String gameName) {
       GuildInfo gi = getDatabaseObject(guildId);
+      String role;
 
       em.getTransaction().begin();
-      gi.removeGameGroupMapping(gameName);
+      role = gi.removeGameGroupMapping(gameName);
       em.persist(gi);
       em.getTransaction().commit();
+
+      return !(role == null || role.isEmpty());
    }
 
    public static void addGameRoleMapping(Long guildId, String gameName, String roleName) {
