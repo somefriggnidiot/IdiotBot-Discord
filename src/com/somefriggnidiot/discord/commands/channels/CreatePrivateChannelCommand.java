@@ -28,7 +28,7 @@ public class CreatePrivateChannelCommand extends Command {
       this.name = "createPrivateChannel";
       this.help = "Creates a private voice channel for use by a user and those invited to it.";
       this.arguments = "<owner> <name>";
-      this.aliases = new String[] {"cpc", "createprivatechannel"};
+      this.aliases = new String[]{"cpc", "createprivatechannel"};
       this.ownerCommand = true;
       this.botPermissions = new Permission[]{Permission.MANAGE_SERVER, Permission.MANAGE_CHANNEL};
       this.category = new Category("VIP");
@@ -44,15 +44,17 @@ public class CreatePrivateChannelCommand extends Command {
          new ButtonMenu.Builder()
              .setChoices("✅", "❌")
              .setAction(
-                reactionEmote -> {
-                   if (reactionEmote.getName().equalsIgnoreCase("✅")) {
-                      createChannel(event);
-                   } else {
-                      logger.info(String.format("[%s] Aborting channel creation.", event.getGuild()));
-                   }
-             })
+                 reactionEmote -> {
+                    if (reactionEmote.getName().equalsIgnoreCase("✅")) {
+                       createChannel(event);
+                    } else {
+                       logger.info(
+                           String.format("[%s] Aborting channel creation.", event.getGuild()));
+                    }
+                 })
              .setEventWaiter(waiter)
-             .setText(String.format("%s already owns a channel. Reset?", channelOwner.getAsMention()))
+             .setText(
+                 String.format("%s already owns a channel. Reset?", channelOwner.getAsMention()))
              .build().display(event.getTextChannel());
       } else {
          createChannel(event);

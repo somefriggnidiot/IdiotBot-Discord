@@ -14,7 +14,7 @@ public class RemoveGameGroupCommand extends Command {
 
    public RemoveGameGroupCommand() {
       this.name = "removegamegroup";
-      this.aliases = new String[] {"rgg"};
+      this.aliases = new String[]{"rgg"};
       this.arguments = "<gameName>";
       this.category = new Category("Functionality");
       this.requiredRole = "Staff";

@@ -27,7 +27,7 @@ public class InviteToPrivateChannelCommand extends Command {
       this.name = "inviteToPrivateChannel";
       this.help = "Grants a user access to your private voice channel.";
       this.arguments = "<user>";
-      this.aliases = new String[] {"i2pc", "ipc", "inv", "invite"};
+      this.aliases = new String[]{"i2pc", "ipc", "inv", "invite"};
       this.botPermissions = new Permission[]{Permission.MANAGE_SERVER, Permission.MANAGE_CHANNEL};
       this.category = new Category("VIP");
       this.cooldown = 1;
@@ -51,7 +51,8 @@ public class InviteToPrivateChannelCommand extends Command {
       if (!isVip) {
          EmbedBuilder eb = new EmbedBuilder()
              .setColor(Color.RED)
-             .setThumbnail("http://www.foundinaction.com/wp-content/uploads/2018/08/Neon_600x600_Transparent.png")
+             .setThumbnail(
+                 "http://www.foundinaction.com/wp-content/uploads/2018/08/Neon_600x600_Transparent.png")
              .setTitle("Become a VIP today!", "https://www.patreon.com/foundinaction")
              .setDescription("Private voice channels are a benefit of being a financial supporter"
                  + " of this community.");
@@ -75,10 +76,11 @@ public class InviteToPrivateChannelCommand extends Command {
              .putPermissionOverride(event.getGuild().getMember(invitee))
              .setPermissions(allowed, denied);
 
-         permissionOverrideAction.queue(success -> logger.info(String.format("[%s] Gave %s access to %s.",
-             event.getGuild(),
-             invitee.getName(),
-             userChannel.getName())));
+         permissionOverrideAction
+             .queue(success -> logger.info(String.format("[%s] Gave %s access to %s.",
+                 event.getGuild(),
+                 invitee.getName(),
+                 userChannel.getName())));
       }
    }
 

@@ -2,8 +2,8 @@ package com.somefriggnidiot.discord.commands.moderation;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import com.somefriggnidiot.discord.events.MessageListener;
 import com.somefriggnidiot.discord.data_access.util.UserWarningUtil;
+import com.somefriggnidiot.discord.events.MessageListener;
 import java.util.Timer;
 import java.util.TimerTask;
 import net.dv8tion.jda.core.entities.Member;
@@ -23,7 +23,7 @@ public class SoftBanCommand extends Command {
           + "warning for their ban.";
       this.arguments = "<user> <duration in minutes> <reason>";
       this.requiredRole = "Staff";
-      this.aliases = new String[] {"sb"};
+      this.aliases = new String[]{"sb"};
       this.cooldown = 1;
       this.cooldownScope = CooldownScope.USER;
    }
@@ -32,7 +32,7 @@ public class SoftBanCommand extends Command {
    protected void execute(CommandEvent event) {
       Member target = event.getGuild().getMember(event.getMessage().getMentionedUsers().get(0));
       Long duration = Long.parseLong(
-          event.getMessage().getContentDisplay().split("\\s", 4)[2])*60*1000;
+          event.getMessage().getContentDisplay().split("\\s", 4)[2]) * 60 * 1000;
       String reason = event.getMessage().getContentDisplay().split("\\s", 4)[3];
       Timer timer = new Timer();
 
@@ -48,7 +48,7 @@ public class SoftBanCommand extends Command {
       logger.info(String.format("[%s] %s has been soft-banned for %s minutes by %s for: %s",
           event.getGuild(),
           target.getEffectiveName(),
-          duration/60000,
+          duration / 60000,
           event.getAuthor().getName(),
           reason));
 
@@ -58,12 +58,13 @@ public class SoftBanCommand extends Command {
       timer.schedule((new TimerTask() {
          @Override
          public void run() {
-            event.getGuild().getController().removeSingleRoleFromMember(target, softbanRole).queue();
+            event.getGuild().getController().removeSingleRoleFromMember(target, softbanRole)
+                .queue();
             target.getUser().openPrivateChannel().queue(success ->
                 success.sendMessage(String.format(
                     "Your ban has been lifted in %s. Please be sure to better follow the rules in the future.",
                     event.getGuild().getName()))
-                .queue());
+                    .queue());
             timer.cancel();
          }
       }), duration);

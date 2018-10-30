@@ -12,6 +12,7 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 
 public class DogCommand extends Command {
+
    public DogCommand() {
       this.name = "dog";
       this.category = new Category("Fun");
@@ -25,11 +26,10 @@ public class DogCommand extends Command {
 
    @Override
    protected void execute(final CommandEvent event) {
-      Unirest.get("https://dog.ceo/api/breeds/image/random").asJsonAsync(new Callback<JsonNode>(){
+      Unirest.get("https://dog.ceo/api/breeds/image/random").asJsonAsync(new Callback<JsonNode>() {
 
          // The API call was successful
-         public void completed(HttpResponse<JsonNode> hr)
-         {
+         public void completed(HttpResponse<JsonNode> hr) {
             event.reply(new EmbedBuilder()
                 .setColor(Color.BLACK)
                 .setImage(hr.getBody().getObject().getString("message"))
@@ -39,14 +39,12 @@ public class DogCommand extends Command {
          }
 
          // The API call failed
-         public void failed(UnirestException ue)
-         {
+         public void failed(UnirestException ue) {
             event.reactError();
          }
 
          // The API call was cancelled (this should never happen)
-         public void cancelled()
-         {
+         public void cancelled() {
             event.reactError();
          }
       });

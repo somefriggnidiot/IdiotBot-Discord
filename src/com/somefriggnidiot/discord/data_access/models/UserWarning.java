@@ -14,9 +14,9 @@ public class UserWarning {
    private final String id;
    private final Long userId;
    private final Timestamp timestamp;
+   private final Long warnerId;
    private String reason;
    private Timestamp expires;
-   private final Long warnerId;
 
    public UserWarning(Long userId, String reason, Long warnerId) {
       this.id = UUID.randomUUID().toString();

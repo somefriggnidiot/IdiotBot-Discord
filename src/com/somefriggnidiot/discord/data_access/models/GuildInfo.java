@@ -15,13 +15,13 @@ public class GuildInfo {
    private final Long guildId;
    private Boolean groupMappingsActive;
    /**
-    * Key = Game as displayed on Discord
-    * Value = Name of group/role associated with game.
+    * Key = Game as displayed on Discord Value = Name of group/role associated with game.
     */
    private HashMap<String, String> gameGroupMappings;
 
    /**
     * Initializes a new GuildInfo object denoted by the given Discord Guild ID.
+    *
     * @param guildId The Discord ID of the guild.
     */
    public GuildInfo(Long guildId) {
@@ -67,8 +67,8 @@ public class GuildInfo {
    }
 
    /**
-    * Key = Game as displayed on Discord
-    * Value = Name of group/role associated with game.
+    * Key = Game as displayed on Discord Value = Name of group/role associated with game.
+    *
     * @return a map containing game names as keys and role names as values.
     */
    public HashMap<String, String> getGameGroupMappings() {

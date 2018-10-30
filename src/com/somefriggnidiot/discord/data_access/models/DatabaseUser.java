@@ -20,12 +20,12 @@ public class DatabaseUser {
       this.karma = 0;
    }
 
-   public void setKarma(Integer newKarma) {
-      this.karma = newKarma;
-   }
-
    public Integer getKarma() {
       return karma;
+   }
+
+   public void setKarma(Integer newKarma) {
+      this.karma = newKarma;
    }
 
    public DatabaseUser withKarma(Integer newKarma) {
@@ -33,12 +33,12 @@ public class DatabaseUser {
       return this;
    }
 
-   public void setPrivateChannel(Long channelId) {
-      this.privateChannelId = channelId;
-   }
-
    public Long getPrivateChannel() {
       return privateChannelId;
+   }
+
+   public void setPrivateChannel(Long channelId) {
+      this.privateChannelId = channelId;
    }
 
    public DatabaseUser withPrivateChannel(Long channelId) {
@@ -47,7 +47,9 @@ public class DatabaseUser {
    }
 
    public void addWarning(String warning) {
-      if (warningIds == null) warningIds = new ArrayList<>();
+      if (warningIds == null) {
+         warningIds = new ArrayList<>();
+      }
       warningIds.add(warning);
    }
 

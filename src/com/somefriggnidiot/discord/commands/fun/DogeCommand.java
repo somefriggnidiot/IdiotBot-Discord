@@ -12,6 +12,7 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 
 public class DogeCommand extends Command {
+
    public DogeCommand() {
       this.name = "doge";
       this.category = new Category("Fun");
@@ -25,30 +26,27 @@ public class DogeCommand extends Command {
    @Override
    protected void execute(final CommandEvent event) {
       Unirest.get("https://dog.ceo/api/breed/shiba/images/random")
-          .asJsonAsync(new Callback<JsonNode>(){
+          .asJsonAsync(new Callback<JsonNode>() {
 
-         // The API call was successful
-         public void completed(HttpResponse<JsonNode> hr)
-         {
-            event.reply(new EmbedBuilder()
-                .setColor(Color.BLACK)
-                .setImage(hr.getBody().getObject().getString("message"))
-                .setFooter("Provided to you by IdiotBot. The most idiotic of bots.",
-                    "http://www.foundinaction.com/wp-content/uploads/2018/08/Neon_600x600_Transparent.png")
-                .build());
-         }
+             // The API call was successful
+             public void completed(HttpResponse<JsonNode> hr) {
+                event.reply(new EmbedBuilder()
+                    .setColor(Color.BLACK)
+                    .setImage(hr.getBody().getObject().getString("message"))
+                    .setFooter("Provided to you by IdiotBot. The most idiotic of bots.",
+                        "http://www.foundinaction.com/wp-content/uploads/2018/08/Neon_600x600_Transparent.png")
+                    .build());
+             }
 
-         // The API call failed
-         public void failed(UnirestException ue)
-         {
-            event.reactError();
-         }
+             // The API call failed
+             public void failed(UnirestException ue) {
+                event.reactError();
+             }
 
-         // The API call was cancelled (this should never happen)
-         public void cancelled()
-         {
-            event.reactError();
-         }
-      });
+             // The API call was cancelled (this should never happen)
+             public void cancelled() {
+                event.reactError();
+             }
+          });
    }
 }

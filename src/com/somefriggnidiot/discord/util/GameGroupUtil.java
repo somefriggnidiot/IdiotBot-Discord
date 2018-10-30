@@ -14,7 +14,9 @@ public class GameGroupUtil {
 
    public static void handleRoleAssignment(CommandEvent event, HashMap<String, String> gameMap,
        String gameName, Member member) {
-      if (!isValidGame(gameMap, gameName)) return;
+      if (!isValidGame(gameMap, gameName)) {
+         return;
+      }
       String groupName = gameMap.get(gameName);
 
       // Get role

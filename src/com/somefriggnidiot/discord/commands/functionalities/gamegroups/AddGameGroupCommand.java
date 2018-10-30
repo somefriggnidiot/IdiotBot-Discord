@@ -14,7 +14,7 @@ public class AddGameGroupCommand extends Command {
 
    public AddGameGroupCommand() {
       this.name = "addgamegroup";
-      this.aliases = new String[] {"agg"};
+      this.aliases = new String[]{"agg"};
       this.arguments = "<gameName>|<roleName>";
       this.category = new Category("Functionality");
       this.requiredRole = "Staff";
@@ -36,12 +36,12 @@ public class AddGameGroupCommand extends Command {
       try {
          GuildInfoUtil.addGameRoleMapping(event.getGuild().getIdLong(), args[0], args[1]);
          event.reply(String.format("New game group created!\nUsers playing \"%s\" will now be "
-             + "added to the role \"%s\".",
+                 + "added to the role \"%s\".",
              args[0],
              args[1]));
       } catch (Exception e) {
          logger.error(String.format("[%s] Error adding game role mapping: "
-             + "\nGameName: \"%s\"\nRoleName: \"%s\"",
+                 + "\nGameName: \"%s\"\nRoleName: \"%s\"",
              event.getGuild(),
              args[0],
              args[1]));
