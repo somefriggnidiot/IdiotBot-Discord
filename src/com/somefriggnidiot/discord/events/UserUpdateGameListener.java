@@ -1,5 +1,7 @@
 package com.somefriggnidiot.discord.events;
 
+import com.somefriggnidiot.discord.data_access.models.GuildInfo;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import java.util.HashMap;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.events.user.update.UserUpdateGameEvent;
@@ -10,59 +12,44 @@ import org.slf4j.LoggerFactory;
 public class UserUpdateGameListener extends ListenerAdapter {
 
    private final Logger logger = LoggerFactory.getLogger(MessageListener.class);
-   /**
-    * Key = Game name displayed in Discord;
-    * Value = Group Name
-    */
-   private final HashMap<String, String> groupMappings = new HashMap<>();
 
    @Override
    public void onUserUpdateGame(UserUpdateGameEvent event) {
-      groupMappings.put("Rocket League", "Rocket League");
-      groupMappings.put("Overwatch", "Overwatch");
-      groupMappings.put("Counter-Strike Global Offensive", "CSGO");
-      groupMappings.put("World of Warships", "World of Warships");
-      groupMappings.put("Planetside 2", "Planetside 2");
-      groupMappings.put("Rainbow Six Siege", "R6 Siege");
-      groupMappings.put("Tom Clancy's Rainbow Six Siege", "R6 Siege");
-      groupMappings.put("Terraria", "Terraria");
-      groupMappings.put("Starbound", "Starboud");
-      groupMappings.put("Minecraft", "Minecraft");
 
-      try {
-         if (event.getNewGame() != null && event.getOldGame() != null) {
-            // started playing from another game, ignore updates to same game
-            if (event.getNewGame().getName().equalsIgnoreCase(event.getOldGame().getName())) return;
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild().getIdLong());
+      final HashMap<String, String> groupMappings = gi.getGameGroupMappings();
 
-            handleSwap(event, event.getOldGame().getName(), event.getNewGame().getName());
-         } else if (event.getNewGame() != null && event.getOldGame() == null) {
-            // started playing from nothing
-            handleRoleAssignment(event, event.getNewGame().getName(), true);
-         } else {
-            // done gaming
-            handleRoleAssignment(event, event.getOldGame().getName(), false);
+      if(gi.isGroupingGames()) {
+
+         try {
+            if (event.getNewGame() != null && event.getOldGame() != null) {
+               // started playing from another game, ignore updates to same game
+               if (event.getNewGame().getName().equalsIgnoreCase(event.getOldGame().getName())) return;
+
+               handleSwap(event, groupMappings, event.getOldGame().getName(), event.getNewGame()
+                   .getName());
+            } else if (event.getNewGame() != null && event.getOldGame() == null) {
+               // started playing from nothing
+               handleRoleAssignment(event, groupMappings, event.getNewGame().getName(), true);
+            } else {
+               // done gaming
+               handleRoleAssignment(event, groupMappings, event.getOldGame().getName(), false);
+            }
+         } catch (IllegalArgumentException e) {
+            logger.error(String.format("Excption thrown with %s on %s", event.getUser(), event.getGuild()));
+            logger.error("Trace: ", e);
          }
-      } catch (IllegalArgumentException e) {
-         logger.error(String.format("Excption thrown with %s on %s", event.getUser(), event.getGuild()));
-         logger.error(e.toString());
       }
    }
 
-   private boolean isValidGame(String gameName) {
-      return groupMappings.get(gameName) != null;
+   private boolean isValidGame(HashMap<String, String> gameMap, String gameName) {
+      return gameMap.get(gameName) != null;
    }
 
-   private void handleRoleAssignment(UserUpdateGameEvent event, String gameName, Boolean assign) {
-      String groupName = null;
-      Boolean isValid = false;
-      for (String game : groupMappings.keySet()) {
-         isValid = game.equalsIgnoreCase(gameName);
-         if (isValid) {
-           groupName = groupMappings.get(gameName);
-           break;
-         }
-      }
-      if (!isValid) return;
+   private void handleRoleAssignment(UserUpdateGameEvent event, HashMap<String, String> gameMap,
+       String gameName, Boolean assign) {
+      if (!isValidGame(gameMap, gameName)) return;
+      String groupName = gameMap.get(gameName);
 
       // Get role
       Role role = null;
@@ -105,8 +92,9 @@ public class UserUpdateGameListener extends ListenerAdapter {
       }
    }
 
-   private void handleSwap(UserUpdateGameEvent event, String oldGameName, String newGameName) {
-      if (!isValidGame(oldGameName) && !isValidGame(newGameName)) return;
+   private void handleSwap(UserUpdateGameEvent event, HashMap<String, String> gameMap,
+       String oldGameName, String newGameName) {
+      if (!isValidGame(gameMap, oldGameName) && !isValidGame(gameMap, newGameName)) return;
 
       //Check for old role.
       Role oldRole = null;

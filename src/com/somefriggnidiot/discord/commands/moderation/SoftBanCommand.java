@@ -3,7 +3,7 @@ package com.somefriggnidiot.discord.commands.moderation;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.events.MessageListener;
-import com.somefriggnidiot.discord.util.WarningUtil;
+import com.somefriggnidiot.discord.data_access.util.UserWarningUtil;
 import java.util.Timer;
 import java.util.TimerTask;
 import net.dv8tion.jda.core.entities.Member;
@@ -52,7 +52,7 @@ public class SoftBanCommand extends Command {
           event.getAuthor().getName(),
           reason));
 
-      WarningUtil.warnUser(event.getMessage().getMentionedUsers().get(0), reason,
+      UserWarningUtil.warnUser(event.getMessage().getMentionedUsers().get(0), reason,
           event.getAuthor().getIdLong());
 
       timer.schedule((new TimerTask() {
