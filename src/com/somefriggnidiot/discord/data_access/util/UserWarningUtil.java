@@ -1,4 +1,4 @@
-package com.somefriggnidiot.discord.util;
+package com.somefriggnidiot.discord.data_access.util;
 
 import com.somefriggnidiot.discord.data_access.DatabaseConnector;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector.Table;
@@ -7,7 +7,7 @@ import com.somefriggnidiot.discord.data_access.models.UserWarning;
 import javax.persistence.EntityManager;
 import net.dv8tion.jda.core.entities.User;
 
-public class WarningUtil {
+public class UserWarningUtil {
 
    public static Integer warnUser(User target, String reason, Long authorId) {
       EntityManager em = new DatabaseConnector().getEntityManager(Table.DATABASE_USER);

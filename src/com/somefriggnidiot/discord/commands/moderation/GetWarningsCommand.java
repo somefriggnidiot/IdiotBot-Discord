@@ -66,10 +66,9 @@ public class GetWarningsCommand extends Command {
       if (!warnings.isEmpty()) {
          for (UserWarning warning : warnings) {
             String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                .format(Date.from((warning.getTimestamp().toInstant())));
+                .format(Date.from((warning.getTimestamp().toInstant()))); //FIXME throwing NPEs
             if(warning.getExpires().after(Timestamp.valueOf(LocalDateTime.now()))) {
-               eb.addField(timestamp, String.format("**Warned By: ** %s "
-                       + "\n **Expires:** %s \n **Reason:** %s",
+               eb.addField(timestamp, String.format("**Warned By: ** %s\n **Expires:** %s\n **Reason:** %s",
                    event.getGuild().getMemberById(warning.getWarnerId()),
                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                        .format(Date.from((warning.getExpires().toInstant()))),

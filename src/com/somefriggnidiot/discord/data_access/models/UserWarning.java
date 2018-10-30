@@ -22,7 +22,7 @@ public class UserWarning {
       this.id = UUID.randomUUID().toString();
       this.userId = userId;
       this.reason = reason;
-      this.timestamp = Timestamp.valueOf(LocalDateTime.now());
+      this.timestamp = Timestamp.valueOf(LocalDateTime.now().plusDays(0));
       this.expires = Timestamp.valueOf(LocalDateTime.now().plusDays(30));
       this.warnerId = warnerId;
    }
