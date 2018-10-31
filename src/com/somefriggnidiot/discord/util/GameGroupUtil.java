@@ -1,8 +1,12 @@
 package com.somefriggnidiot.discord.util;
 
 import com.jagrosh.jdautilities.command.CommandEvent;
+import com.somefriggnidiot.discord.data_access.models.GuildInfo;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.MessageListener;
 import java.util.HashMap;
+import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
 import org.slf4j.Logger;
@@ -46,7 +50,19 @@ public class GameGroupUtil {
       }
    }
 
-   private static boolean isValidGame(HashMap<String, String> gameMap, String gameName) {
+   public static boolean isValidGame(HashMap<String, String> gameMap, String gameName) {
       return gameMap.get(gameName) != null;
+   }
+
+   public static Role getGameRole(Guild guild, Game game) {
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
+
+      if (game == null || game.getName().isEmpty()) {
+         return null;
+      } else if (isValidGame(gi.getGameGroupMappings(), game.getName())) {
+         return guild.getRolesByName(gi.getGameGroupMappings().get(game.getName()), false).get(0);
+      } else {
+         return null;
+      }
    }
 }

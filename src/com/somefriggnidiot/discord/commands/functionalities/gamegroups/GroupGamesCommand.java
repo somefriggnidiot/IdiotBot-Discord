@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.managers.GuildController;
@@ -52,6 +54,11 @@ public class GroupGamesCommand extends Command {
 
       try {
          switch (args[1]) {
+            case "reset":
+            case "refresh":
+            case "check":
+               update(event);
+               return;
             case "toggle":
                toggle(event, !gi.isGroupingGames());
                return;
@@ -197,5 +204,82 @@ public class GroupGamesCommand extends Command {
 
       //Send message.
       event.getChannel().sendMessage(eb.build()).queue();
+   }
+
+   private void update(CommandEvent event) {
+      Guild guild = event.getGuild();
+      GuildController gc = guild.getController();
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
+      List<Member> members = guild.getMembers();
+      Collection<String> roleNames = gi.getGameGroupMappings().values();
+      Collection<Role> roles = new ArrayList<>();
+
+      for (String roleName : roleNames) {
+         roles.add(guild.getRolesByName(roleName, false).get(0));
+      }
+
+      if (gi.isGroupingGames()) { //Only do if guild is grouping.
+         for (Member member : members) { //For each
+            // member
+            logger.trace(String.format("[%s] Member: %s\nGame: %s",
+                guild,
+                member.toString(),
+                member.getGame()));
+            Game game = member.getGame();
+
+            if(game == null || game.getName().isEmpty()) { //If not playing game
+               gc.removeRolesFromMember(member, roles).queue(); //Remove game roles.
+               logger.debug(String.format("[%s] %s is not playing any game, removing all game "
+                   + "roles.",
+                   guild,
+                   member.getEffectiveName()));
+            } else { //Playing game
+
+               //So check if they have a game role
+               List<Role> memberRoles = member.getRoles();
+
+               Boolean next = false;
+
+               for (Role role : memberRoles) {
+                  if (roles.contains(role)) { //User's role is a game role.
+                     if (GameGroupUtil.getGameRole(guild, game) == role) { //User has correct role.
+                        logger.info(String.format("[%s] %s already has the correct role.",
+                            guild,
+                            member.getEffectiveName()));
+                     } else {
+                        if (GameGroupUtil.isValidGame(gi.getGameGroupMappings(), game.getName())) {
+                           gc.addSingleRoleToMember(member, GameGroupUtil.getGameRole(guild, game))
+                               .queue();
+                           logger.info(String.format("[%s] Removing %s from existing game roles and "
+                                   + "adding to %s.",
+                               guild,
+                               member.getEffectiveName(),
+                               GameGroupUtil.getGameRole(guild, game)));
+                        } else {
+                           gc.removeRolesFromMember(member, roles).queue();
+                           logger.info(String.format("[%s] Removing %s from existing game roles.",
+                               guild,
+                               member.getEffectiveName()));
+                        }
+                     }
+                     next = true;
+                  }
+               }
+
+               if (!next) {
+                  GameGroupUtil.handleRoleAssignment(event, gi.getGameGroupMappings(), game.getName(),
+                      member);
+               }
+            }
+         }
+      } else {
+         //Report that it can't be done.
+         logger.warn(String.format("[%s] Attempted to refresh gamegroups but guild does not have "
+             + "grouping enabled. Removing all game roles from members.",
+             guild));
+         for (Member member : members) {
+            gc.removeRolesFromMember(member, roles);
+         }
+      }
    }
 }
