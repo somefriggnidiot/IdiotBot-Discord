@@ -1,5 +1,8 @@
 package com.somefriggnidiot.discord.events;
 
+import com.somefriggnidiot.discord.data_access.models.GuildInfo;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
+import com.somefriggnidiot.discord.util.MessageListenerUtil;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
@@ -18,8 +21,14 @@ public class MessageListener extends ListenerAdapter {
       User author = event.getAuthor();
       Message message = event.getMessage();
       MessageChannel channel = event.getChannel();
-
       String msg = message.getContentDisplay();
+
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild().getIdLong());
+      Boolean isGrantingXp = gi.isGrantingMessageXp() == null ? false : gi.isGrantingMessageXp();
+
+      if (isGrantingXp && !msg.startsWith("!")) {
+         MessageListenerUtil.handleXpGain(event);
+      }
 
       //Karma Check
       //TODO do it on mentions instead.

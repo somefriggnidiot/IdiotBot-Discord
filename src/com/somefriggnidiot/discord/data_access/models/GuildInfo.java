@@ -14,6 +14,8 @@ public class GuildInfo {
    @Id
    private final Long guildId;
    private Boolean groupMappingsActive;
+   private Boolean messageXpActive;
+
    /**
     * Key = Game as displayed on Discord Value = Name of group/role associated with game.
     */
@@ -27,6 +29,7 @@ public class GuildInfo {
    public GuildInfo(Long guildId) {
       this.guildId = guildId;
       this.groupMappingsActive = false;
+      this.messageXpActive = false;
       gameGroupMappings = new HashMap<>();
    }
 
@@ -38,7 +41,7 @@ public class GuildInfo {
    }
 
    public Boolean isGroupingGames() {
-      return groupMappingsActive;
+      return groupMappingsActive == null ? false : groupMappingsActive;
    }
 
    public void setGroupMappingsActive(Boolean isGroupingGames) {
@@ -73,6 +76,14 @@ public class GuildInfo {
     */
    public HashMap<String, String> getGameGroupMappings() {
       return gameGroupMappings;
+   }
+
+   public Boolean isGrantingMessageXp() {
+      return messageXpActive == null ? false : messageXpActive;
+   }
+
+   public void setGrantingMessageXp(Boolean messageXpActive) {
+      this.messageXpActive = messageXpActive;
    }
 
    @Override

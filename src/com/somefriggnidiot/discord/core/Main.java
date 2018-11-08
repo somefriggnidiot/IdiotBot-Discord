@@ -11,6 +11,8 @@ import com.somefriggnidiot.discord.commands.fun.DogeCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.AddGameGroupCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.GroupGamesCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.RemoveGameGroupCommand;
+import com.somefriggnidiot.discord.commands.functionalities.messagexp.MessageXpCommand;
+import com.somefriggnidiot.discord.commands.functionalities.messagexp.ToggleXpGainCommand;
 import com.somefriggnidiot.discord.commands.moderation.AddAllUsersToRoleCommand;
 import com.somefriggnidiot.discord.commands.moderation.GetWarningsCommand;
 import com.somefriggnidiot.discord.commands.moderation.RemoveAllUsersFromRoleCommand;
@@ -58,7 +60,9 @@ public class Main {
              .addCommand(new AddGameGroupCommand())
              .addCommand(new RemoveGameGroupCommand())
              .addCommand(new AddAllUsersToRoleCommand())
-             .addCommand(new RemoveAllUsersFromRoleCommand());
+             .addCommand(new RemoveAllUsersFromRoleCommand())
+             .addCommand(new MessageXpCommand())
+             .addCommand(new ToggleXpGainCommand());
 
          JDA jda = new JDABuilder(args[0])
              .addEventListener(new MessageListener())

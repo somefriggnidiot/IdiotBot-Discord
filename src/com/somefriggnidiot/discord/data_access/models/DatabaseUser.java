@@ -1,5 +1,7 @@
 package com.somefriggnidiot.discord.data_access.models;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Entity;
@@ -14,10 +16,15 @@ public class DatabaseUser {
    private Integer karma;
    private Long privateChannelId;
    private List<String> warningIds;
+   private Integer level;
+   private Integer xp;
+   private Timestamp lastMessageDtTm;
 
    public DatabaseUser(Long userId) {
       this.userId = userId;
       this.karma = 0;
+      this.level = 0;
+      this.xp = 0;
    }
 
    public Integer getKarma() {
@@ -55,5 +62,44 @@ public class DatabaseUser {
 
    public List<String> getWarnings() {
       return warningIds;
+   }
+
+   public Integer getXp() {
+      return xp;
+   }
+
+   public void setXp(Integer xp) {
+      this.xp = xp;
+   }
+
+   public DatabaseUser withXp(Integer xp) {
+      this.xp = xp;
+      return this;
+   }
+
+   public Timestamp getLastMessageDtTm() {
+      return lastMessageDtTm;
+   }
+
+   public void setLastMessageDtTm(Timestamp lastMessageDtTm) {
+      this.lastMessageDtTm = lastMessageDtTm;
+   }
+
+   public DatabaseUser withUpdatedDtTm(Timestamp updatedDtTm) {
+      this.lastMessageDtTm = updatedDtTm;
+      return this;
+   }
+
+   public Integer getLevel() {
+      return level;
+   }
+
+   public void setLevel(Integer level) {
+      this.level = level;
+   }
+
+   public DatabaseUser withLevel(Integer level) {
+      this.level = level;
+      return this;
    }
 }

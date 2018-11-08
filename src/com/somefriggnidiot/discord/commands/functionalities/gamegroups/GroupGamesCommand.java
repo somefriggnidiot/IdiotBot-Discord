@@ -30,6 +30,7 @@ public class GroupGamesCommand extends Command {
       this.name = "gamegroups";
       this.aliases = new String[]{"groupbygame", "groupgames", "gamegroupings"};
       this.arguments = "<toggle/status/enable/disable>";
+      this.requiredRole = "Staff";
       this.category = new Category("Functionality");
       this.help = "Toggles whether or not this guild groups mambers by what game they are playing"
           + ". Members are \"grouped\" by being added to the specified group when Discord shows "

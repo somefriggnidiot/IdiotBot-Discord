@@ -52,6 +52,15 @@ public class GuildInfoUtil {
       em.getTransaction().commit();
    }
 
+   public static void setXpTracking(Long guildId, Boolean isActive) {
+      GuildInfo gi = getGuildInfo(guildId);
+
+      em.getTransaction().begin();
+      gi.setGrantingMessageXp(isActive);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
    private static GuildInfo getDatabaseObject(Long guildId) {
       GuildInfo gi = em.find(GuildInfo.class, guildId);
 
