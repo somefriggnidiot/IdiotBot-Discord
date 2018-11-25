@@ -8,6 +8,40 @@ import javax.persistence.EntityManager;
 public class GuildInfoUtil {
 
    static EntityManager em = new DatabaseConnector().getEntityManager(Table.GUILD_INFO);
+   private GuildInfo gi;
+
+   public GuildInfoUtil(Long guildId) {
+      this.gi = getGuildInfo(guildId);
+   }
+
+   public void addRoleLevelMapping(Long roleId, Integer level) {
+      em.getTransaction().begin();
+      gi.addRoleLevelMapping(roleId, level);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public Integer removeRoleLevelMapping(Long roleId) {
+      Integer level;
+
+      em.getTransaction().begin();
+      level = gi.removeRoleLevelMapping(roleId);
+      em.persist(gi);
+      em.getTransaction().commit();
+
+      return level;
+   }
+
+   public void setVoiceXpMultiplier(double multiplier) {
+      em.getTransaction().begin();
+      gi.setVoiceXpMultiplier(multiplier);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public double getVoiceXpMultiplier() {
+      return gi.getVoiceXpMultiplier();
+   }
 
    public static GuildInfo getGuildInfo(Long guildId) {
       return getDatabaseObject(guildId);

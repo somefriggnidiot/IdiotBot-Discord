@@ -3,6 +3,7 @@ package com.somefriggnidiot.discord.data_access.models;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -17,14 +18,18 @@ public class DatabaseUser {
    private Long privateChannelId;
    private List<String> warningIds;
    private Integer level;
-   private Integer xp;
+   private HashMap<Long, Integer> xpMap;
    private Timestamp lastMessageDtTm;
 
    public DatabaseUser(Long userId) {
       this.userId = userId;
       this.karma = 0;
       this.level = 0;
-      this.xp = 0;
+      this.xpMap = new HashMap<>();
+   }
+
+   public Long getId() {
+      return userId;
    }
 
    public Integer getKarma() {
@@ -64,16 +69,21 @@ public class DatabaseUser {
       return warningIds;
    }
 
-   public Integer getXp() {
-      return xp;
+   public HashMap<Long, Integer> getXpMap() {
+      return xpMap == null ? new HashMap<>() : xpMap;
    }
 
-   public void setXp(Integer xp) {
-      this.xp = xp;
+   public void setXp(HashMap<Long, Integer> xpMap) {
+      this.xpMap = xpMap;
    }
 
-   public DatabaseUser withXp(Integer xp) {
-      this.xp = xp;
+   public Integer updateXp(Long guldId, Integer newXpValue) {
+      xpMap = xpMap == null ? new HashMap<>() : xpMap;
+      return xpMap.put(guldId, newXpValue);
+   }
+
+   public DatabaseUser withXpMap(HashMap<Long, Integer> xpMap) {
+      this.xpMap = xpMap;
       return this;
    }
 
@@ -91,7 +101,7 @@ public class DatabaseUser {
    }
 
    public Integer getLevel() {
-      return level;
+      return level == null ? 0 : level;
    }
 
    public void setLevel(Integer level) {

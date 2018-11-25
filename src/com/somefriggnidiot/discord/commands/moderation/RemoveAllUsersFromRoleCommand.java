@@ -32,10 +32,18 @@ public class RemoveAllUsersFromRoleCommand extends Command {
    @Override
    protected void execute(final CommandEvent event) {
       String[] args = event.getMessage().getContentDisplay().split("\\s", 2);
-      Role role = event.getGuild().getRolesByName(args[1], true).get(0);
+      Role role;
+
+      if (event.getMessage().getMentionedRoles().isEmpty()) {
+         role = event.getGuild().getRolesByName(args[1], true).get(0);
+      } else {
+         role = event.getMessage().getMentionedRoles().get(0);
+      }
+
       GuildController gc = event.getGuild().getController();
       List<Member> members = event.getGuild().getMembers().stream()
           .filter(m -> !m.getUser().isBot())
+          .filter(m -> m.getRoles().contains(role))
           .collect(Collectors.toList());
 
       members.forEach(m -> {

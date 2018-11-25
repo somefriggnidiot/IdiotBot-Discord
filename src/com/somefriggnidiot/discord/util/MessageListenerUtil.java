@@ -24,7 +24,7 @@ public class MessageListenerUtil {
       Instant userLastMessageTime;
 
       if (dbu.getLastMessageDtTm() == null) {
-         DatabaseUserUtil.addXp(event.getAuthor().getIdLong(), 0);
+         DatabaseUserUtil.addXp(event.getGuild().getIdLong(), event.getAuthor().getIdLong(), 0);
          userLastMessageTime = Instant.now().truncatedTo(ChronoUnit.MINUTES);
       } else {
          userLastMessageTime = dbu.getLastMessageDtTm()
@@ -35,22 +35,22 @@ public class MessageListenerUtil {
          Integer messageLength = event.getMessage().getContentDisplay().length();
          Integer xpGain;
          //If message contains link
-         if (event.getMessage().getContentDisplay().contains("http")) {
+         if (event.getMessage().getContentDisplay().contains("http")
+             || event.getMessage().getContentDisplay().isEmpty()) {
             xpGain = 5;
          } else {
-            xpGain = ThreadLocalRandom.current().nextInt(10, 26);
-            xpGain += (messageLength / 25);
+            xpGain = ThreadLocalRandom.current().nextInt(10, 31);
+            xpGain += (messageLength / 20);
          }
 
-         Integer newXp = DatabaseUserUtil.addXp(userId, xpGain);
+         Integer newXp = DatabaseUserUtil.addXp(event.getGuild().getIdLong(), userId, xpGain);
          logger.info(String.format("[%s] %s gained %s xp for messaging. They're now at %s xp.",
              event.getGuild(),
              event.getAuthor().getName(),
              xpGain,
              newXp));
 
-         if (XpUtil
-             .checkForLevelUp(event, dbu.getLevel() == null ? 0 : dbu.getLevel(), newXp, userId)) {
+         if (XpUtil.checkForLevelUp(event.getGuild(), event.getAuthor(), newXp) > 0) {
             logger.info(String.format("[%s] %s has leveled up! Now level %s!",
                 event.getGuild(),
                 event.getAuthor().getName(),

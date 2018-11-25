@@ -15,18 +15,28 @@ public class DatabaseUserUtil {
       return getDatabaseObject(userId);
    }
 
-   public static Integer addXp(Long userId, Integer xpGain) {
+   public static Integer addXp(Long guildId, Long userId, Integer xpGain) {
       DatabaseUser dbu = getDatabaseObject(userId);
-      Integer currentXp = dbu.getXp() == null ? 0 : dbu.getXp();
+      Integer currentXp = dbu.getXpMap().get(guildId) == null ? 0 : dbu.getXpMap().get(guildId);
       Integer newXp = currentXp + xpGain;
 
       em.getTransaction().begin();
-      dbu.setXp(newXp);
+      dbu.updateXp(guildId, newXp);
       dbu.setLastMessageDtTm(Timestamp.from(Instant.now()));
       em.persist(dbu);
       em.getTransaction().commit();
 
       return newXp;
+   }
+
+   public static void setXp(Long guildId, Long userId, Integer xpValue) {
+      DatabaseUser dbu = getDatabaseObject(userId);
+
+      em.getTransaction().begin();
+      dbu.updateXp(guildId, xpValue);
+      dbu.setLastMessageDtTm(Timestamp.from(Instant.now()));
+      em.persist(dbu);
+      em.getTransaction().commit();
    }
 
    public static Integer incrementLevel(Long userId) {

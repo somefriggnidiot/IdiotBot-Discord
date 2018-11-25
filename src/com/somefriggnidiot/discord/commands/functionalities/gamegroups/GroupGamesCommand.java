@@ -57,6 +57,7 @@ public class GroupGamesCommand extends Command {
          switch (args[1]) {
             case "reset":
             case "refresh":
+            case "update":
             case "check":
                update(event);
                return;

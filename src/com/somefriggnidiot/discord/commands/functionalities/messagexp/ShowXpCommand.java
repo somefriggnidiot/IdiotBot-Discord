@@ -12,14 +12,14 @@ import net.dv8tion.jda.core.entities.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MessageXpCommand extends Command {
+public class ShowXpCommand extends Command {
 
    private final Logger logger = LoggerFactory.getLogger(MessageListener.class);
    private EmbedBuilder eb;
 
-   public MessageXpCommand() {
-      this.name = "xp";
-      this.aliases = new String[]{"myxp"};
+   public ShowXpCommand() {
+      this.name = "showxp";
+      this.aliases = new String[]{"myxp", "xp"};
       this.arguments = "(userMention)";
       this.category = new Category("Functionality");
       this.help = "Displays information about your current xp and level on IdiotBot.";
@@ -40,7 +40,8 @@ public class MessageXpCommand extends Command {
       if (event.getMessage().getMentionedMembers().size() == 0) {
          dbu = DatabaseUserUtil.getUser(event.getAuthor().getIdLong());
          level = dbu.getLevel() == null ? "0" : dbu.getLevel().toString();
-         xp = dbu.getXp() == null ? "0" : dbu.getXp().toString();
+         xp = dbu.getXpMap().get(event.getGuild().getIdLong()) == null ? "0" : dbu.getXpMap().get
+             (event.getGuild().getIdLong()).toString();
          nextXp = XpUtil.getXpThresholdForLevel(Integer.valueOf(level)+1).toString();
 
          eb = new EmbedBuilder()
@@ -55,7 +56,8 @@ public class MessageXpCommand extends Command {
          User user = event.getMessage().getMentionedUsers().get(0);
          dbu = DatabaseUserUtil.getUser(user.getIdLong());
          level = dbu.getLevel() == null ? "0" : dbu.getLevel().toString();
-         xp = dbu.getXp() == null ? "0" : dbu.getXp().toString();
+         xp = dbu.getXpMap().get(event.getGuild().getIdLong()) == null ? "0" : dbu.getXpMap().get
+             (event.getGuild().getIdLong()).toString();
          nextXp = XpUtil.getXpThresholdForLevel(Integer.valueOf(level)+1).toString();
 
          eb = new EmbedBuilder()

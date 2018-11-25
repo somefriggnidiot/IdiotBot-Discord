@@ -1,89 +1,121 @@
 package com.somefriggnidiot.discord.util;
 
-import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
+import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.MessageListener;
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent;
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.core.entities.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class XpUtil {
    private static final Logger logger = LoggerFactory.getLogger(MessageListener.class);
 
-   public static Boolean checkForLevelUp(MessageReceivedEvent event, Integer currentLevel,
-       Integer newXp, Long userId) {
+   public static Integer checkForLevelUp(Guild guild, User user, Integer newXp) {
+      Long userId = user.getIdLong();
+      Integer currentLevel = DatabaseUserUtil.getUser(userId).getLevel() == null ? 0 :
+          DatabaseUserUtil.getUser(userId).getLevel();
       Integer xpThreshold = getXpThresholdForLevel(currentLevel+1);
       Integer newLevel = currentLevel;
 
       if (newXp > xpThreshold) {
-         newLevel = DatabaseUserUtil.incrementLevel(userId);
+         newLevel = DatabaseUserUtil.setLevel(userId, getLevelForXp(newXp));
+         String newLevelString = String.format("**%s**  (%s%s)",
+             newLevel.toString(),
+             (newLevel - currentLevel)>=1 ? "+" : "",
+             (newLevel - currentLevel)
+         );
 
          EmbedBuilder eb = new EmbedBuilder()
              .setColor(Color.CYAN)
-             .setThumbnail(event.getAuthor().getAvatarUrl())
-             .setTitle(String.format("%s has leveled up!", event.getAuthor().getName()))
-             .setFooter("Provided to you by IdiotBot. The most idiotic of bots.",
-                 "http://www.foundinaction.com/wp-content/uploads/2018/08/"
-                     + "Neon_600x600_Transparent.png")
-             .addField("Current Level", newLevel.toString(), true)
+             .setThumbnail(user.getAvatarUrl())
+             .setTitle(String.format("%s has leveled up!", user.getName()))
+             .addField("Current Level", newLevelString, true)
              .addField("Progress to Next Level",
                  newXp + " / " + getXpThresholdForLevel(newLevel+1)
                      .toString(),
                  true);
 
-         event.getChannel().sendMessage(eb.build()).queue();
-      } else if (newXp < getXpThresholdForLevel(currentLevel)) {
-         newLevel = DatabaseUserUtil.setLevel(userId, currentLevel-1);
-         logger.info(String.format("[%s] Demoted %s to level %s.",
-             event.getGuild(),
-             event.getAuthor().getName(),
-             newLevel));
-      }
+         List <Role> newRoles = handleRoleAssignments(null, userId, guild);
+         if (newRoles != null && !newRoles.isEmpty()) {
+            String roleList = "";
 
-      return newLevel > currentLevel;
-   }
+            for (Role role : newRoles) {
+               roleList += role.getName().toString() + ", ";
+            }
 
-   public static boolean checkForLevelUp(GuildVoiceJoinEvent event, Integer newXp) {
-      Long userId = event.getMember().getUser().getIdLong();
-      Integer currentLevel = DatabaseUserUtil.getUser(userId).getLevel();
-      Integer xpThreshold = getXpThresholdForLevel(currentLevel+1);
-      Integer newLevel = currentLevel;
+            roleList = roleList.substring(0, roleList.length()-2);
+            eb.addField("Role(s) Unlocked", roleList, true);
+         }
 
-      if (newXp > xpThreshold) {
-         newLevel = DatabaseUserUtil.incrementLevel(userId);
-
-         EmbedBuilder eb = new EmbedBuilder()
-             .setColor(Color.CYAN)
-             .setThumbnail(event.getMember().getUser().getAvatarUrl())
-             .setTitle(String.format("%s has leveled up!", event.getMember().getUser().getName()))
-             .setFooter("Provided to you by IdiotBot. The most idiotic of bots.",
-                 "http://www.foundinaction.com/wp-content/uploads/2018/08/"
-                     + "Neon_600x600_Transparent.png")
-             .addField("Current Level", newLevel.toString(), true)
-             .addField("Progress to Next Level",
-                 newXp + " / " + getXpThresholdForLevel(newLevel+1)
-                     .toString(),
-                 true);
-
-         event.getGuild().getTextChannelsByName("general", false).get(0)
+         guild.getTextChannelsByName("bot-spam", false).get(0)
              .sendMessage(eb.build()).queue();
+
       } else if (newXp < getXpThresholdForLevel(currentLevel)) {
-         newLevel = DatabaseUserUtil.setLevel(userId, currentLevel-1);
+         newLevel = DatabaseUserUtil.setLevel(userId, getLevelForXp(newXp));
          logger.info(String.format("[%s] Demoted %s to level %s.",
-             event.getGuild(),
-             event.getMember().getUser().getName(),
+             guild,
+             user.getName(),
              newLevel));
+
+         handleRoleAssignments(null, userId, guild);
       }
 
-      return newLevel > currentLevel;
+      return newLevel - currentLevel;
    }
 
-   private static void handleRoleAssignments(TextChannel channel, Long userId, Long guildId) {
-      return;
+   private static List<Role> handleRoleAssignments(TextChannel channel, Long userId, Guild
+       guild) {
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
+
+      if (gi.getLevelRolesActive() || !gi.getLevelRolesActive()) {
+         HashMap<Long, Integer> roleLevelIds = gi.getRoleLevelMappings();
+         Integer userLevel = DatabaseUserUtil.getUser(userId).getLevel();
+         List<Long> applicableRoleIds = roleLevelIds.keySet().stream()
+             .filter(e -> roleLevelIds.get(e) <= userLevel)
+             .collect(Collectors.toList());
+         List<Role> applicableRoles = new ArrayList<>();
+         applicableRoleIds.forEach(e -> applicableRoles.add(guild.getRoleById(e)));
+         Member member = guild.getMemberById(userId);
+         List<Role> newRoles = applicableRoles.stream()
+             .filter(role -> !member.getRoles().contains(role))
+             .collect(Collectors.toList());
+
+
+         guild.getController().addRolesToMember(member, newRoles).queue();
+
+         return newRoles;
+      }
+
+      return null;
+   }
+
+   public static Integer getLevelForXp(Integer xp) {
+      Integer level = -1;
+      Integer thresholdXp  = getXpThresholdForLevel(level);
+
+      while (xp > thresholdXp) {
+         thresholdXp = getXpThresholdForLevel(level);
+
+         if (xp < thresholdXp) {
+            break;
+         } else {
+            level++;
+         }
+      }
+
+      level--;
+      return level;
    }
 
    public static Integer getXpThresholdForLevel(Integer level) {
