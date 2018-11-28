@@ -1,17 +1,33 @@
 package com.somefriggnidiot.discord.data_access.util;
 
+import com.somefriggnidiot.discord.core.Main;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector.Table;
+import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
+import com.somefriggnidiot.discord.util.HighscoreObject;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Member;
 
 public class GuildInfoUtil {
 
    static EntityManager em = new DatabaseConnector().getEntityManager(Table.GUILD_INFO);
    private GuildInfo gi;
+   private Guild guild;
 
    public GuildInfoUtil(Long guildId) {
       this.gi = getGuildInfo(guildId);
+      this.guild = Main.jda.getGuildById(guildId);
+   }
+
+   public GuildInfoUtil(Guild guild) {
+      this.gi = getGuildInfo(guild.getIdLong());
+      this.guild = guild;
    }
 
    public void addRoleLevelMapping(Long roleId, Integer level) {
@@ -41,6 +57,21 @@ public class GuildInfoUtil {
 
    public double getVoiceXpMultiplier() {
       return gi.getVoiceXpMultiplier();
+   }
+
+   public List<HighscoreObject> getRankedXpList() {
+      List<HighscoreObject> rankedList = new ArrayList<>();
+      List<DatabaseUser> dbus = new ArrayList<>();
+      List<Member> members = guild.getMembers();
+
+      members.forEach(member -> dbus
+          .add(DatabaseUserUtil.getUser(member.getUser().getIdLong())));
+      dbus.forEach(dbu -> rankedList.add(new HighscoreObject(dbu, dbu.getXpMap().get(guild
+          .getIdLong()) == null ? 0 : dbu.getXpMap().get(guild.getIdLong()))));
+
+      return rankedList.stream()
+          .sorted(Comparator.comparing(HighscoreObject::getXp).reversed())
+          .collect(Collectors.toList());
    }
 
    public static GuildInfo getGuildInfo(Long guildId) {

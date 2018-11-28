@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 public class Main {
 
    private final static Logger logger = LoggerFactory.getLogger(Main.class);
+   public static JDA jda;
 
    public static void main(String[] args) {
       System.setProperty("log4j.configurationFile", "./resources/log4j2.xml");
@@ -87,7 +88,7 @@ public class Main {
              .addCommand(new KarmaCommand())
              .addCommand(new StatusCommand());
 
-         JDA jda = new JDABuilder(args[0])
+         jda = new JDABuilder(args[0])
              .addEventListener(new MessageListener())
              .addEventListener(new UserUpdateGameListener())
              .addEventListener(new GuildVoiceListener())

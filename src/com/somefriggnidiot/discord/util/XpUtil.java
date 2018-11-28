@@ -1,5 +1,6 @@
 package com.somefriggnidiot.discord.util;
 
+import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
@@ -126,5 +127,22 @@ public class XpUtil {
       }
 
       return threshold;
+   }
+
+   public static Integer getGuildRank(Guild guild, User user) {
+      GuildInfoUtil giu = new GuildInfoUtil(guild);
+      List<HighscoreObject> rankedList = giu.getRankedXpList();
+      List<DatabaseUser> rankedDbus = new ArrayList<>();
+
+      rankedList.stream().forEach(e -> rankedDbus.add(e.getUser()));
+      DatabaseUser dbu = DatabaseUserUtil.getUser(user.getIdLong());
+
+      return rankedDbus.indexOf(dbu) + 1;
+   }
+
+   public static Integer getGuildLeaderboardSize(Guild guild) {
+      GuildInfoUtil giu = new GuildInfoUtil(guild);
+
+      return giu.getRankedXpList().size();
    }
 }
