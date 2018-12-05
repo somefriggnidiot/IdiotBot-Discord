@@ -1,4 +1,4 @@
-package com.somefriggnidiot.discord.commands.functionalities.messagexp;
+package com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 public class ShowXpCommand extends Command {
 
-   private final Logger logger = LoggerFactory.getLogger(MessageListener.class);
+   private final Logger logger = LoggerFactory.getLogger(ShowXpCommand.class);
    private EmbedBuilder eb;
 
    public ShowXpCommand() {

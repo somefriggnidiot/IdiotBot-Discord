@@ -10,9 +10,35 @@ import javax.persistence.EntityManager;
 public class DatabaseUserUtil {
 
    private static EntityManager em = new DatabaseConnector().getEntityManager(Table.DATABASE_USER);
+   private DatabaseUser dbu;
+
+   public DatabaseUserUtil(Long userId) {
+      this.dbu = getDatabaseObject(userId);
+   }
 
    public static DatabaseUser getUser(Long userId) {
       return getDatabaseObject(userId);
+   }
+
+   /**
+    * Adds the provided amount of tokens to the existing amount for the {@link DatabaseUser}
+    * within the provided Guild.
+    *
+    * @param guildId the ID of the Guild in which this user is gaining tokens.
+    * @param tokenGain the amount of tokens being gained.
+    * @return the final quantity of tokens possessed by the user.
+    */
+   public Integer addTokens(Long guildId, Integer tokenGain) {
+      Integer currentTokens =
+          dbu.getTokenMap().get(guildId) == null ? 0 : dbu.getTokenMap().get(guildId);
+      Integer newTokens = currentTokens + tokenGain;
+
+      em.getTransaction().begin();
+      dbu.updateTokens(guildId, newTokens);
+      em.persist(dbu);
+      em.getTransaction().commit();
+
+      return newTokens;
    }
 
    public static Integer addXp(Long guildId, Long userId, Integer xpGain) {

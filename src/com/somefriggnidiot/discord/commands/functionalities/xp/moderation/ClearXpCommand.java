@@ -1,7 +1,8 @@
-package com.somefriggnidiot.discord.commands.functionalities.messagexp;
+package com.somefriggnidiot.discord.commands.functionalities.xp.moderation;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.XpLeaderboardCommand;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
@@ -21,7 +22,7 @@ public class ClearXpCommand extends Command {
       this.botPermissions = new Permission[]{Permission.MESSAGE_READ,
           Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
       this.guildOnly = true;
-      this.requiredRole = "Staff";
+      this.requiredRole = "Founder";
       this.cooldown = 1;
       this.cooldownScope = CooldownScope.USER;
    }

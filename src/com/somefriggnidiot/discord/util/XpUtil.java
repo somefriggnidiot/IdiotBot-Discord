@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
@@ -79,7 +80,7 @@ public class XpUtil {
        guild) {
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
 
-      if (gi.getLevelRolesActive() || !gi.getLevelRolesActive()) {
+      if (gi.getLevelRolesActive() && gi.getRoleLevelMappings().size() > 0) {
          HashMap<Long, Integer> roleLevelIds = gi.getRoleLevelMappings();
          Integer userLevel = DatabaseUserUtil.getUser(userId).getLevel();
          List<Long> applicableRoleIds = roleLevelIds.keySet().stream()
@@ -144,5 +145,35 @@ public class XpUtil {
       GuildInfoUtil giu = new GuildInfoUtil(guild);
 
       return giu.getRankedXpList().size();
+   }
+
+   /**
+    * Compares a random number to 1. If the number matches, returns true.
+    *
+    * @return whether or not a token drop has been activated.
+    */
+   public static Boolean tokenDropActivated() {
+      return ThreadLocalRandom.current().nextInt(250) == 1;
+   }
+
+   /**
+    * Adds tokens for a user within a guild.
+    *
+    * @param guild
+    * @param user
+    * @param tokens
+    * @return
+    */
+   public static Integer handleTokenDrops(Guild guild, User user, Integer tokens) {
+      DatabaseUserUtil dbuu = new DatabaseUserUtil(user.getIdLong());
+      Integer newTokens = dbuu.addTokens(guild.getIdLong(), tokens);
+
+      logger.info(String.format("[%s] %s has gained %s token(s)! Now at %s.",
+          guild,
+          user.getName(),
+          tokens,
+          newTokens));
+
+      return newTokens;
    }
 }

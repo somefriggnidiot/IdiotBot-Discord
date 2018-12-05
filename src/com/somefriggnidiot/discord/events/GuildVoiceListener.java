@@ -118,6 +118,11 @@ public class GuildVoiceListener extends ListenerAdapter {
          Double multiplier = 0.9 + (0.05 * channel.getMembers().size());
          Double voiceMultiplier = new GuildInfoUtil(guild.getIdLong()).getVoiceXpMultiplier();
 
+         //Check for token drops.
+         if (XpUtil.tokenDropActivated()) {
+            XpUtil.handleTokenDrops(guild, user, 1);
+         }
+
          //Check if user is in supported game.
          List<Role> userRoles = guild.getMember(user).getRoles();
          Role gameGroupRole = null;
@@ -130,7 +135,7 @@ public class GuildVoiceListener extends ListenerAdapter {
                 .collect(Collectors.toList())
                 .get(0);
          } catch (Exception e) {
-            logger.warn(String.format("[%s] %s is not in a game group role. Game: %s",
+            logger.debug(String.format("[%s] %s is not in a game group role. Game: %s",
                 guild,
                 user.getName(),
                 guild.getMember(user).getGame()));
@@ -146,7 +151,7 @@ public class GuildVoiceListener extends ListenerAdapter {
              user.getIdLong(),
              xpGained);
 
-         logger.info(String.format("base_xp: %s "
+         logger.debug(String.format("base_xp: %s "
                  + "activity_bonus: %s "
                  + "multiplier: %s "
                  + "channel_users: %s "

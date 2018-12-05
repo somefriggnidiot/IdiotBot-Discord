@@ -19,6 +19,7 @@ public class DatabaseUser {
    private List<String> warningIds;
    private Integer level;
    private HashMap<Long, Integer> xpMap;
+   private HashMap<Long, Integer> tokenMap;
    private Timestamp lastMessageDtTm;
 
    public DatabaseUser(Long userId) {
@@ -84,6 +85,24 @@ public class DatabaseUser {
 
    public DatabaseUser withXpMap(HashMap<Long, Integer> xpMap) {
       this.xpMap = xpMap;
+      return this;
+   }
+
+   public HashMap<Long, Integer> getTokenMap() {
+      return tokenMap == null ? new HashMap<>() : tokenMap;
+   }
+
+   public void setTokenMap(HashMap<Long, Integer> tokenMap) {
+      this.tokenMap = tokenMap;
+   }
+
+   public Integer updateTokens(Long guldId, Integer newTokenValue) {
+      tokenMap = tokenMap == null ? new HashMap<>() : tokenMap;
+      return tokenMap.put(guldId, newTokenValue);
+   }
+
+   public DatabaseUser withTokenMap(HashMap<Long, Integer> tokenMap) {
+      this.tokenMap = tokenMap;
       return this;
    }
 

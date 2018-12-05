@@ -1,4 +1,4 @@
-package com.somefriggnidiot.discord.commands.functionalities.messagexp;
+package com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -8,18 +8,18 @@ import net.dv8tion.jda.core.entities.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RemoveRoleLevelCommand extends Command {
+public class AddRoleLevelCommand extends Command {
 
-   private final Logger logger = LoggerFactory.getLogger(RemoveRoleLevelCommand.class);
+   private final Logger logger = LoggerFactory.getLogger(AddRoleLevelCommand.class);
 
-   public RemoveRoleLevelCommand() {
-      this.name = "removerolelevel";
+   public AddRoleLevelCommand() {
+      this.name = "addrolelevel";
       this.aliases = new String[]{};
-      this.arguments = "<role>";
+      this.arguments = "<level> <role>";
       this.category = new Category("Functionality");
-      this.help = "Removes a role to be granted to a member when they reach the designated level.";
+      this.help = "Adds a role to be granted to a member when they reach the designated level.";
       this.botPermissions = new Permission[]{Permission.MESSAGE_READ, Permission.MESSAGE_WRITE,
-          Permission.MANAGE_ROLES};
+      Permission.MANAGE_ROLES};
       this.guildOnly = true;
       this.requiredRole = "Staff";
       this.cooldown = 1;
@@ -28,18 +28,19 @@ public class RemoveRoleLevelCommand extends Command {
 
    @Override
    protected void execute(final CommandEvent event) {
+      String[] args = event.getMessage().getContentDisplay().split("\\s", 3);
       Role role = event.getMessage().getMentionedRoles().get(0);
       GuildInfoUtil giu = new GuildInfoUtil(event.getGuild().getIdLong());
 
-      Integer level = giu.removeRoleLevelMapping(role.getIdLong());
+      giu.addRoleLevelMapping(role.getIdLong(), Integer.valueOf(args[1]));
 
-      event.reply(String.format("Removed role \"%s\" from being granted at level %s.",
+      event.reply(String.format("Added role \"%s\" to be granted at level %s.",
           role.getName(),
-          level));
+          args[1]));
 
-      logger.info(String.format("[%s] Removed role \"%s\" from being granted at level %s.",
+      logger.info(String.format("[%s] Added role \"%s\" to be granted at level %s.",
           event.getGuild(),
           role.getName(),
-          level));
+          args[1]));
    }
 }

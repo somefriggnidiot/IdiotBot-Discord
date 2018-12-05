@@ -23,6 +23,10 @@ public class MessageListenerUtil {
           .toInstant().truncatedTo(ChronoUnit.MINUTES);
       Instant userLastMessageTime;
 
+      if (XpUtil.tokenDropActivated()) {
+         XpUtil.handleTokenDrops(event.getGuild(), event.getAuthor(), 2);
+      }
+
       if (dbu.getLastMessageDtTm() == null) {
          DatabaseUserUtil.addXp(event.getGuild().getIdLong(), event.getAuthor().getIdLong(), 0);
          userLastMessageTime = Instant.now().truncatedTo(ChronoUnit.MINUTES);

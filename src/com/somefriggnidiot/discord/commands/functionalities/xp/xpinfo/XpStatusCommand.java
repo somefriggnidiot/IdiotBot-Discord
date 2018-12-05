@@ -1,10 +1,9 @@
-package com.somefriggnidiot.discord.commands.functionalities.messagexp;
+package com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
-import com.somefriggnidiot.discord.events.MessageListener;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import org.slf4j.Logger;
@@ -39,6 +38,7 @@ public class XpStatusCommand extends Command {
           .setTitle("XP Stats")
           .addField("XP Tracking", xpTracking, true)
           .addField("Total Level Roles", levelRoles, true);
+      //Add total xp on server
 
       event.reply(eb.build());
    }

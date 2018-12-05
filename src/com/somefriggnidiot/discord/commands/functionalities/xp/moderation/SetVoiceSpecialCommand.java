@@ -1,4 +1,4 @@
-package com.somefriggnidiot.discord.commands.functionalities.messagexp;
+package com.somefriggnidiot.discord.commands.functionalities.xp.moderation;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -12,9 +12,10 @@ public class SetVoiceSpecialCommand extends Command {
    private final Logger logger = LoggerFactory.getLogger(SetVoiceSpecialCommand.class);
 
    public SetVoiceSpecialCommand() {
-      this.name = "setvoicespecial";
-      this.aliases = new String[]{"setspecial", "setvoicespecial", "setxpspecial"};
-      this.arguments = "<special multiplier>";
+      this.name = "setvoicexpmultiplier";
+      this.aliases = new String[]{"setvoicemultiplier", "setvoicemult", "voicemultiplier",
+          "voicemult"};
+      this.arguments = "<multiplier>";
       this.category = new Category("Functionality");
       this.help = "Adds an additional multiplier to the XP gained while in voice chat.";
       this.botPermissions = new Permission[]{Permission.MESSAGE_READ};

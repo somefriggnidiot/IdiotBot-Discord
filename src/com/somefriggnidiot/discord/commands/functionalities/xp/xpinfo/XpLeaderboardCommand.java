@@ -1,9 +1,10 @@
-package com.somefriggnidiot.discord.commands.functionalities.messagexp;
+package com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
+import com.somefriggnidiot.discord.util.HighscoreObject;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -36,6 +37,7 @@ public class XpLeaderboardCommand extends Command {
 
    @Override
    protected void execute(final CommandEvent event) {
+      //Set the X in "top X"
       Integer count;
       try {
          count = Integer.parseInt(event.getMessage()
@@ -47,65 +49,56 @@ public class XpLeaderboardCommand extends Command {
       Guild guild = event.getGuild();
       List<Member> members = event.getGuild().getMembers();
       List<DatabaseUser> dbus = new ArrayList<>();
-      List<HighScoreObject> highScoreObjects = new ArrayList<>();
+      List<HighscoreObject> highScoreObjects = new ArrayList<>();
 
+      //Get DBUs for all members.
       for (Member member : members) {
          dbus.add(DatabaseUserUtil.getUser(member.getUser().getIdLong()));
       }
 
+      //Convert DBUs into HighscoreObjects if XP > 0
       for (DatabaseUser dbu : dbus) {
          Integer xp = dbu.getXpMap().get(guild.getIdLong()) == null ? 0 : dbu.getXpMap()
              .get(guild.getIdLong());
-         highScoreObjects.add(new HighScoreObject(dbu, xp));
+         highScoreObjects.add(new HighscoreObject(dbu, xp));
       }
 
-      List<HighScoreObject> sortedScores = null;
-      try {
-         sortedScores = highScoreObjects.stream()
-             .sorted(Comparator.comparing(HighScoreObject::getXp).reversed())
-             .filter(e -> e.getXp() > 0)
-             .collect(Collectors.toList()).subList(0, count);
-      } catch (IndexOutOfBoundsException | NullPointerException e) {
-         sortedScores = highScoreObjects.stream()
-             .sorted(Comparator.comparing(HighScoreObject::getXp).reversed())
-             .filter(p -> p.getXp() > 0)
-             .collect(Collectors.toList());
-      }
+      //Sort the scores.
+      List<HighscoreObject> sortedScores;
+      sortedScores = highScoreObjects.stream()
+          .sorted(Comparator.comparing(HighscoreObject::getXp).reversed())
+          .filter(e -> e.getXp() > 0)
+          .collect(Collectors.toList());
 
-      String top = "";
-      int position = 1;
-      for (HighScoreObject user : sortedScores) {
-         top += String.format("**%s. %s** - Level %s - %s XP\n",
-             position++,
-             guild.getMemberById(user.getUser().getId()).getEffectiveName(),
-             user.getUser().getLevel(),
-             new DecimalFormat("###,###").format(user.getXp()));
+      String top = ""; //String to be returned as leaderboard.
+      int index = (count - 10) < 0 ? 0 : (count - 10); //Set start index to 10 before top, or 0.
+      int rank = (count - 10) < 0 ? 1 : (count - 9);
+      int startRank = rank;
+
+      while (index < count) {
+         try {
+            top += String.format("**%s. %s** - Level %s - %s XP\n",
+                rank++,
+                guild.getMemberById(sortedScores.get(index).getUser().getId()).getEffectiveName(),
+                sortedScores.get(index).getUser().getLevel(),
+                new DecimalFormat("###,###").format(sortedScores.get(index).getXp()));
+            index++;
+         } catch (IndexOutOfBoundsException e) {
+            rank--;
+            break;
+         }
       }
 
       EmbedBuilder eb = new EmbedBuilder()
-          .setTitle("Top " + count + " - " + guild.getName())
-          .addField("Top", top, true);
+          .setTitle(String.format("XP Leaderboard - %s to %s - %s",
+              startRank,
+              rank - 1,
+              guild.getName()))
+          .setDescription(top);
+//          .addField("", top, true);
 
       event.getChannel().sendMessage(eb.build()).queue();
    }
 
 
-}
-
-class HighScoreObject {
-   DatabaseUser user;
-   Integer xp;
-
-   HighScoreObject(DatabaseUser user, Integer xp) {
-      this.user = user;
-      this.xp = xp;
-   }
-
-   public Integer getXp() {
-      return xp;
-   }
-
-   public DatabaseUser getUser() {
-      return user;
-   }
 }

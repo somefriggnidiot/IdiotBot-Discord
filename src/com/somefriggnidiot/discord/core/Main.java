@@ -3,6 +3,7 @@ package com.somefriggnidiot.discord.core;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.somefriggnidiot.discord.commands.KarmaCommand;
+import com.somefriggnidiot.discord.commands.ProfileCommand;
 import com.somefriggnidiot.discord.commands.StatusCommand;
 import com.somefriggnidiot.discord.commands.channels.CreatePrivateChannelCommand;
 import com.somefriggnidiot.discord.commands.channels.InviteToPrivateChannelCommand;
@@ -12,13 +13,13 @@ import com.somefriggnidiot.discord.commands.fun.DogeCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.AddGameGroupCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.GroupGamesCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.RemoveGameGroupCommand;
-import com.somefriggnidiot.discord.commands.functionalities.messagexp.AddRoleLevelCommand;
-import com.somefriggnidiot.discord.commands.functionalities.messagexp.ClearXpCommand;
-import com.somefriggnidiot.discord.commands.functionalities.messagexp.RemoveRoleLevelCommand;
-import com.somefriggnidiot.discord.commands.functionalities.messagexp.ShowXpCommand;
-import com.somefriggnidiot.discord.commands.functionalities.messagexp.SetVoiceSpecialCommand;
-import com.somefriggnidiot.discord.commands.functionalities.messagexp.ToggleXpGainCommand;
-import com.somefriggnidiot.discord.commands.functionalities.messagexp.XpLeaderboardCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.AddRoleLevelCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.ClearXpCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.RemoveRoleLevelCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.ShowXpCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.SetVoiceSpecialCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.ToggleXpGainCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.XpLeaderboardCommand;
 import com.somefriggnidiot.discord.commands.moderation.AddAllUsersToRoleCommand;
 import com.somefriggnidiot.discord.commands.moderation.GetWarningsCommand;
 import com.somefriggnidiot.discord.commands.moderation.RemoveAllUsersFromRoleCommand;
@@ -30,12 +31,14 @@ import com.somefriggnidiot.discord.events.MessageListener;
 import com.somefriggnidiot.discord.events.UserUpdateGameListener;
 import java.net.URL;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.security.auth.login.LoginException;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Icon;
+import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.MessageHistory;
+import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,6 +89,7 @@ public class Main {
                  new SoftBanCommand()
              )
              .addCommand(new KarmaCommand())
+             .addCommand(new ProfileCommand())
              .addCommand(new StatusCommand());
 
          jda = new JDABuilder(args[0])
