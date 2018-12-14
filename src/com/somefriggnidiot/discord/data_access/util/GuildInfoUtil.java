@@ -74,6 +74,23 @@ public class GuildInfoUtil {
           .collect(Collectors.toList());
    }
 
+   public List<Long> getRaffleIds() {
+      return getGuildInfo(guild.getIdLong()).getRaffleIds();
+   }
+
+   public void addRaffleId(Long raffleId) {
+      List<Long> raffleIds = getGuildInfo(guild.getIdLong()).getRaffleIds();
+
+      if (!raffleIds.contains(raffleId)) {
+         raffleIds.add(raffleId);
+         getGuildInfo(guild.getIdLong()).setRaffleIds(raffleIds);
+
+         em.getTransaction().begin();
+         em.persist(getGuildInfo(guild.getIdLong()));
+         em.getTransaction().commit();
+      }
+   }
+
    public static GuildInfo getGuildInfo(Long guildId) {
       return getDatabaseObject(guildId);
    }

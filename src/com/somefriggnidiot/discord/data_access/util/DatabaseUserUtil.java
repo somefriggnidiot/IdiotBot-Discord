@@ -31,7 +31,7 @@ public class DatabaseUserUtil {
    public Integer addTokens(Long guildId, Integer tokenGain) {
       Integer currentTokens =
           dbu.getTokenMap().get(guildId) == null ? 0 : dbu.getTokenMap().get(guildId);
-      Integer newTokens = currentTokens + tokenGain;
+      Integer newTokens = currentTokens + tokenGain < 0 ? 0 : currentTokens + tokenGain;
 
       em.getTransaction().begin();
       dbu.updateTokens(guildId, newTokens);
@@ -39,6 +39,12 @@ public class DatabaseUserUtil {
       em.getTransaction().commit();
 
       return newTokens;
+   }
+
+   public Integer getTokens(Long guildId) {
+      Integer tokens = dbu.getTokenMap().get(guildId);
+
+      return tokens == null ? 0 : tokens;
    }
 
    public static Integer addXp(Long guildId, Long userId, Integer xpGain) {

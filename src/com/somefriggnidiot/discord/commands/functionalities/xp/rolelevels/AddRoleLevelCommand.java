@@ -16,7 +16,7 @@ public class AddRoleLevelCommand extends Command {
       this.name = "addrolelevel";
       this.aliases = new String[]{};
       this.arguments = "<level> <role>";
-      this.category = new Category("Functionality");
+      this.category = new Category("Role Levels");
       this.help = "Adds a role to be granted to a member when they reach the designated level.";
       this.botPermissions = new Permission[]{Permission.MESSAGE_READ, Permission.MESSAGE_WRITE,
       Permission.MANAGE_ROLES};

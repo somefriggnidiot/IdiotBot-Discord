@@ -17,7 +17,7 @@ public class XpStatusCommand extends Command {
       this.name = "xpstatus";
       this.aliases = new String[]{"xpstats", "xpinfo"};
       this.arguments = "";
-      this.category = new Category("Functionalitiy");
+      this.category = new Category("Xp Info");
       this.help = "Displays various information about the XP system.";
       this.botPermissions = new Permission[]{Permission.MANAGE_ROLES, Permission.MESSAGE_READ,
           Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};

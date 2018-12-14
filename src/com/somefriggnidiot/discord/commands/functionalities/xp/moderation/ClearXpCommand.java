@@ -2,7 +2,6 @@ package com.somefriggnidiot.discord.commands.functionalities.xp.moderation;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.XpLeaderboardCommand;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
@@ -11,13 +10,13 @@ import org.slf4j.LoggerFactory;
 
 public class ClearXpCommand extends Command {
 
-   private final Logger logger = LoggerFactory.getLogger(XpLeaderboardCommand.class);
+   private final Logger logger = LoggerFactory.getLogger(ClearXpCommand.class);
 
    public ClearXpCommand() {
       this.name = "clearxp";
       this.aliases = new String[]{"resetxp"};
       this.arguments = "<user>";
-      this.category = new Category("Functionality");
+      this.category = new Category("Xp Moderation");
       this.help = "Clears a user's xp.";
       this.botPermissions = new Permission[]{Permission.MESSAGE_READ,
           Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};

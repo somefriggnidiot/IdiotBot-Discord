@@ -80,7 +80,7 @@ public class XpUtil {
        guild) {
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
 
-      if (gi.getLevelRolesActive() && gi.getRoleLevelMappings().size() > 0) {
+      if (gi.getLevelRolesActive() || gi.getRoleLevelMappings().size() > 0) {
          HashMap<Long, Integer> roleLevelIds = gi.getRoleLevelMappings();
          Integer userLevel = DatabaseUserUtil.getUser(userId).getLevel();
          List<Long> applicableRoleIds = roleLevelIds.keySet().stream()
@@ -153,7 +153,7 @@ public class XpUtil {
     * @return whether or not a token drop has been activated.
     */
    public static Boolean tokenDropActivated() {
-      return ThreadLocalRandom.current().nextInt(250) == 1;
+      return ThreadLocalRandom.current().nextInt(50) == 1;
    }
 
    /**

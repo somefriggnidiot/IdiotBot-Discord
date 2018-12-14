@@ -60,11 +60,11 @@ public class ProfileCommand extends Command {
                  "http://www.foundinaction.com/wp-content/uploads/2018/08/"
                      + "Neon_600x600_Transparent.png")
              .setThumbnail(event.getAuthor().getAvatarUrl())
-             .addField("Current Level", level, false)
-             .addField("Rank", String.format("%s of %s", guildRank, guildRanks), false)
+             .addField("Current Level", level, true)
+             .addField("Rank", String.format("%s of %s", guildRank, guildRanks), true)
              .addField("Progress to Next Level",
-                 String.format("%s / %s XP", df.format(xp), df.format(nextXp)), false)
-             .addField("Tokens", tokens.toString(), false);
+                 String.format("%s / %s XP", df.format(xp), df.format(nextXp)), true)
+             .addField("Tokens", tokens.toString(), true);
 
          event.getChannel().sendMessage(eb.build()).queue();
       } else {
@@ -87,11 +87,11 @@ public class ProfileCommand extends Command {
                  "http://www.foundinaction.com/wp-content/uploads/2018/08/"
                      + "Neon_600x600_Transparent.png")
              .setThumbnail(user.getAvatarUrl())
-             .addField("Current Level", level, false)
-             .addField("Rank", String.format("%s of %s", guildRank, guildRanks), false)
+             .addField("Current Level", level, true)
+             .addField("Rank", String.format("%s of %s", guildRank, guildRanks), true)
              .addField("Progress to Next Level",
-                 String.format("%s / %s XP", df.format(xp), df.format(nextXp)), false)
-             .addField("Tokens", tokens.toString(), false);
+                 String.format("%s / %s XP", df.format(xp), df.format(nextXp)), true)
+             .addField("Tokens", tokens.toString(), true);
 
          event.getChannel().sendMessage(eb.build()).queue();
       }

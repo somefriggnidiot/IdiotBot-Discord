@@ -22,7 +22,7 @@ public class ShowXpCommand extends Command {
       this.name = "showxp";
       this.aliases = new String[]{"myxp", "xp"};
       this.arguments = "(userMention)";
-      this.category = new Category("Functionality");
+      this.category = new Category("Xp Info");
       this.help = "Displays information about your current xp and level on IdiotBot.";
       this.botPermissions = new Permission[]{Permission.MESSAGE_READ,
           Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};

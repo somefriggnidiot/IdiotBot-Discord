@@ -13,6 +13,13 @@ import com.somefriggnidiot.discord.commands.fun.DogeCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.AddGameGroupCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.GroupGamesCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.RemoveGameGroupCommand;
+import com.somefriggnidiot.discord.commands.functionalities.raffle.CloseRaffleCommand;
+import com.somefriggnidiot.discord.commands.functionalities.raffle.CreateRaffleCommand;
+import com.somefriggnidiot.discord.commands.functionalities.raffle.DrawRaffleCommand;
+import com.somefriggnidiot.discord.commands.functionalities.raffle.EnterRaffleCommand;
+import com.somefriggnidiot.discord.commands.functionalities.raffle.ListRafflesCommand;
+import com.somefriggnidiot.discord.commands.functionalities.tokens.AdjustTokensCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.AdjustXpCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.AddRoleLevelCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.ClearXpCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.RemoveRoleLevelCommand;
@@ -72,13 +79,28 @@ public class Main {
                  new GroupGamesCommand(),
                  new RemoveGameGroupCommand()
              )
-             .addCommands( // Functionalities - MessageXp
-                 new AddRoleLevelCommand(),
+             .addCommands( // Raffles
+                 new CloseRaffleCommand(),
+                 new CreateRaffleCommand(),
+                 new DrawRaffleCommand(),
+                 new EnterRaffleCommand(),
+                 new ListRafflesCommand()
+             )
+             .addCommands( // Tokens
+                 new AdjustTokensCommand()
+             )
+             .addCommands( //XP - Moderation
+                 new AdjustXpCommand(),
                  new ClearXpCommand(),
-                 new RemoveRoleLevelCommand(),
                  new SetVoiceSpecialCommand(),
+                 new ToggleXpGainCommand()
+              )
+             .addCommands( //XP - Role Levels
+                 new AddRoleLevelCommand(),
+                 new RemoveRoleLevelCommand()
+             )
+             .addCommands( // XP - XpInfo
                  new ShowXpCommand(),
-                 new ToggleXpGainCommand(),
                  new XpLeaderboardCommand()
              )
              .addCommands( //Moderation
@@ -88,7 +110,7 @@ public class Main {
                  new WarningCommand(),
                  new SoftBanCommand()
              )
-             .addCommand(new KarmaCommand())
+//             .addCommand(new KarmaCommand())
              .addCommand(new ProfileCommand())
              .addCommand(new StatusCommand());
 

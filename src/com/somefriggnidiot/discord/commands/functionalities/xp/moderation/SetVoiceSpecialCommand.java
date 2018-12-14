@@ -16,7 +16,7 @@ public class SetVoiceSpecialCommand extends Command {
       this.aliases = new String[]{"setvoicemultiplier", "setvoicemult", "voicemultiplier",
           "voicemult"};
       this.arguments = "<multiplier>";
-      this.category = new Category("Functionality");
+      this.category = new Category("Xp Moderation");
       this.help = "Adds an additional multiplier to the XP gained while in voice chat.";
       this.botPermissions = new Permission[]{Permission.MESSAGE_READ};
       this.guildOnly = true;

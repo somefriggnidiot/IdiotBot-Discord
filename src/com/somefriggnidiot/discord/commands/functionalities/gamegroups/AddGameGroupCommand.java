@@ -16,7 +16,7 @@ public class AddGameGroupCommand extends Command {
       this.name = "addgamegroup";
       this.aliases = new String[]{"agg"};
       this.arguments = "<gameName>|<roleName>";
-      this.category = new Category("Functionality");
+      this.category = new Category("Game Groups");
       this.requiredRole = "Staff";
       this.cooldown = 5;
       this.cooldownScope = CooldownScope.GUILD;

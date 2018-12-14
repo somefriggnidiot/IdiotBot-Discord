@@ -25,7 +25,7 @@ public class XpLeaderboardCommand extends Command {
       this.name = "leaderboard";
       this.aliases = new String[]{"xpleaderboard", "top"};
       this.arguments = "(count)";
-      this.category = new Category("Functionality");
+      this.category = new Category("Xp Info");
       this.help = "Displays the top XP earners in this guild. Defaults to 10 records, but can be "
           + "overridden.";
       this.botPermissions = new Permission[]{Permission.MESSAGE_READ,

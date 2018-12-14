@@ -3,7 +3,9 @@ package com.somefriggnidiot.discord.data_access.models;
 import com.iwebpp.crypto.TweetNaclFast.Hash;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector.Table;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
@@ -27,6 +29,7 @@ public class GuildInfo {
    private Boolean levelRolesActive;
    private HashMap<Long, Integer> roleLevelMappings;
    private double voiceXpMultiplier;
+   private List<Long> raffleIds;
 
    /**
     * Initializes a new GuildInfo object denoted by the given Discord Guild ID.
@@ -41,6 +44,7 @@ public class GuildInfo {
       this.levelRolesActive = false;
       this.roleLevelMappings = new HashMap<>();
       this.voiceXpMultiplier = 0.0;
+      this.raffleIds = new ArrayList<>();
    }
 
    /**
@@ -85,7 +89,7 @@ public class GuildInfo {
     * @return a map containing game names as keys and role names as values.
     */
    public HashMap<String, String> getGameGroupMappings() {
-      return gameGroupMappings;
+      return gameGroupMappings == null ? new HashMap<>() : gameGroupMappings;
    }
 
    public Boolean isGrantingMessageXp() {
@@ -110,7 +114,7 @@ public class GuildInfo {
    }
 
    public HashMap<Long, Integer> getRoleLevelMappings() {
-      return roleLevelMappings;
+      return roleLevelMappings == null ? new HashMap<>() : roleLevelMappings;
    }
 
    public void addRoleLevelMapping(Long roleId, Integer level) {
@@ -129,6 +133,14 @@ public class GuildInfo {
 
    public double getVoiceXpMultiplier() {
       return voiceXpMultiplier;
+   }
+
+   public List<Long> getRaffleIds() {
+      return raffleIds == null ? new ArrayList<>() : raffleIds;
+   }
+
+   public void setRaffleIds(List<Long> raffleIds) {
+      this.raffleIds = raffleIds;
    }
 
    @Override

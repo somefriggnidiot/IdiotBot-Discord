@@ -4,6 +4,7 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
+import com.somefriggnidiot.discord.data_access.util.RaffleUtil;
 import java.awt.Color;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -45,21 +46,10 @@ public class StatusCommand extends Command {
           ().isBot()).count();
       Long botCount = event.getGuild().getMembers().stream().filter(member -> member.getUser()
           .isBot()).count();
-//      Integer lifetimeMessages = 0;
-//
-//      for (TextChannel channel : event.getGuild().getTextChannels()) {
-//         MessageHistory history = channel.getHistory();
-//         int messages = 0;
-//         List<Message> messageList = history.retrievePast(100).complete();
-//         messages += messageList.size();
-//
-//         while (messageList.size() == 100) {
-//            messageList = history.retrievePast(100).complete();
-//            messages += messageList.size();
-//         }
-//
-//         lifetimeMessages += messages;
-//      }
+      Long activeRaffles = RaffleUtil.getRaffles(true).stream().filter(raffle -> raffle
+          .getGuildId() == event.getGuild().getIdLong()).count();
+      Long totalRaffles = activeRaffles + RaffleUtil.getRaffles(false).stream().filter(raffle ->
+          raffle.getGuildId() == event.getGuild().getIdLong()).count();
 
       String voiceMultiplier = String.valueOf(new GuildInfoUtil(event.getGuild().getIdLong())
           .getVoiceXpMultiplier() + 1.0) + "x";
@@ -69,7 +59,7 @@ public class StatusCommand extends Command {
           String.format("Active (%s)", gi.getGameGroupMappings().size()) : "_Disabled_";
       String rolesOnLevelsStatus = gi.getRoleLevelMappings().size() > 0 ?
           String.format("Active (%s)", gi.getRoleLevelMappings().size()) : "_Disabled_";
-//      String guildLifetimeMessages = df.format(lifetimeMessages);
+      String rafflesString = format("%s (%s)", totalRaffles, activeRaffles);
 
       EmbedBuilder eb = new EmbedBuilder();
       eb.setTitle(format("%s Information", event.getGuild().getName()));
@@ -82,7 +72,7 @@ public class StatusCommand extends Command {
       eb.addField("**Voice XP Multiplier**", voiceMultiplierStatus, true);
       eb.addField("**Grouping Games**", groupingGamesStatus, true);
       eb.addField("**Roles On Levels**", rolesOnLevelsStatus, true);
-//      eb.addField("**Total Server Messages**", guildLifetimeMessages, true);
+      eb.addField("**Raffles (Active)**", rafflesString, true);
 
       event.reply(eb.build());
    }

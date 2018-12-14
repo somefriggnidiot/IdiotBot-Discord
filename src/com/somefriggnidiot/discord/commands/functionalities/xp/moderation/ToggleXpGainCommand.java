@@ -18,7 +18,7 @@ public class ToggleXpGainCommand extends Command {
       this.aliases = new String[]{"togglegains", "togglexp"};
       this.arguments = "";
       this.requiredRole = "Staff";
-      this.category = new Category("Functionality");
+      this.category = new Category("Xp Moderation");
       this.help = "Displays information about your current xp and level on IdiotBot.";
       this.botPermissions = new Permission[]{Permission.MESSAGE_READ,
           Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
