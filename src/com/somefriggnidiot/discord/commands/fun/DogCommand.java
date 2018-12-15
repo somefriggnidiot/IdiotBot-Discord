@@ -17,7 +17,7 @@ public class DogCommand extends Command {
       this.name = "dog";
       this.category = new Category("Fun");
       this.help = "Returns dogs.";
-      this.aliases = new String[]{"dogs", "bork", "woof"};
+      this.aliases = new String[]{"dogs", "bork", "woof", "pupper", "doggo", "doggu"};
       this.botPermissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
       this.guildOnly = false;
       this.cooldown = 1;

@@ -1,5 +1,8 @@
 package com.somefriggnidiot.discord.events;
 
+import com.somefriggnidiot.discord.data_access.models.GuildInfo;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
+import com.somefriggnidiot.discord.util.MessageListenerUtil;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
@@ -18,32 +21,19 @@ public class MessageListener extends ListenerAdapter {
       User author = event.getAuthor();
       Message message = event.getMessage();
       MessageChannel channel = event.getChannel();
-
       String msg = message.getContentDisplay();
 
-      //Karma Check
-      //TODO do it on mentions instead.
-//      List<User> mentionedUsers = message.getMentionedUsers();
-//
-//      if(!mentionedUsers.isEmpty()) {
-//         String[] split = msg.split("//s");
-//         Boolean addKarma = null;
-//         Integer karma = 0;
-//
-//         for (String string : split) {
-//            if(string.endsWith("++")) {
-//               karma = KarmaUpdate.updateUser(mentionedUsers.get(0), true);
-//               event.getChannel().sendMessage(String.format("%s leveled up! (%s karma)",
-//                   mentionedUsers.get(0).getName(), karma.toString()));
-//               break;
-//            } else if (string.endsWith("--")) {
-//               karma = KarmaUpdate.updateUser(mentionedUsers.get(0), false);
-//               event.getChannel().sendMessage(String.format("%s got pwned! (%s karma)",
-//                   mentionedUsers.get(0).getName(), karma.toString()));
-//               break;
-//            }
-//         }
-//      }
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild().getIdLong());
+      Boolean isGrantingXp = gi.isGrantingMessageXp() == null ? false : gi.isGrantingMessageXp();
+
+      if (isGrantingXp && !msg.startsWith("!")) {
+         MessageListenerUtil.handleXpGain(event);
+      }
+
+      if (author.getName().equalsIgnoreCase("Discord.RSS")) {
+         message.addReaction("👍").queue();
+         message.addReaction("👎").queue();
+      }
 
       //Logging
       if (event.isFromType(ChannelType.TEXT) &&

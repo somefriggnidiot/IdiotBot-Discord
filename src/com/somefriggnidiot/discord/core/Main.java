@@ -2,7 +2,8 @@ package com.somefriggnidiot.discord.core;
 
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import com.somefriggnidiot.discord.commands.KarmaCommand;
+import com.somefriggnidiot.discord.commands.ProfileCommand;
+import com.somefriggnidiot.discord.commands.StatusCommand;
 import com.somefriggnidiot.discord.commands.channels.CreatePrivateChannelCommand;
 import com.somefriggnidiot.discord.commands.channels.InviteToPrivateChannelCommand;
 import com.somefriggnidiot.discord.commands.fun.CatCommand;
@@ -11,6 +12,20 @@ import com.somefriggnidiot.discord.commands.fun.DogeCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.AddGameGroupCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.GroupGamesCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.RemoveGameGroupCommand;
+import com.somefriggnidiot.discord.commands.functionalities.raffle.CloseRaffleCommand;
+import com.somefriggnidiot.discord.commands.functionalities.raffle.CreateRaffleCommand;
+import com.somefriggnidiot.discord.commands.functionalities.raffle.DrawRaffleCommand;
+import com.somefriggnidiot.discord.commands.functionalities.raffle.EnterRaffleCommand;
+import com.somefriggnidiot.discord.commands.functionalities.raffle.ListRafflesCommand;
+import com.somefriggnidiot.discord.commands.functionalities.tokens.AdjustTokensCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.AdjustXpCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.AddRoleLevelCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.ClearXpCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.RemoveRoleLevelCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.ShowXpCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.SetVoiceSpecialCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.ToggleXpGainCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.XpLeaderboardCommand;
 import com.somefriggnidiot.discord.commands.moderation.AddAllUsersToRoleCommand;
 import com.somefriggnidiot.discord.commands.moderation.GetWarningsCommand;
 import com.somefriggnidiot.discord.commands.moderation.RemoveAllUsersFromRoleCommand;
@@ -34,6 +49,7 @@ import org.slf4j.LoggerFactory;
 public class Main {
 
    private final static Logger logger = LoggerFactory.getLogger(Main.class);
+   public static JDA jda;
 
    public static void main(String[] args) {
       System.setProperty("log4j.configurationFile", "./resources/log4j2.xml");
@@ -41,26 +57,60 @@ public class Main {
 
       try {
          CommandClientBuilder client = new CommandClientBuilder()
-             .setGame(Game.watching("you sleep."))
-             .setOwnerId("129098270323638272")
+             .setGame(Game.playing("quidditch."))
+             .setOwnerId(args[1])
              .setPrefix("!")
              .setHelpWord("help")
-             .addCommand(new CatCommand())
-             .addCommand(new DogCommand())
-             .addCommand(new DogeCommand())
-             .addCommand(new KarmaCommand())
-             .addCommand(new CreatePrivateChannelCommand(waiter))
-             .addCommand(new InviteToPrivateChannelCommand())
-             .addCommand(new WarningCommand())
-             .addCommand(new GetWarningsCommand())
-             .addCommand(new SoftBanCommand())
-             .addCommand(new GroupGamesCommand())
-             .addCommand(new AddGameGroupCommand())
-             .addCommand(new RemoveGameGroupCommand())
-             .addCommand(new AddAllUsersToRoleCommand())
-             .addCommand(new RemoveAllUsersFromRoleCommand());
+             .addCommands( //Channels
+                 new CreatePrivateChannelCommand(waiter),
+                 new InviteToPrivateChannelCommand()
+             )
+             .addCommands( //Fun
+                 new CatCommand(),
+                 new DogCommand(),
+                 new DogeCommand()
+             )
+             .addCommands( // Functionalities - GameGroups
+                 new AddGameGroupCommand(),
+                 new GroupGamesCommand(),
+                 new RemoveGameGroupCommand()
+             )
+             .addCommands( // Raffles
+                 new CloseRaffleCommand(),
+                 new CreateRaffleCommand(),
+                 new DrawRaffleCommand(),
+                 new EnterRaffleCommand(),
+                 new ListRafflesCommand()
+             )
+             .addCommands( // Tokens
+                 new AdjustTokensCommand()
+             )
+             .addCommands( //XP - Moderation
+                 new AdjustXpCommand(),
+                 new ClearXpCommand(),
+                 new SetVoiceSpecialCommand(),
+                 new ToggleXpGainCommand()
+              )
+             .addCommands( //XP - Role Levels
+                 new AddRoleLevelCommand(),
+                 new RemoveRoleLevelCommand()
+             )
+             .addCommands( // XP - XpInfo
+                 new ShowXpCommand(),
+                 new XpLeaderboardCommand()
+             )
+             .addCommands( //Moderation
+                 new AddAllUsersToRoleCommand(),
+                 new GetWarningsCommand(),
+                 new RemoveAllUsersFromRoleCommand(),
+                 new WarningCommand(),
+                 new SoftBanCommand()
+             )
+//             .addCommand(new KarmaCommand())
+             .addCommand(new ProfileCommand())
+             .addCommand(new StatusCommand());
 
-         JDA jda = new JDABuilder(args[0])
+         jda = new JDABuilder(args[0])
              .addEventListener(new MessageListener())
              .addEventListener(new UserUpdateGameListener())
              .addEventListener(new GuildVoiceListener())

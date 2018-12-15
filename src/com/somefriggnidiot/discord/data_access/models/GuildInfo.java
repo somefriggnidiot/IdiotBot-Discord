@@ -1,6 +1,8 @@
 package com.somefriggnidiot.discord.data_access.models;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import net.dv8tion.jda.core.entities.Guild;
@@ -14,10 +16,16 @@ public class GuildInfo {
    @Id
    private final Long guildId;
    private Boolean groupMappingsActive;
+   private Boolean messageXpActive;
+
    /**
     * Key = Game as displayed on Discord Value = Name of group/role associated with game.
     */
    private HashMap<String, String> gameGroupMappings;
+   private Boolean levelRolesActive;
+   private HashMap<Long, Integer> roleLevelMappings;
+   private double voiceXpMultiplier;
+   private List<Long> raffleIds;
 
    /**
     * Initializes a new GuildInfo object denoted by the given Discord Guild ID.
@@ -27,7 +35,12 @@ public class GuildInfo {
    public GuildInfo(Long guildId) {
       this.guildId = guildId;
       this.groupMappingsActive = false;
-      gameGroupMappings = new HashMap<>();
+      this.messageXpActive = false;
+      this.gameGroupMappings = new HashMap<>();
+      this.levelRolesActive = false;
+      this.roleLevelMappings = new HashMap<>();
+      this.voiceXpMultiplier = 0.0;
+      this.raffleIds = new ArrayList<>();
    }
 
    /**
@@ -38,7 +51,7 @@ public class GuildInfo {
    }
 
    public Boolean isGroupingGames() {
-      return groupMappingsActive;
+      return groupMappingsActive == null ? false : groupMappingsActive;
    }
 
    public void setGroupMappingsActive(Boolean isGroupingGames) {
@@ -72,7 +85,58 @@ public class GuildInfo {
     * @return a map containing game names as keys and role names as values.
     */
    public HashMap<String, String> getGameGroupMappings() {
-      return gameGroupMappings;
+      return gameGroupMappings == null ? new HashMap<>() : gameGroupMappings;
+   }
+
+   public Boolean isGrantingMessageXp() {
+      return messageXpActive == null ? false : messageXpActive;
+   }
+
+   public void setGrantingMessageXp(Boolean messageXpActive) {
+      this.messageXpActive = messageXpActive;
+   }
+
+   public Boolean getLevelRolesActive() {
+      levelRolesActive = levelRolesActive == null ? false : levelRolesActive;
+      return levelRolesActive;
+   }
+
+   public void setLevelRolesActive(Boolean isActive) {
+      this.levelRolesActive = isActive;
+   }
+
+   public void setRoleLevelMappings(HashMap<Long, Integer> roleLevelMappings) {
+      this.roleLevelMappings = roleLevelMappings;
+   }
+
+   public HashMap<Long, Integer> getRoleLevelMappings() {
+      return roleLevelMappings == null ? new HashMap<>() : roleLevelMappings;
+   }
+
+   public void addRoleLevelMapping(Long roleId, Integer level) {
+      roleLevelMappings = roleLevelMappings == null ? new HashMap<>() : roleLevelMappings;
+      roleLevelMappings.put(roleId, level);
+   }
+
+   public Integer removeRoleLevelMapping(Long roleId) {
+      roleLevelMappings = roleLevelMappings == null ? new HashMap<>() : roleLevelMappings;
+      return roleLevelMappings.remove(roleId);
+   }
+
+   public void setVoiceXpMultiplier(Double multiplier) {
+      this.voiceXpMultiplier = multiplier;
+   }
+
+   public double getVoiceXpMultiplier() {
+      return voiceXpMultiplier;
+   }
+
+   public List<Long> getRaffleIds() {
+      return raffleIds == null ? new ArrayList<>() : raffleIds;
+   }
+
+   public void setRaffleIds(List<Long> raffleIds) {
+      this.raffleIds = raffleIds;
    }
 
    @Override

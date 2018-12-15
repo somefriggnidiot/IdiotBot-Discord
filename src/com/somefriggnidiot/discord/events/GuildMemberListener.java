@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 public class GuildMemberListener extends ListenerAdapter {
 
    private final Logger logger = LoggerFactory.getLogger(MessageListener.class);
+   private final String[] bannedNames = new String[]{"bitch", "cunt", "whore", "fag", "slut"};
 
    @Override
    public void onGuildMemberNickChange(GuildMemberNickChangeEvent event) {
@@ -20,5 +21,11 @@ public class GuildMemberListener extends ListenerAdapter {
           event.getGuild(),
           oldName,
           newName));
+
+      for (String bannedSegment : bannedNames) {
+         if (newName.contains(bannedSegment)) {
+            event.getGuild().getController().setNickname(event.getMember(), null).queue();
+         }
+      }
    }
 }
