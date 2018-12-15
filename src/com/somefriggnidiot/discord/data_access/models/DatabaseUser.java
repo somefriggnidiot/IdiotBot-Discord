@@ -1,7 +1,6 @@
 package com.somefriggnidiot.discord.data_access.models;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

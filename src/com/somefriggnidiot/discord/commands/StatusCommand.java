@@ -7,23 +7,13 @@ import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.data_access.util.RaffleUtil;
 import java.awt.Color;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.MessageHistory;
-import net.dv8tion.jda.core.entities.TextChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static java.lang.String.format;
 
 public class StatusCommand extends Command {
-
-   private final Logger logger = LoggerFactory.getLogger(StatusCommand.class);
-   private final DecimalFormat df = new DecimalFormat("###,###");
 
    public StatusCommand() {
       this.name = "status";

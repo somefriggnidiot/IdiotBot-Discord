@@ -19,8 +19,6 @@ import org.slf4j.LoggerFactory;
 
 public class XpLeaderboardCommand extends Command {
 
-   private final Logger logger = LoggerFactory.getLogger(XpLeaderboardCommand.class);
-
    public XpLeaderboardCommand() {
       this.name = "leaderboard";
       this.aliases = new String[]{"xpleaderboard", "top"};

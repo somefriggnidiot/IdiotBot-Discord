@@ -1,6 +1,5 @@
 package com.somefriggnidiot.discord.events;
 
-import com.somefriggnidiot.discord.core.Main;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberNickChangeEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;

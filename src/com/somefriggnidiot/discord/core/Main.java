@@ -2,7 +2,6 @@ package com.somefriggnidiot.discord.core;
 
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import com.somefriggnidiot.discord.commands.KarmaCommand;
 import com.somefriggnidiot.discord.commands.ProfileCommand;
 import com.somefriggnidiot.discord.commands.StatusCommand;
 import com.somefriggnidiot.discord.commands.channels.CreatePrivateChannelCommand;
@@ -43,9 +42,6 @@ import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Icon;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.MessageHistory;
-import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

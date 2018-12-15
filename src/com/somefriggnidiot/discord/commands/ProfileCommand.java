@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 public class ProfileCommand extends Command {
 
-   private final Logger logger = LoggerFactory.getLogger(ProfileCommand.class);
    private EmbedBuilder eb;
 
    public ProfileCommand() {

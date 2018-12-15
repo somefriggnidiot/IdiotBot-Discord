@@ -53,7 +53,7 @@ public class XpUtil {
             String roleList = "";
 
             for (Role role : newRoles) {
-               roleList += role.getName().toString() + ", ";
+               roleList += role.getName() + ", ";
             }
 
             roleList = roleList.substring(0, roleList.length()-2);

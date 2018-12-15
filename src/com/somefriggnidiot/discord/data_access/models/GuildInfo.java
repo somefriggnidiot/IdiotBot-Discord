@@ -1,13 +1,9 @@
 package com.somefriggnidiot.discord.data_access.models;
 
-import com.iwebpp.crypto.TweetNaclFast.Hash;
-import com.somefriggnidiot.discord.data_access.DatabaseConnector;
-import com.somefriggnidiot.discord.data_access.DatabaseConnector.Table;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import net.dv8tion.jda.core.entities.Guild;
 

@@ -23,18 +23,23 @@ public class DatabaseConnector {
     */
    public EntityManager getEntityManager(Table table) {
       EntityManagerFactory managerFactory;
-      if (table == Table.DATABASE_USER) {
-         managerFactory = Persistence.createEntityManagerFactory(DATABASE_USER_TABLE);
-         this.manager = managerFactory.createEntityManager();
-      } else if (table == Table.USER_WARNING) {
-         managerFactory = Persistence.createEntityManagerFactory(USER_WARNING_TABLE);
-         this.manager = managerFactory.createEntityManager();
-      } else if (table == Table.GUILD_INFO) {
-         managerFactory = Persistence.createEntityManagerFactory(GUILD_INFO);
-         this.manager = managerFactory.createEntityManager();
-      } else if (table == Table.RAFFLE) {
-         managerFactory = Persistence.createEntityManagerFactory(RAFFLE);
-         this.manager = managerFactory.createEntityManager();
+      switch (table) {
+         case DATABASE_USER:
+            managerFactory = Persistence.createEntityManagerFactory(DATABASE_USER_TABLE);
+            this.manager = managerFactory.createEntityManager();
+            break;
+         case USER_WARNING:
+            managerFactory = Persistence.createEntityManagerFactory(USER_WARNING_TABLE);
+            this.manager = managerFactory.createEntityManager();
+            break;
+         case GUILD_INFO:
+            managerFactory = Persistence.createEntityManagerFactory(GUILD_INFO);
+            this.manager = managerFactory.createEntityManager();
+            break;
+         case RAFFLE:
+            managerFactory = Persistence.createEntityManagerFactory(RAFFLE);
+            this.manager = managerFactory.createEntityManager();
+            break;
       }
 
       return manager;

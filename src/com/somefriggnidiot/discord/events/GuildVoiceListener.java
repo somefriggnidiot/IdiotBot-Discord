@@ -172,7 +172,7 @@ public class GuildVoiceListener extends ListenerAdapter {
                  + "They're now at %s xp.",
              guild,
              user.getName(),
-             xpGained.intValue(),
+             xpGained,
              newXp));
       }
 

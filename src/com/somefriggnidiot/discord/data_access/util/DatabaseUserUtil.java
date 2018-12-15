@@ -71,18 +71,6 @@ public class DatabaseUserUtil {
       em.getTransaction().commit();
    }
 
-   public static Integer incrementLevel(Long userId) {
-      DatabaseUser dbu = getDatabaseObject(userId);
-      Integer currentLevel = dbu.getLevel() == null ? 0 : dbu.getLevel();
-
-      em.getTransaction().begin();
-      dbu.setLevel(++currentLevel);
-      em.persist(dbu);
-      em.getTransaction().commit();
-
-      return currentLevel;
-   }
-
    public static Integer setLevel(Long userId, Integer level) {
       DatabaseUser dbu = getDatabaseObject(userId);
 
