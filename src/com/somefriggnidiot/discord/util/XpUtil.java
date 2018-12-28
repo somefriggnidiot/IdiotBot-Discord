@@ -38,10 +38,12 @@ public class XpUtil {
              (newLevel - currentLevel)
          );
 
+         String effectiveName = guild.getMember(user).getEffectiveName();
+
          EmbedBuilder eb = new EmbedBuilder()
              .setColor(Color.CYAN)
              .setThumbnail(user.getAvatarUrl())
-             .setTitle(String.format("%s has leveled up!", user.getName()))
+             .setTitle(String.format("%s has leveled up!", effectiveName))
              .addField("Current Level", newLevelString, true)
              .addField("Progress to Next Level",
                  newXp + " / " + getXpThresholdForLevel(newLevel+1)
@@ -153,7 +155,7 @@ public class XpUtil {
     * @return whether or not a token drop has been activated.
     */
    public static Boolean tokenDropActivated() {
-      return ThreadLocalRandom.current().nextInt(50) == 1;
+      return ThreadLocalRandom.current().nextInt(150) == 1;
    }
 
    /**
