@@ -18,6 +18,7 @@ import com.somefriggnidiot.discord.commands.functionalities.raffle.DrawRaffleCom
 import com.somefriggnidiot.discord.commands.functionalities.raffle.EnterRaffleCommand;
 import com.somefriggnidiot.discord.commands.functionalities.raffle.ListRafflesCommand;
 import com.somefriggnidiot.discord.commands.functionalities.tokens.AdjustTokensCommand;
+import com.somefriggnidiot.discord.commands.functionalities.tokens.ResetAllTokensCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.AdjustXpCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.AddRoleLevelCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.ClearXpCommand;
@@ -31,16 +32,19 @@ import com.somefriggnidiot.discord.commands.moderation.GetWarningsCommand;
 import com.somefriggnidiot.discord.commands.moderation.RemoveAllUsersFromRoleCommand;
 import com.somefriggnidiot.discord.commands.moderation.SoftBanCommand;
 import com.somefriggnidiot.discord.commands.moderation.WarningCommand;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.GuildMemberListener;
 import com.somefriggnidiot.discord.events.GuildVoiceListener;
 import com.somefriggnidiot.discord.events.MessageListener;
 import com.somefriggnidiot.discord.events.UserUpdateGameListener;
+import com.somefriggnidiot.discord.util.VoiceXpUtil;
 import java.net.URL;
 import java.util.List;
 import javax.security.auth.login.LoginException;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Icon;
 import net.dv8tion.jda.core.entities.User;
 import org.slf4j.Logger;
@@ -83,7 +87,8 @@ public class Main {
                  new ListRafflesCommand()
              )
              .addCommands( // Tokens
-                 new AdjustTokensCommand()
+                 new AdjustTokensCommand(),
+                 new ResetAllTokensCommand()
              )
              .addCommands( //XP - Moderation
                  new AdjustXpCommand(),
@@ -145,6 +150,14 @@ public class Main {
              jda.getGuilds().size(),
              users,
              jda.getUsers().size() - users));
+
+         for (Guild guild : jda.getGuilds()) {
+            if (GuildInfoUtil.getGuildInfo(guild.getIdLong()).isGrantingMessageXp()) {
+               VoiceXpUtil.startTimer(guild.getIdLong());
+               logger.info(String.format("[%s] Started voice XP timer.",
+                   guild));
+            }
+         }
       } catch (LoginException e) {
          logger.error("Error logging in to Discord.", e);
       } catch (InterruptedException e2) {

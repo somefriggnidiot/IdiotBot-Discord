@@ -42,7 +42,8 @@ public class ProfileCommand extends Command {
 
       if (event.getMessage().getMentionedUsers().size() == 0) {
          dbu = DatabaseUserUtil.getUser(event.getAuthor().getIdLong());
-         level = dbu.getLevel() == null ? "0" : dbu.getLevel().toString();
+         level = new DatabaseUserUtil(event.getAuthor().getIdLong())
+             .getLevel(event.getGuild().getIdLong()).toString();
          xp = dbu.getXpMap().get(event.getGuild().getIdLong()) == null ? 0 : dbu.getXpMap().get
              (event.getGuild().getIdLong());
          nextXp = XpUtil.getXpThresholdForLevel(Integer.valueOf(level)+1);
@@ -69,7 +70,8 @@ public class ProfileCommand extends Command {
       } else {
          User user = event.getMessage().getMentionedUsers().get(0);
          dbu = DatabaseUserUtil.getUser(user.getIdLong());
-         level = dbu.getLevel() == null ? "0" : dbu.getLevel().toString();
+         level = new DatabaseUserUtil(user.getIdLong())
+             .getLevel(event.getGuild().getIdLong()).toString();
          xp = dbu.getXpMap().get(event.getGuild().getIdLong()) == null ? 0 : dbu.getXpMap().get
              (event.getGuild().getIdLong());
          nextXp = XpUtil.getXpThresholdForLevel(Integer.valueOf(level)+1);

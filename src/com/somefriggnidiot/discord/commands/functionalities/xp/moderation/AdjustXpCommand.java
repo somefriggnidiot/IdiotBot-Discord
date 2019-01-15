@@ -48,7 +48,7 @@ public class AdjustXpCommand extends Command {
       Integer adjustedLevel = XpUtil.getLevelForXp(adjustedXp);
 
       DatabaseUserUtil.setXp(guildId, memberId, adjustedXp);
-      DatabaseUserUtil.setLevel(memberId, adjustedLevel);
+      new DatabaseUserUtil(memberId).setGuildLevel(guildId, adjustedLevel);
 
       logger.info(String.format("[%s] Adjusted %s's XP by %s. Now %s XP. (Level %s)",
           event.getGuild(),

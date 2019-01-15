@@ -18,6 +18,7 @@ public class DatabaseUser {
    private List<String> warningIds;
    private Integer level;
    private HashMap<Long, Integer> xpMap;
+   private HashMap<Long, Integer> levelMap;
    private HashMap<Long, Integer> tokenMap;
    private Timestamp lastMessageDtTm;
 
@@ -26,6 +27,8 @@ public class DatabaseUser {
       this.karma = 0;
       this.level = 0;
       this.xpMap = new HashMap<>();
+      this.levelMap = new HashMap<>();
+      this.tokenMap = new HashMap<>();
    }
 
    public Long getId() {
@@ -87,6 +90,24 @@ public class DatabaseUser {
       return this;
    }
 
+   /**
+    * Fetches the map of a user's level for each guild.
+    * @return a HashMap where the guildId functions as the key and the user's level within that
+    * guild is the value.
+    */
+   public HashMap<Long, Integer> getLevelMap() {
+      return levelMap == null ? new HashMap<>() : levelMap;
+   }
+
+   public void setLevelMap(HashMap<Long, Integer> levelMap) {
+      this.levelMap = levelMap;
+   }
+
+   public Integer updateLevel(Long guildId, Integer newLevelValue) {
+      levelMap = levelMap == null ? new HashMap<>() : levelMap;
+      return levelMap.put(guildId, newLevelValue);
+   }
+
    public HashMap<Long, Integer> getTokenMap() {
       return tokenMap == null ? new HashMap<>() : tokenMap;
    }
@@ -115,19 +136,6 @@ public class DatabaseUser {
 
    public DatabaseUser withUpdatedDtTm(Timestamp updatedDtTm) {
       this.lastMessageDtTm = updatedDtTm;
-      return this;
-   }
-
-   public Integer getLevel() {
-      return level == null ? 0 : level;
-   }
-
-   public void setLevel(Integer level) {
-      this.level = level;
-   }
-
-   public DatabaseUser withLevel(Integer level) {
-      this.level = level;
       return this;
    }
 }

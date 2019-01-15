@@ -25,23 +25,24 @@ public class XpUtil {
 
    public static Integer checkForLevelUp(Guild guild, User user, Integer newXp) {
       Long userId = user.getIdLong();
-      Integer currentLevel = DatabaseUserUtil.getUser(userId).getLevel() == null ? 0 :
-          DatabaseUserUtil.getUser(userId).getLevel();
+      Integer currentLevel = new DatabaseUserUtil(userId).getGuildLevel(guild.getIdLong());
       Integer xpThreshold = getXpThresholdForLevel(currentLevel+1);
       Integer newLevel = currentLevel;
 
       if (newXp > xpThreshold) {
-         newLevel = DatabaseUserUtil.setLevel(userId, getLevelForXp(newXp));
+         newLevel = new DatabaseUserUtil(userId).setGuildLevel(guild.getIdLong(), getLevelForXp(newXp));
          String newLevelString = String.format("**%s**  (%s%s)",
              newLevel.toString(),
              (newLevel - currentLevel)>=1 ? "+" : "",
              (newLevel - currentLevel)
          );
 
+         String effectiveName = guild.getMember(user).getEffectiveName();
+
          EmbedBuilder eb = new EmbedBuilder()
              .setColor(Color.CYAN)
              .setThumbnail(user.getAvatarUrl())
-             .setTitle(String.format("%s has leveled up!", user.getName()))
+             .setTitle(String.format("%s has leveled up!", effectiveName))
              .addField("Current Level", newLevelString, true)
              .addField("Progress to Next Level",
                  newXp + " / " + getXpThresholdForLevel(newLevel+1)
@@ -64,7 +65,7 @@ public class XpUtil {
              .sendMessage(eb.build()).queue();
 
       } else if (newXp < getXpThresholdForLevel(currentLevel)) {
-         newLevel = DatabaseUserUtil.setLevel(userId, getLevelForXp(newXp));
+         newLevel = new DatabaseUserUtil(userId).setGuildLevel(guild.getIdLong(), getLevelForXp(newXp));
          logger.info(String.format("[%s] Demoted %s to level %s.",
              guild,
              user.getName(),
@@ -82,7 +83,7 @@ public class XpUtil {
 
       if (gi.getLevelRolesActive() || gi.getRoleLevelMappings().size() > 0) {
          HashMap<Long, Integer> roleLevelIds = gi.getRoleLevelMappings();
-         Integer userLevel = DatabaseUserUtil.getUser(userId).getLevel();
+         Integer userLevel = new DatabaseUserUtil(userId).getLevel(guild.getIdLong());
          List<Long> applicableRoleIds = roleLevelIds.keySet().stream()
              .filter(e -> roleLevelIds.get(e) <= userLevel)
              .collect(Collectors.toList());
@@ -124,7 +125,7 @@ public class XpUtil {
       Integer threshold = 0;
 
       for (int i=0; i<level; i++) {
-         threshold += 5*(i*i) + 50*(i) + 100;
+         threshold += 5*(i*i) + 100*(i) + 250;
       }
 
       return threshold;
@@ -153,7 +154,7 @@ public class XpUtil {
     * @return whether or not a token drop has been activated.
     */
    public static Boolean tokenDropActivated() {
-      return ThreadLocalRandom.current().nextInt(50) == 1;
+      return ThreadLocalRandom.current().nextInt(201) == 1;
    }
 
    /**

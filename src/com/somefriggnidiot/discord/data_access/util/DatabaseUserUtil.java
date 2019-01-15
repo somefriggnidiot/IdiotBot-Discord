@@ -3,6 +3,7 @@ package com.somefriggnidiot.discord.data_access.util;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector.Table;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
+import com.somefriggnidiot.discord.util.XpUtil;
 import java.sql.Timestamp;
 import java.time.Instant;
 import javax.persistence.EntityManager;
@@ -47,6 +48,28 @@ public class DatabaseUserUtil {
       return tokens == null ? 0 : tokens;
    }
 
+   public void setTokens(Long guildId, Integer newTokenBalance) {
+      em.getTransaction().begin();
+      dbu.updateTokens(guildId, newTokenBalance);
+      em.persist(dbu);
+      em.getTransaction().commit();
+   }
+
+   public Integer getGuildLevel(Long guildId) {
+      Integer level = dbu.getLevelMap().get(guildId);
+
+      return level == null ? 0 : level;
+   }
+
+   public Integer setGuildLevel(Long guildId, Integer newLevel) {
+      em.getTransaction().begin();
+      dbu.updateLevel(guildId, newLevel);
+      em.persist(dbu);
+      em.getTransaction().commit();
+
+      return newLevel;
+   }
+
    public static Integer addXp(Long guildId, Long userId, Integer xpGain) {
       DatabaseUser dbu = getDatabaseObject(userId);
       Integer currentXp = dbu.getXpMap().get(guildId) == null ? 0 : dbu.getXpMap().get(guildId);
@@ -71,15 +94,20 @@ public class DatabaseUserUtil {
       em.getTransaction().commit();
    }
 
-   public static Integer setLevel(Long userId, Integer level) {
-      DatabaseUser dbu = getDatabaseObject(userId);
+   public Integer getLevel(Long guildId) {
+      Integer level = dbu.getLevelMap().get(guildId);
 
-      em.getTransaction().begin();
-      dbu.setLevel(level);
-      em.persist(dbu);
-      em.getTransaction().commit();
+      if (level == null || level == 0) {
+         Integer xp = dbu.getXpMap().get(guildId);
 
-      return dbu.getLevel();
+         if (xp != null && xp > 0) {
+            return XpUtil.getLevelForXp(xp);
+         } else {
+            return 0;
+         }
+      } else {
+         return level;
+      }
    }
 
    private static DatabaseUser getDatabaseObject(Long userId) {

@@ -1,60 +1,97 @@
-package com.somefriggnidiot.discord.events;
+package com.somefriggnidiot.discord.util;
 
+import static java.lang.String.format;
+
+import com.somefriggnidiot.discord.core.Main;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
-import com.somefriggnidiot.discord.util.VoiceXpUtil;
-import com.somefriggnidiot.discord.util.XpUtil;
+import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.GuildVoiceState;
+import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.entities.VoiceChannel;
-import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent;
-import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent;
-import net.dv8tion.jda.core.events.guild.voice.GuildVoiceMoveEvent;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GuildVoiceListener extends ListenerAdapter {
+public class VoiceXpUtil {
 
-   private final Logger logger = LoggerFactory.getLogger(this.getClass());
+   private static final Logger logger = LoggerFactory.getLogger(VoiceXpUtil.class);
+   private static final DecimalFormat df = new DecimalFormat("###,###");
+   /**
+    * Key=GuildId; Timer=Timer for guild
+    */
+   private static final Map<Long, Timer> guildTimers = new HashMap<>();
+   /**
+    * Key=UserId; Long=Executions
+    */
+   private static Map<Long, Integer> userExecutions = new HashMap<>();
 
-   @Override
-   public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
-      logger.info(String.format("[%s] %s connected to %s.",
-          event.getGuild(),
-          event.getMember().getEffectiveName(),
-          event.getChannelJoined()));
+   public static void startTimer(Long guildId) {
+      if (!guildTimers.containsKey(guildId)) {
+         Timer guildTimer = new Timer();
+         guildTimer.schedule(getTimerTask(guildId), 300000, 300000);
+
+         guildTimers.put(guildId, guildTimer);
+      } else {
+         logger.warn(format("[%s] Attempted to start a voice XP timer, but one already existed "
+             + "for this guild.",
+             Main.jda.getGuildById(guildId)));
+      }
    }
 
-   @Override
-   public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
-      logger.info(String.format("[%s] %s disconnected from %s.",
-          event.getGuild(),
-          event.getMember().getEffectiveName(),
-          event.getChannelLeft()));
-
-      VoiceXpUtil.resetUserExecutions(event.getMember().getUser());
+   public static void stopTimer(Long guildId) {
+      if (guildTimers.containsKey(guildId)) {
+         Timer guildTimer = guildTimers.get(guildId);
+         guildTimer.cancel();
+         guildTimer.purge();
+      } else {
+         logger.warn(format("[%s] Attempted to stop voice XP timer, but no timer was found.",
+             Main.jda.getGuildById(guildId)));
+      }
    }
 
-   @Override
-   public void onGuildVoiceMove(GuildVoiceMoveEvent event) {
-      logger.info(String.format("[%s] %s moved from %s to %s.",
-          event.getGuild(),
-          event.getMember().getEffectiveName(),
-          event.getChannelLeft(),
-          event.getChannelJoined()));
+   public static void resetUserExecutions(User user) {
+      userExecutions.remove(user.getIdLong());
    }
 
-   @Deprecated
-   private Integer handleVoiceXp(Timer timer, VoiceChannel channel, Guild guild, User user, Integer
+   private static TimerTask getTimerTask(Long guildId) {
+      return new TimerTask() {
+
+         @Override
+         public void run() {
+            Guild guild = Main.jda.getGuildById(guildId);
+
+            List<VoiceChannel> nonEmptyChannels = guild.getVoiceChannels().stream()
+                .filter(voiceChannel -> voiceChannel.getMembers().size() > 1)
+                .collect(Collectors.toList());
+
+            //For every voice channel with members...
+            for (VoiceChannel channel : nonEmptyChannels) {
+               //For every voice user
+               for (Member member : channel.getMembers()) {
+                  //Handle XP and increment counter
+                  User user = member.getUser();
+                  Integer oldExecutions = userExecutions.get(user.getIdLong()) == null ? 0 :
+                      userExecutions.get(user.getIdLong());
+                  Integer newExecutions = handleVoiceXp(channel, guild, user, oldExecutions);
+                  userExecutions.put(user.getIdLong(), newExecutions);
+               }
+            }
+         }
+      };
+   }
+
+   private static Integer handleVoiceXp(VoiceChannel channel, Guild guild, User user, Integer
        executions) {
       GuildVoiceState voiceState = guild.getMember(user).getVoiceState();
       Boolean isActive = !voiceState.isDeafened() && !voiceState.isMuted() &&
@@ -69,7 +106,6 @@ public class GuildVoiceListener extends ListenerAdapter {
       if (!GuildInfoUtil.getGuildInfo(guild.getIdLong()).isGrantingMessageXp() ||
           !guild.getVoiceChannelById(channel.getId()).getMembers().contains(guild.getMember(user)) ||
           !voiceState.inVoiceChannel()) {
-         timer.cancel();
          return executions;
       }
 
@@ -110,7 +146,7 @@ public class GuildVoiceListener extends ListenerAdapter {
                 .collect(Collectors.toList())
                 .get(0);
          } catch (Exception e) {
-            logger.debug(String.format("[%s] %s is not in a game group role. Game: %s",
+            logger.debug(format("[%s] %s is not in a game group role. Game: %s",
                 guild,
                 user.getName(),
                 guild.getMember(user).getGame()));
@@ -126,7 +162,7 @@ public class GuildVoiceListener extends ListenerAdapter {
              user.getIdLong(),
              xpGained);
 
-         logger.debug(String.format("base_xp: %s "
+         logger.debug(format("base_xp: %s "
                  + "activity_bonus: %s "
                  + "multiplier: %s "
                  + "channel_users: %s "
@@ -143,19 +179,18 @@ public class GuildVoiceListener extends ListenerAdapter {
          //Check for levelup.
          XpUtil.checkForLevelUp(guild, user, newXp);
 
-         logger.info(String.format("[%s] %s gained %s xp for participating in voice. "
+         logger.info(format("[%s] %s gained %s xp for participating in voice. "
                  + "They're now at %s xp.",
              guild,
              user.getName(),
              xpGained,
-             newXp));
+             df.format(newXp)));
       }
 
       return ++executions;
    }
 
-   @Deprecated
-   private Integer usersPlayingTogether(VoiceChannel channel, Role gameGroup) {
+   private static Integer usersPlayingTogether(VoiceChannel channel, Role gameGroup) {
       Long count = channel.getMembers()
           .stream()
           .filter(member -> member.getRoles().contains(gameGroup))

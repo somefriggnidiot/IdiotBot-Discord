@@ -3,6 +3,7 @@ package com.somefriggnidiot.discord.util;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
 import com.somefriggnidiot.discord.events.MessageListener;
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ThreadLocalRandom;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 public class MessageListenerUtil {
 
    private static final Logger logger = LoggerFactory.getLogger(MessageListener.class);
+   private static final DecimalFormat df = new DecimalFormat("###,###");
 
    public static void handleXpGain(MessageReceivedEvent event) {
       if (event.getAuthor().isBot()) return;
@@ -24,7 +26,7 @@ public class MessageListenerUtil {
       Instant userLastMessageTime;
 
       if (XpUtil.tokenDropActivated()) {
-         XpUtil.handleTokenDrops(event.getGuild(), event.getAuthor(), 2);
+         XpUtil.handleTokenDrops(event.getGuild(), event.getAuthor(), 1);
       }
 
       if (dbu.getLastMessageDtTm() == null) {
@@ -51,14 +53,15 @@ public class MessageListenerUtil {
          logger.info(String.format("[%s] %s gained %s xp for messaging. They're now at %s xp.",
              event.getGuild(),
              event.getAuthor().getName(),
-             xpGain,
-             newXp));
+             df.format(xpGain),
+             df.format(newXp)));
 
          if (XpUtil.checkForLevelUp(event.getGuild(), event.getAuthor(), newXp) > 0) {
             logger.info(String.format("[%s] %s has leveled up! Now level %s!",
                 event.getGuild(),
                 event.getAuthor().getName(),
-                dbu.getLevel()));
+                dbu.getLevelMap().get(event.getGuild().getIdLong()) == null ? "0" :
+                    dbu.getLevelMap().get(event.getGuild().getIdLong()).toString()));
          }
       }
    }

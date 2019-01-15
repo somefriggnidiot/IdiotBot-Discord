@@ -5,6 +5,7 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
 import com.somefriggnidiot.discord.util.HighscoreObject;
+import com.somefriggnidiot.discord.util.XpUtil;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -78,7 +79,7 @@ public class XpLeaderboardCommand extends Command {
             top += String.format("**%s. %s** - Level %s - %s XP\n",
                 rank++,
                 guild.getMemberById(sortedScores.get(index).getUser().getId()).getEffectiveName(),
-                sortedScores.get(index).getUser().getLevel(),
+                XpUtil.getLevelForXp(sortedScores.get(index).getXp()),
                 new DecimalFormat("###,###").format(sortedScores.get(index).getXp()));
             index++;
          } catch (IndexOutOfBoundsException e) {

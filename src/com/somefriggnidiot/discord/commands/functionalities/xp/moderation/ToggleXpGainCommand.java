@@ -5,6 +5,7 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.MessageListener;
+import com.somefriggnidiot.discord.util.VoiceXpUtil;
 import net.dv8tion.jda.core.Permission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,11 +36,21 @@ public class ToggleXpGainCommand extends Command {
          GuildInfoUtil.setXpTracking(event.getGuild().getIdLong(), false);
          logger.info(String.format("[%s] Guild is no longer granting message xp.",
              event.getGuild()));
+
+         VoiceXpUtil.stopTimer(event.getGuild().getIdLong());
+         logger.info(String.format("[%s] Stopped voice XP timer.",
+             event.getGuild()));
+
          event.reply("XP tracking disabled.");
       } else {
          GuildInfoUtil.setXpTracking(event.getGuild().getIdLong(), true);
          logger.info(String.format("[%s] Guild is now granting message xp.",
              event.getGuild()));
+
+         VoiceXpUtil.startTimer(event.getGuild().getIdLong());
+         logger.info(String.format("[%s] Started voice XP timer.",
+             event.getGuild()));
+
          event.reply("XP tracking enabled.");
       }
    }

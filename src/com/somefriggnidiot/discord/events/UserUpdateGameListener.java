@@ -99,6 +99,7 @@ public class UserUpdateGameListener extends ListenerAdapter {
 
    private void handleSwap(UserUpdateGameEvent event, HashMap<String, String> gameMap,
        String oldGameName, String newGameName) {
+      //If both old and new are invalid, skip.
       if (!isValidGame(gameMap, oldGameName) && !isValidGame(gameMap, newGameName)) {
          return;
       }
@@ -109,11 +110,15 @@ public class UserUpdateGameListener extends ListenerAdapter {
          oldRole = event.getGuild().getRolesByName(oldGameName, false).get(0);
       } catch (IndexOutOfBoundsException e) {
          logger
-             .debug(String.format("[%s] Role not found for \"%s\"", event.getGuild(), oldGameName));
+             .debug(String.format("[%s] Previous game not present: \"%s\"",
+                 event.getGuild(),
+                 oldGameName));
       }
       if (oldRole == null) {
          logger
-             .warn(String.format("[%s] Role not found for \"%s\"", event.getGuild(), oldGameName));
+             .warn(String.format("[%s] Role not found for previous game: \"%s\"",
+                 event.getGuild(),
+                 oldGameName));
          return;
       } else {
          //Log it
@@ -127,7 +132,9 @@ public class UserUpdateGameListener extends ListenerAdapter {
             event.getGuild().getController().removeSingleRoleFromMember(event.getMember(), oldRole)
                 .queue();
          } catch (Exception e) {
-            logger.warn(String.format("[%s] Role not found for \"%s\"", event.getGuild(), oldRole));
+            logger.warn(String.format("[%s] Role not found for \"%s\"",
+                event.getGuild(),
+                oldRole));
          }
       }
 
@@ -136,17 +143,21 @@ public class UserUpdateGameListener extends ListenerAdapter {
          newRole = event.getGuild().getRolesByName(newGameName, false).get(0);
       } catch (IndexOutOfBoundsException e) {
          logger
-             .debug(String.format("[%s] Role not found for \"%s\"", event.getGuild(), newGameName));
+             .debug(String.format("[%s] New game not present: \"%s\"",
+                 event.getGuild(),
+                 newGameName));
       }
       if (newRole == null) {
          logger
-             .warn(String.format("[%s] Role not found for \"%s\"", event.getGuild(), newGameName));
+             .warn(String.format("[%s] Role not found for new game: \"%s\"",
+                 event.getGuild(),
+                 newGameName));
       } else {
          //Log it
-         logger.info(String.format("%s has started playing %s in %s.",
+         logger.info(String.format("[%s] %s has started playing %s.",
+             event.getGuild(),
              event.getMember().getEffectiveName(),
-             event.getNewGame().getName(),
-             event.getGuild().getName()));
+             event.getNewGame().getName()));
 
          //Assign role
          try {
