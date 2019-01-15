@@ -29,11 +29,12 @@ public class ClearXpCommand extends Command {
    @Override
    protected void execute(CommandEvent event) {
       Member member = event.getMessage().getMentionedMembers().get(0);
+      Long guildId = event.getGuild().getIdLong();
 
-      DatabaseUserUtil.setXp(event.getGuild().getIdLong(), member.getUser().getIdLong(), 0);
-      DatabaseUserUtil.setLevel(member.getUser().getIdLong(), 0);
+      DatabaseUserUtil.setXp(guildId, member.getUser().getIdLong(), 0);
+      DatabaseUserUtil.getUser(member.getUser().getIdLong()).updateLevel(guildId, 0);
 
-      logger.info(String.format("[%s] Reset global XP for %s.",
+      logger.info(String.format("[%s] Reset guild XP for %s.",
           event.getGuild(),
           member.getEffectiveName()));
    }

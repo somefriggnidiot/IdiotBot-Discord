@@ -52,7 +52,8 @@ public class ShowXpCommand extends Command {
          } catch (NumberFormatException e) {
             //Get self XP
             dbu = DatabaseUserUtil.getUser(event.getAuthor().getIdLong());
-            level = dbu.getLevel() == null ? "0" : dbu.getLevel().toString();
+            level = dbu.getLevelMap().get(event.getGuild().getIdLong()) == null ? "0" :
+                dbu.getLevelMap().get(event.getGuild().getIdLong()).toString();
             xp = dbu.getXpMap().get(event.getGuild().getIdLong()) == null ? 0 : dbu.getXpMap().get
                 (event.getGuild().getIdLong());
             nextXp = XpUtil.getXpThresholdForLevel(Integer.valueOf(level)+1);
@@ -74,7 +75,8 @@ public class ShowXpCommand extends Command {
       } else {
          User user = event.getMessage().getMentionedUsers().get(0);
          dbu = DatabaseUserUtil.getUser(user.getIdLong());
-         level = dbu.getLevel() == null ? "0" : dbu.getLevel().toString();
+         level = dbu.getLevelMap().get(event.getGuild().getIdLong()) == null ? "0" :
+             dbu.getLevelMap().get(event.getGuild().getIdLong()).toString();
          xp = dbu.getXpMap().get(event.getGuild().getIdLong()) == null ? 0 : dbu.getXpMap().get
              (event.getGuild().getIdLong());
          nextXp = XpUtil.getXpThresholdForLevel(Integer.valueOf(level)+1);

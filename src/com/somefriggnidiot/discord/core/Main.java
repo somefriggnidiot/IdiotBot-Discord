@@ -18,6 +18,7 @@ import com.somefriggnidiot.discord.commands.functionalities.raffle.DrawRaffleCom
 import com.somefriggnidiot.discord.commands.functionalities.raffle.EnterRaffleCommand;
 import com.somefriggnidiot.discord.commands.functionalities.raffle.ListRafflesCommand;
 import com.somefriggnidiot.discord.commands.functionalities.tokens.AdjustTokensCommand;
+import com.somefriggnidiot.discord.commands.functionalities.tokens.ResetAllTokensCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.AdjustXpCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.AddRoleLevelCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.ClearXpCommand;
@@ -86,7 +87,8 @@ public class Main {
                  new ListRafflesCommand()
              )
              .addCommands( // Tokens
-                 new AdjustTokensCommand()
+                 new AdjustTokensCommand(),
+                 new ResetAllTokensCommand()
              )
              .addCommands( //XP - Moderation
                  new AdjustXpCommand(),
