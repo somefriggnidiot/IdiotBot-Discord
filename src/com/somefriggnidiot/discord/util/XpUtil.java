@@ -6,6 +6,7 @@ import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.MessageListener;
 import java.awt.Color;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 public class XpUtil {
    private static final Logger logger = LoggerFactory.getLogger(MessageListener.class);
+   private static final DecimalFormat df = new DecimalFormat("###,###");
 
    public static Integer checkForLevelUp(Guild guild, User user, Integer newXp) {
       Long userId = user.getIdLong();
@@ -31,7 +33,7 @@ public class XpUtil {
 
       if (newXp > xpThreshold) {
          newLevel = new DatabaseUserUtil(userId).setGuildLevel(guild.getIdLong(), getLevelForXp(newXp));
-         String newLevelString = String.format("**%s**  (%s%s)",
+         String newLevelString = String.format("**%s** (%s%s)",
              newLevel.toString(),
              (newLevel - currentLevel)>=1 ? "+" : "",
              (newLevel - currentLevel)
@@ -45,11 +47,10 @@ public class XpUtil {
              .setTitle(String.format("%s has leveled up!", effectiveName))
              .addField("Current Level", newLevelString, true)
              .addField("Progress to Next Level",
-                 newXp + " / " + getXpThresholdForLevel(newLevel+1)
-                     .toString(),
+                 df.format(newXp) + " / " + df.format(getXpThresholdForLevel(newLevel+1)),
                  true);
 
-         List <Role> newRoles = handleRoleAssignments(null, userId, guild);
+         List <Role> newRoles = handleRoleAssignments(userId, guild);
          if (newRoles != null && !newRoles.isEmpty()) {
             String roleList = "";
 
@@ -71,14 +72,13 @@ public class XpUtil {
              user.getName(),
              newLevel));
 
-         handleRoleAssignments(null, userId, guild);
+         handleRoleAssignments(userId, guild);
       }
 
       return newLevel - currentLevel;
    }
 
-   private static List<Role> handleRoleAssignments(TextChannel channel, Long userId, Guild
-       guild) {
+   private static List<Role> handleRoleAssignments(Long userId, Guild guild) {
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
 
       if (gi.getLevelRolesActive() || gi.getRoleLevelMappings().size() > 0) {
@@ -93,7 +93,6 @@ public class XpUtil {
          List<Role> newRoles = applicableRoles.stream()
              .filter(role -> !member.getRoles().contains(role))
              .collect(Collectors.toList());
-
 
          guild.getController().addRolesToMember(member, newRoles).queue();
 
