@@ -13,13 +13,13 @@ public class DatabaseUserUtil {
    private static EntityManager em = new DatabaseConnector().getEntityManager(Table.DATABASE_USER);
    private DatabaseUser dbu;
 
+   public static DatabaseUser getUser(Long userId) {
+      return getDatabaseObject(userId);
+   }
    public DatabaseUserUtil(Long userId) {
       this.dbu = getDatabaseObject(userId);
    }
 
-   public static DatabaseUser getUser(Long userId) {
-      return getDatabaseObject(userId);
-   }
 
    /**
     * Adds the provided amount of tokens to the existing amount for the {@link DatabaseUser}
