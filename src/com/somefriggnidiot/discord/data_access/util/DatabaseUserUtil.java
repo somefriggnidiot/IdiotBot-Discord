@@ -70,6 +70,13 @@ public class DatabaseUserUtil {
       return newLevel;
    }
 
+   /**
+    *
+    * @param guildId
+    * @param userId
+    * @param xpGain
+    * @return the {@code DatabaseUser}'s new XP balance.
+    */
    public static Integer addXp(Long guildId, Long userId, Integer xpGain) {
       DatabaseUser dbu = getDatabaseObject(userId);
       Integer currentXp = dbu.getXpMap().get(guildId) == null ? 0 : dbu.getXpMap().get(guildId);

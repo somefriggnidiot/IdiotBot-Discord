@@ -16,15 +16,27 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Utility functions pertaining to XP, levels, and level roles, but not directly writing data to
+ * the database.
+ */
 public class XpUtil {
    private static final Logger logger = LoggerFactory.getLogger(MessageListener.class);
    private static final DecimalFormat df = new DecimalFormat("###,###");
 
+   /**
+    * Determines if the {@link User} has reached an XP threshold for the next level to be earned
+    * in the given {@link Guild}.
+    *
+    * @param guild the {@link Guild} in which the user is gaining XP.
+    * @param user the {@link User} gaining XP.
+    * @param newXp the new XP balance for the {@code DatabaseUser}
+    * @return the amount of levels gained by this levelup.
+    */
    public static Integer checkForLevelUp(Guild guild, User user, Integer newXp) {
       Long userId = user.getIdLong();
       Integer currentLevel = new DatabaseUserUtil(userId).getGuildLevel(guild.getIdLong());
@@ -55,7 +67,7 @@ public class XpUtil {
             String roleList = "";
 
             for (Role role : newRoles) {
-               roleList += role.getName() + ", ";
+               roleList = roleList.concat(role.getName() + ", ");
             }
 
             roleList = roleList.substring(0, roleList.length()-2);
@@ -78,6 +90,13 @@ public class XpUtil {
       return newLevel - currentLevel;
    }
 
+   /**
+    * Checks for and assigns any unassigned roles earned through Role Level Mappings.
+    *
+    * @param userId the ID of the {@link User} being checked.
+    * @param guild the {@link Guild} in which the {@code User} resides.
+    * @return a list of {@link Role} objects matching any roles newly assigned to the {@code User}.
+    */
    private static List<Role> handleRoleAssignments(Long userId, Guild guild) {
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
 
@@ -102,6 +121,12 @@ public class XpUtil {
       return null;
    }
 
+   /**
+    * Determines what level a user would be at for a given XP value.
+    *
+    * @param xp a XP value.
+    * @return the level a user should be at for the provided XP value.
+    */
    public static Integer getLevelForXp(Integer xp) {
       Integer level = -1;
       Integer thresholdXp  = getXpThresholdForLevel(level);
@@ -120,6 +145,12 @@ public class XpUtil {
       return level;
    }
 
+   /**
+    * Determines what XP threshold a user would need to reach to achieve a certain level.
+    *
+    * @param level a level value.
+    * @return the amount of XP a user would need to achieve that level.
+    */
    public static Integer getXpThresholdForLevel(Integer level) {
       Integer threshold = 0;
 
@@ -130,17 +161,32 @@ public class XpUtil {
       return threshold;
    }
 
+   /**
+    * Retrieves the ranked position of a {@link DatabaseUser} on a {@link Guild}'s leaderboard.
+    *
+    * @param guild the {@link Guild} in which the {@code User} resides.
+    * @param user the {@link User} linked to a {@code DatabaseUser} object which has earned XP in
+    * the provided {@code Guild}
+    * @return the ranked position relative to all other {@code DatabaseUser} objects in a guild.
+    */
    public static Integer getGuildRank(Guild guild, User user) {
       GuildInfoUtil giu = new GuildInfoUtil(guild);
       List<HighscoreObject> rankedList = giu.getRankedXpList();
       List<DatabaseUser> rankedDbus = new ArrayList<>();
 
-      rankedList.stream().forEach(e -> rankedDbus.add(e.getUser()));
+      rankedList.forEach(e -> rankedDbus.add(e.getUser()));
       DatabaseUser dbu = DatabaseUserUtil.getUser(user.getIdLong());
 
       return rankedDbus.indexOf(dbu) + 1;
    }
 
+   /**
+    * Retrieves the total number of {@link DatabaseUser}s for a {@link Guild}, regardless of
+    * their XP balances.
+    *
+    * @param guild the {@link Guild} for which all {@code DatabaseUser}s are being retrieved.
+    * @return the size of the list containing all {@link DatabaseUser}s for a {@code Guild}.
+    */
    public static Integer getGuildLeaderboardSize(Guild guild) {
       GuildInfoUtil giu = new GuildInfoUtil(guild);
 
@@ -157,14 +203,15 @@ public class XpUtil {
    }
 
    /**
-    * Adds tokens for a user within a guild.
+    * Provided a {@link User} and {@link Guild}, will modify the {@link DatabaseUser}'s token
+    * balance for the {@code Guild}.
     *
-    * @param guild
-    * @param user
-    * @param tokens
-    * @return
+    * @param guild the {@link Guild} entity containing the user being modified.
+    * @param user the {@link User} whose tokens are being adjusted.
+    * @param tokens the adjustment being made to the User's token count. Can be negative to
+    * reduce tokens.
     */
-   public static Integer handleTokenDrops(Guild guild, User user, Integer tokens) {
+   public static void handleTokenDrops(Guild guild, User user, Integer tokens) {
       DatabaseUserUtil dbuu = new DatabaseUserUtil(user.getIdLong());
       Integer newTokens = dbuu.addTokens(guild.getIdLong(), tokens);
 
@@ -173,7 +220,5 @@ public class XpUtil {
           user.getName(),
           tokens,
           newTokens));
-
-      return newTokens;
    }
 }
