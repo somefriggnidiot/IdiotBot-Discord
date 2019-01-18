@@ -23,6 +23,10 @@ import net.dv8tion.jda.core.entities.VoiceChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Contains helper and utility functions for the Voice XP Timer and its handling of granting XP
+ * to users.
+ */
 public class VoiceXpUtil {
 
    private static final Logger logger = LoggerFactory.getLogger(VoiceXpUtil.class);
@@ -36,6 +40,12 @@ public class VoiceXpUtil {
     */
    private static Map<Long, Integer> userExecutions = new HashMap<>();
 
+   /**
+    * Starts execution of a Voice XP Timer for a given {@link Guild} if one is not already running.
+    *
+    * @see VoiceXpUtil#getTimerTask(Long)
+    * @param guildId the {@link Guild} for which the timer is starting.
+    */
    public static void startTimer(Long guildId) {
       if (!guildTimers.containsKey(guildId)) {
          Timer guildTimer = new Timer();
@@ -49,6 +59,11 @@ public class VoiceXpUtil {
       }
    }
 
+   /**
+    * Stops execution of a Voice XP Timer for a given {@link Guild} if one is running.
+    *
+    * @param guildId the {@link Guild} for which the timer is being stopped.
+    */
    public static void stopTimer(Long guildId) {
       if (guildTimers.containsKey(guildId)) {
          Timer guildTimer = guildTimers.get(guildId);
@@ -60,10 +75,24 @@ public class VoiceXpUtil {
       }
    }
 
+   /**
+    * Resets the consecutive execution count for a given user.
+    * <br />
+    * Each time a {@code User} gains XP through the Voice XP Timer, this count is incremented by
+    * one until being reset back to zero.
+    *
+    * @param user the {@link User} whose execution count is being reset.
+    */
    public static void resetUserExecutions(User user) {
       userExecutions.remove(user.getIdLong());
    }
 
+   /**
+    * Retrieves the {@link TimerTask} being executed each iteration for a {@link Guild}.
+    *
+    * @param guildId the {@link Guild} for which the {@code TimerTask} is being retrieved.
+    * @return the {@link TimerTask} in use for that {@code Guild}.
+    */
    private static TimerTask getTimerTask(Long guildId) {
       return new TimerTask() {
 
@@ -91,6 +120,16 @@ public class VoiceXpUtil {
       };
    }
 
+   /**
+    * Determines whether a {@link User} is eligible to earn XP, assigning it accordingly.
+    *
+    * @param channel the {@link VoiceChannel} in which the {@code User} currently resides.
+    * @param guild the {@link Guild} containing the {@code VoiceChannel} and {@code User}.
+    * @param user the {@link User} potentially gaining XP.
+    * @param executions the total times this {@code User} has gained XP from execution of this
+    * command without being reset by {@link VoiceXpUtil#resetUserExecutions(User)}
+    * @return the new total value for {@code executions}.
+    */
    private static Integer handleVoiceXp(VoiceChannel channel, Guild guild, User user, Integer
        executions) {
       GuildVoiceState voiceState = guild.getMember(user).getVoiceState();
@@ -190,6 +229,16 @@ public class VoiceXpUtil {
       return ++executions;
    }
 
+   /**
+    * Calculates the amount of {@link User}s in a {@link VoiceChannel} that are also in the same
+    * Game Group {@link Role}. Used to get a rough estimate of how many {@code User}s may be
+    * playing a game in the same lobby.
+    *
+    * @param channel the {@link VoiceChannel} containing the {@link User}s being scanned.
+    * @param gameGroup the {@link Role} of the Game Group being scanned.
+    * @return the count of {@link User}s in the {@link VoiceChannel} that share the same Game
+    * Group {@link Role}.
+    */
    private static Integer usersPlayingTogether(VoiceChannel channel, Role gameGroup) {
       Long count = channel.getMembers()
           .stream()

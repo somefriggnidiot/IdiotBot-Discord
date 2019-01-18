@@ -11,11 +11,24 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Utility/helper methods used to handle a combination of {@link MessageReceivedEvent}s and the
+ * XP system.
+ *
+ * @see XpUtil
+ * @see MessageListener
+ */
 public class MessageListenerUtil {
 
    private static final Logger logger = LoggerFactory.getLogger(MessageListener.class);
    private static final DecimalFormat df = new DecimalFormat("###,###");
 
+   /**
+    * Assigns XP to the authoring {@link net.dv8tion.jda.core.entities.User} of a valid
+    * text message.
+    *
+    * @param event the {@link MessageReceivedEvent} containing the potentially valid message.
+    */
    public static void handleXpGain(MessageReceivedEvent event) {
       if (event.getAuthor().isBot()) return;
 

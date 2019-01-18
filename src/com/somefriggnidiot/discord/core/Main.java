@@ -61,7 +61,7 @@ public class Main {
 
       try {
          CommandClientBuilder client = new CommandClientBuilder()
-             .setGame(Game.playing("quidditch."))
+             .setGame(Game.playing("Bot-it League"))
              .setOwnerId(args[1])
              .setPrefix("!")
              .setHelpWord("help")

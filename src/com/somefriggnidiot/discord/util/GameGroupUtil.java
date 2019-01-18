@@ -12,10 +12,31 @@ import net.dv8tion.jda.core.entities.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Various helper functions for GameGroups. <br />
+ * GameGrouping is a concept of assigning a Discord {@link Role} to a
+ * {@link net.dv8tion.jda.core.entities.User} temporarily while that {@code User}
+ * is playing a certain {@link Game} as defined by {@code User}-defined rules.
+ *
+ * @see com.somefriggnidiot.discord.commands.functionalities.gamegroups.AddGameGroupCommand
+ * @see com.somefriggnidiot.discord.commands.functionalities.gamegroups.RemoveGameGroupCommand
+ * @see com.somefriggnidiot.discord.commands.functionalities.gamegroups.GroupGamesCommand
+ */
 public class GameGroupUtil {
 
    private static final Logger logger = LoggerFactory.getLogger(MessageListener.class);
 
+   /**
+    * Assigns the GameGroup {@link Role} to a {@link net.dv8tion.jda.core.entities.User} playing
+    * a {@link Game} that has a valid GameGroup mapping in the {@link Guild}.
+    *
+    * @param event this will eventually be replaced with a direct Guild object.
+    * @param gameMap the complete {@link HashMap} mapping {@code Game} display names to
+    * {@code Role}s for a {@code Guild}.
+    * @param gameName this will eventually just be pulled from the Member.
+    * @param member the {@link Member} playing a {@code Game}.
+    */
+   //TODO: Change Event and usages to Guild. Change gameName to just read from Member.
    public static void handleRoleAssignment(CommandEvent event, HashMap<String, String> gameMap,
        String gameName, Member member) {
       if (!isValidGame(gameMap, gameName)) {
@@ -50,10 +71,27 @@ public class GameGroupUtil {
       }
    }
 
+   /**
+    * Scans a mapping of game display names (key) and role names to determine if a {@link Game}
+    * has a valid GameGroup mapping.
+    *
+    * @param gameMap a complete {@link HashMap} of game display names to role names for a given
+    * {@link Guild}.
+    * @param gameName the name of the {@link Game}.
+    * @return {@code true} if the {@code Game} name is in the list of mapping values, otherwise
+    * {@code false}.
+    */
    public static boolean isValidGame(HashMap<String, String> gameMap, String gameName) {
       return gameMap.get(gameName) != null;
    }
 
+   /**
+    * Returns the {@link Role} mapped to a valid GameGroup {@link Game} if a valid mapping exists.
+    *
+    * @param guild the {@link Guild} containing GameGroup Roles.
+    * @param game the {@link Game} being scanned for a GameGroup Role mapping.
+    * @return the GameGroup {@link Role} mapped to the {@link Game} or {@code null}
+    */
    public static Role getGameRole(Guild guild, Game game) {
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
 

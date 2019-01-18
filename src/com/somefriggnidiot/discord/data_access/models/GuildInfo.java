@@ -19,7 +19,8 @@ public class GuildInfo {
    private Boolean messageXpActive;
 
    /**
-    * Key = Game as displayed on Discord Value = Name of group/role associated with game.
+    * Key = Game as displayed on Discord<br />
+    * Value = Name of group/role associated with game.
     */
    private HashMap<String, String> gameGroupMappings;
    private Boolean levelRolesActive;
