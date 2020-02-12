@@ -31,6 +31,7 @@ import com.somefriggnidiot.discord.commands.moderation.AddAllUsersToRoleCommand;
 import com.somefriggnidiot.discord.commands.moderation.GetWarningsCommand;
 import com.somefriggnidiot.discord.commands.moderation.RemoveAllUsersFromRoleCommand;
 import com.somefriggnidiot.discord.commands.moderation.SoftBanCommand;
+import com.somefriggnidiot.discord.commands.moderation.TagLogCommand;
 import com.somefriggnidiot.discord.commands.moderation.WarningCommand;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.GuildMemberListener;
@@ -109,6 +110,7 @@ public class Main {
                  new GetWarningsCommand(),
                  new RemoveAllUsersFromRoleCommand(),
                  new WarningCommand(),
+                 new TagLogCommand(),
                  new SoftBanCommand()
              )
 //             .addCommand(new KarmaCommand())

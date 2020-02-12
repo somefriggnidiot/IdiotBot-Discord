@@ -59,7 +59,11 @@ public class GroupGamesCommand extends Command {
             case "refresh":
             case "update":
             case "check":
-               update(event);
+               try {
+                  update(event);
+               } catch (Exception e) {
+                  event.reply("Cannot modify roles of a higher rank.");
+               }
                return;
             case "toggle":
                toggle(event, !gi.isGroupingGames());
