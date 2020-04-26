@@ -28,50 +28,75 @@ import org.slf4j.LoggerFactory;
 public class MessageListener extends ListenerAdapter {
 
    private final Logger logger = LoggerFactory.getLogger(MessageListener.class);
-   private CloseableHttpClient httpClient = HttpClients.createDefault();
 
    @Override
-   public void onMessageReceived(MessageReceivedEvent event) {
+   public void onMessageReceived(final MessageReceivedEvent event) {
       User author = event.getAuthor();
-      Message message = event.getMessage();
       MessageChannel channel = event.getChannel();
-      String msg = message.getContentDisplay();
+      String msg = event.getMessage().getContentDisplay();
 
-      GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild().getIdLong());
-      Boolean isGrantingXp = gi.isGrantingMessageXp() == null ? false : gi.isGrantingMessageXp();
+      handleXp(event, msg);
+      logEvent(event, author, channel, msg);
+
+      //Test bridge to Guilded
+      if (event.isFromType(ChannelType.TEXT) &&
+          event.getGuild().getName().contains("Celestial") &&
+          !event.getMessage().isWebhookMessage()) {
+         if (event.getChannel().getName().equalsIgnoreCase("log")) {
+            bridgeToGuilded("webhookurl", event.getMessage());
+         }
+      }
+   }
+
+   /**
+    * Routes messages to the {@link MessageListenerUtil} for XP Gains when applicable.
+    *
+    * @param event a {@link MessageReceivedEvent} to be checked
+    * @param msg the message contents as a {@link String}
+    */
+   private void handleXp(final MessageReceivedEvent event, final String msg) {
+      GuildInfo gi = event.getGuild().isAvailable()? GuildInfoUtil.getGuildInfo(event.getGuild()
+          .getIdLong()) : null;
+
+      Boolean isGrantingXp;
+
+      if (gi != null || gi.isGrantingMessageXp() == null) {
+         isGrantingXp = false;
+      } else {
+         isGrantingXp = gi.isGrantingMessageXp();
+      }
 
       if (isGrantingXp) {
          if (!msg.startsWith("!") && !msg.startsWith("$") && !msg.startsWith("~")) {
             MessageListenerUtil.handleXpGain(event);
          }
       }
+   }
 
-      if (author.getName().equalsIgnoreCase("Discord.RSS")) {
-         message.addReaction("👍").queue();
-         message.addReaction("👎").queue();
-      }
-
-      //Logging
+   /**
+    * Logs the {@link MessageReceivedEvent} contents based on the current logging
+    * configuration settings.
+    *
+    * @param event the {@link MessageReceivedEvent} being logged.
+    * @param author the {@link User} that authored the message which created the
+    * event.
+    * @param channel the {@link MessageChannel} where the logged message was received.
+    * @param msg the message contents as a {@link String}
+    */
+   private void logEvent(final MessageReceivedEvent event, final User author,
+       final MessageChannel channel, final String msg) {
       if (event.isFromType(ChannelType.TEXT) &&
           !event.getChannel().getName().equalsIgnoreCase("log")) {
          logger.info(String.format("[%s] %s in #%s: %s",
-             event.getGuild(),
+             event.getGuild() == null ? "DIRECT MESSAGE" : event.getGuild(),
              author.getName(),
              channel.getName(),
              msg));
       }
-
-      if (event.isFromType(ChannelType.TEXT) &&
-          event.getGuild().getName().contains("Celestial") &&
-          !event.getMessage().isWebhookMessage()) {
-         if (event.getChannel().getName().equalsIgnoreCase("log")) {
-            bridgeToGuilded("https://media.guilded.gg/webhooks/fca53363-1ed5-418c-a296-ea82a4961300/zhjKqJSsvjpguDms5PjWOkdHscC6Tmcl_ReEqCicOPrJKw-z-Ui8kFuswUhm1nI4wDezAZcCNRMatWbfs9nLWA", event.getMessage());
-         }
-      }
    }
 
    private void bridgeToGuilded(final String webhooUrl, final Message message) {
-      httpClient = HttpClients.createDefault();
+      CloseableHttpClient httpClient = HttpClients.createDefault();
       HttpPost request = new HttpPost(webhooUrl);
       JSONObject payload = new JSONObject();
       request.addHeader("content-type", "application/json");
