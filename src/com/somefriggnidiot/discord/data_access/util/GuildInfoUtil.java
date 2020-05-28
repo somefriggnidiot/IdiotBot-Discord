@@ -16,7 +16,7 @@ import net.dv8tion.jda.core.entities.Member;
 
 public class GuildInfoUtil {
 
-   static EntityManager em = new DatabaseConnector().getEntityManager(Table.GUILD_INFO);
+   private static EntityManager em = new DatabaseConnector().getEntityManager(Table.GUILD_INFO);
    private GuildInfo gi;
    private Guild guild;
 
@@ -95,8 +95,12 @@ public class GuildInfoUtil {
       return getDatabaseObject(guildId);
    }
 
-   public static void enableGameGrouping(Long guildId) {
-      GuildInfo gi = getGuildInfo(guildId);
+   public static GuildInfo getGuildInfo(Guild guild) {
+      return getDatabaseObject(guild.getIdLong());
+   }
+
+   public static void enableGameGrouping(Guild guild) {
+      GuildInfo gi = getGuildInfo(guild.getIdLong());
 
       em.getTransaction().begin();
       gi.setGroupMappingsActive(true);
@@ -104,8 +108,8 @@ public class GuildInfoUtil {
       em.getTransaction().commit();
    }
 
-   public static void disableGameGrouping(Long guildId) {
-      GuildInfo gi = getGuildInfo(guildId);
+   public static void disableGameGrouping(Guild guild) {
+      GuildInfo gi = getGuildInfo(guild.getIdLong());
 
       em.getTransaction().begin();
       gi.setGroupMappingsActive(false);
@@ -139,6 +143,15 @@ public class GuildInfoUtil {
 
       em.getTransaction().begin();
       gi.setGrantingMessageXp(isActive);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public static void setLuckBonusActive(Long guildId, Boolean isActive) {
+      GuildInfo gi = getGuildInfo(guildId);
+
+      em.getTransaction().begin();
+      gi.setLuckBonusActive(isActive);
       em.persist(gi);
       em.getTransaction().commit();
    }

@@ -133,9 +133,14 @@ public class VoiceXpUtil {
    private static Integer handleVoiceXp(VoiceChannel channel, Guild guild, User user, Integer
        executions) {
       GuildVoiceState voiceState = guild.getMember(user).getVoiceState();
-      Boolean isActive = !voiceState.isDeafened() && !voiceState.isMuted() &&
-          !voiceState.isGuildDeafened() && !voiceState.isGuildMuted() &&
-          !voiceState.isSuppressed();
+      /*
+       * Returns true if the user is:
+       *  & not deafened
+       *  & not suppressed
+       *  & not muted by the guild. (Self-mute is fine.)
+       */
+      Boolean isActive = !voiceState.isDeafened() && !voiceState.isGuildMuted()
+          && !voiceState.isSuppressed();
 
       /*
          EXIT WHEN
@@ -194,12 +199,27 @@ public class VoiceXpUtil {
          Integer usersInGame = usersPlayingTogether(channel, gameGroupRole);
          multiplier += (0.05 * usersInGame);
 
+         //Check for Luck Bonus
+         Boolean luckMultActive = XpUtil.luckMultiplierActivated();
+         if (gi.luckBonusActive() && luckMultActive) {
+            multiplier += XpUtil.getLuckMultiplier();
+         }
+
          //Give XP
          Integer xpGained = (int) Math.rint((base + bonus) * (multiplier + voiceMultiplier));
          Integer newXp = DatabaseUserUtil.addXp(
              guild.getIdLong(),
              user.getIdLong(),
              xpGained);
+
+         if (luckMultActive) {
+            String multStr = multiplier.toString();
+            String xpGainStr = xpGained.toString();
+            String message = user + " has gotten a random XP multiplier of " + multStr + " for a "
+                + "drop of " + xpGainStr + " XP!";
+            guild.getTextChannelsByName("bot-spam", true).get(0)
+                .sendMessage(message).queue();
+         }
 
          logger.debug(format("base_xp: %s "
                  + "activity_bonus: %s "

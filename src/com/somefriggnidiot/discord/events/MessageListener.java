@@ -3,19 +3,14 @@ package com.somefriggnidiot.discord.events;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.util.MessageListenerUtil;
-import net.dv8tion.jda.core.entities.Category;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
-import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
-import net.dv8tion.jda.core.managers.GuildController;
-import net.dv8tion.jda.core.managers.GuildManager;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -43,7 +38,9 @@ public class MessageListener extends ListenerAdapter {
           event.getGuild().getName().contains("Celestial") &&
           !event.getMessage().isWebhookMessage()) {
          if (event.getChannel().getName().equalsIgnoreCase("log")) {
-            bridgeToGuilded("webhookurl", event.getMessage());
+            bridgeToGuilded(
+                "https://media.guilded.gg/webhooks/fca53363-1ed5-418c-a296-ea82a4961300/zhjKqJSsvjpguDms5PjWOkdHscC6Tmcl_ReEqCicOPrJKw-z-Ui8kFuswUhm1nI4wDezAZcCNRMatWbfs9nLWA",
+                event.getMessage());
          }
       }
    }
@@ -85,11 +82,19 @@ public class MessageListener extends ListenerAdapter {
     */
    private void logEvent(final MessageReceivedEvent event, final User author,
        final MessageChannel channel, final String msg) {
+      Guild guild = event.getGuild();
       if (event.isFromType(ChannelType.TEXT) &&
           !event.getChannel().getName().equalsIgnoreCase("log")) {
+
+         String userName;
+         if (guild == null || guild.getMember(author) == null) {
+            userName = author.getName();
+         } else {
+            userName = guild.getMember(author).getEffectiveName();
+         }
          logger.info(String.format("[%s] %s in #%s: %s",
-             event.getGuild() == null ? "DIRECT MESSAGE" : event.getGuild(),
-             author.getName(),
+             guild == null ? "DIRECT MESSAGE" : event.getGuild(),
+             userName,
              channel.getName(),
              msg));
       }

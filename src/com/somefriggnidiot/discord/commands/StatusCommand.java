@@ -1,17 +1,15 @@
 package com.somefriggnidiot.discord.commands;
 
+import static java.lang.String.format;
+
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.data_access.util.RaffleUtil;
 import java.awt.Color;
-import java.text.DecimalFormat;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import static java.lang.String.format;
 
 public class StatusCommand extends Command {
 
@@ -45,6 +43,7 @@ public class StatusCommand extends Command {
           .getVoiceXpMultiplier() + 1.0) + "x";
       String voiceMultiplierStatus = gi.isGrantingMessageXp() ? voiceMultiplier : "_Disabled_";
       String xpTrackingStatus = gi.isGrantingMessageXp() ? "Active" : "_Disabled_";
+      String xpLuckBonusStatus = gi.luckBonusActive() ? "Active" : "_Disabled_";
       String groupingGamesStatus = gi.isGroupingGames() ?
           String.format("Active (%s)", gi.getGameGroupMappings().size()) : "_Disabled_";
       String rolesOnLevelsStatus = gi.getRoleLevelMappings().size() > 0 ?
@@ -59,6 +58,7 @@ public class StatusCommand extends Command {
       eb.addField("**Bots**", botCount.toString(), true);
       eb.addField("**Ping**", format("%s ms", ping), true);
       eb.addField("**XP Tracking**", xpTrackingStatus, true);
+      eb.addField("**Luck Bonus**", xpLuckBonusStatus, true);
       eb.addField("**Voice XP Multiplier**", voiceMultiplierStatus, true);
       eb.addField("**Grouping Games**", groupingGamesStatus, true);
       eb.addField("**Roles On Levels**", rolesOnLevelsStatus, true);

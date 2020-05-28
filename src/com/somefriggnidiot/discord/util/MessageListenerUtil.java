@@ -45,8 +45,20 @@ public class MessageListenerUtil {
       userLastMessageTime = updateDbuLastMessageTimestamp(event, dbu);
 
       if (messageTime.isAfter(userLastMessageTime)) {
-         Integer xpGain = calculateXpGain(event.getMessage().getContentDisplay());
+         Boolean luckMultiplierActivated = XpUtil.luckMultiplierActivated();
+         Double multiplier = luckMultiplierActivated ? XpUtil.getLuckMultiplier() : 1.0;
+         Integer xpGain = calculateXpGain(event.getMessage().getContentDisplay(), multiplier);
          Integer newXp = DatabaseUserUtil.addXp(event.getGuild().getIdLong(), userId, xpGain);
+
+         if (luckMultiplierActivated) {
+            String user = event.getGuild().getMember(event.getAuthor()).getEffectiveName();
+            String multStr = multiplier.toString();
+            String xpGainStr = xpGain.toString();
+            String message = user + " has gotten a random XP multiplier of " + multStr + " for a "
+                + "drop of " + xpGainStr + " XP!";
+            event.getGuild().getTextChannelsByName("bot-spam", true).get(0)
+                .sendMessage(message).queue();
+         }
 
          handleLogging(event, xpGain, newXp, dbu);
       }
@@ -77,14 +89,18 @@ public class MessageListenerUtil {
     * @param messageContentDisplay the {@link String} contents of a message.
     * @return the amount of XP gained based on the message size and contents.
     */
-   private static Integer calculateXpGain(String messageContentDisplay) {
+   private static Integer calculateXpGain(String messageContentDisplay, Double multiplier) {
       //If message contains link or is embed.
       if (messageContentDisplay.contains("http")
           || messageContentDisplay.isEmpty()) {
          return 5;
       } else {
-         Integer randomBase = ThreadLocalRandom.current().nextInt(10, 31);
-         return randomBase + (messageContentDisplay.length() / 20);
+         Integer baseXp = ThreadLocalRandom.current().nextInt(10, 31);
+         Integer lengthBonus = messageContentDisplay.length() / 20;
+
+         Double totalGain = (baseXp + lengthBonus) * multiplier;
+
+         return (int) Math.rint(totalGain);
       }
    }
 

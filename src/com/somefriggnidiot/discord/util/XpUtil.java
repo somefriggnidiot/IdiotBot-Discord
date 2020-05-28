@@ -124,7 +124,7 @@ public class XpUtil {
    /**
     * Determines what level a user would be at for a given XP value.
     *
-    * @param xp a XP value.
+    * @param xp an XP value.
     * @return the level a user should be at for the provided XP value.
     */
    public static Integer getLevelForXp(Integer xp) {
@@ -194,7 +194,7 @@ public class XpUtil {
    }
 
    /**
-    * Compares a random number to 1. If the number matches, returns true.
+    * Random number generator to determine if a drop has been activated..
     *
     * @return whether or not a token drop has been activated.
     */
@@ -203,8 +203,12 @@ public class XpUtil {
    }
 
    /**
+    * Updates a user to apply an additional amount of tokens.
+    *
+    * <p>
     * Provided a {@link User} and {@link Guild}, will modify the {@link DatabaseUser}'s token
     * balance for the {@code Guild}.
+    * </p>
     *
     * @param guild the {@link Guild} entity containing the user being modified.
     * @param user the {@link User} whose tokens are being adjusted.
@@ -220,5 +224,18 @@ public class XpUtil {
           user.getName(),
           tokens,
           newTokens));
+   }
+
+   public static Boolean luckMultiplierActivated() {
+      Integer rnGesus = ThreadLocalRandom.current().nextInt(0, 1000);
+      return rnGesus == 1;
+   }
+
+   public static Double getLuckMultiplier() {
+      Double mult = ThreadLocalRandom.current().nextDouble(0.50, 10.00);
+
+      logger.info("Multiplier of " + mult + " is being applied!");
+
+      return mult > 1.00 ? mult : 1.00;
    }
 }
