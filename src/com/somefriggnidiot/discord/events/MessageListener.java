@@ -32,17 +32,6 @@ public class MessageListener extends ListenerAdapter {
 
       handleXp(event, msg);
       logEvent(event, author, channel, msg);
-
-      //Test bridge to Guilded
-      if (event.isFromType(ChannelType.TEXT) &&
-          event.getGuild().getName().contains("Celestial") &&
-          !event.getMessage().isWebhookMessage()) {
-         if (event.getChannel().getName().equalsIgnoreCase("log")) {
-            bridgeToGuilded(
-                "https://media.guilded.gg/webhooks/fca53363-1ed5-418c-a296-ea82a4961300/zhjKqJSsvjpguDms5PjWOkdHscC6Tmcl_ReEqCicOPrJKw-z-Ui8kFuswUhm1nI4wDezAZcCNRMatWbfs9nLWA",
-                event.getMessage());
-         }
-      }
    }
 
    /**
