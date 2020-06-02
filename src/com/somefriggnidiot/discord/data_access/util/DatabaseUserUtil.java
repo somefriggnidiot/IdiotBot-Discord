@@ -13,13 +13,13 @@ public class DatabaseUserUtil {
    private static EntityManager em = new DatabaseConnector().getEntityManager(Table.DATABASE_USER);
    private DatabaseUser dbu;
 
+   public static DatabaseUser getUser(Long userId) {
+      return getDatabaseObject(userId);
+   }
    public DatabaseUserUtil(Long userId) {
       this.dbu = getDatabaseObject(userId);
    }
 
-   public static DatabaseUser getUser(Long userId) {
-      return getDatabaseObject(userId);
-   }
 
    /**
     * Adds the provided amount of tokens to the existing amount for the {@link DatabaseUser}
@@ -70,6 +70,13 @@ public class DatabaseUserUtil {
       return newLevel;
    }
 
+   /**
+    *
+    * @param guildId
+    * @param userId
+    * @param xpGain
+    * @return the {@code DatabaseUser}'s new XP balance.
+    */
    public static Integer addXp(Long guildId, Long userId, Integer xpGain) {
       DatabaseUser dbu = getDatabaseObject(userId);
       Integer currentXp = dbu.getXpMap().get(guildId) == null ? 0 : dbu.getXpMap().get(guildId);

@@ -44,8 +44,9 @@ public class GroupGamesCommand extends Command {
 
    @Override
    protected void execute(final CommandEvent event) {
+      Guild guild = event.getGuild();
       String[] args = event.getMessage().getContentDisplay().split("\\s", 2);
-      GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild().getIdLong());
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
 
       eb = new EmbedBuilder()
           .setTitle("Game Grouping")
@@ -59,7 +60,11 @@ public class GroupGamesCommand extends Command {
             case "refresh":
             case "update":
             case "check":
-               update(event);
+               try {
+                  update(event);
+               } catch (Exception e) {
+                  event.reply("Cannot modify roles of a higher rank.");
+               }
                return;
             case "toggle":
                toggle(event, !gi.isGroupingGames());
@@ -85,20 +90,21 @@ public class GroupGamesCommand extends Command {
    }
 
    private void toggle(CommandEvent event, Boolean enable) {
-      GuildController gc = event.getGuild().getController();
-      GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild().getIdLong());
-      List<Member> members = event.getGuild().getMembers();
+      Guild guild = event.getGuild();
+      GuildController gc = guild.getController();
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
+      List<Member> members = guild.getMembers();
       Collection<String> roleNames = gi.getGameGroupMappings().values();
       Collection<Role> roles = new ArrayList<>();
 
       for (String roleName : roleNames) {
-         roles.add(event.getGuild().getRolesByName(roleName, false).get(0));
+         roles.add(guild.getRolesByName(roleName, false).get(0));
       }
 
       //Handle
       if (!enable) {
          //Disable
-         GuildInfoUtil.disableGameGrouping(event.getGuild().getIdLong());
+         GuildInfoUtil.disableGameGrouping(guild);
 
          //Remove from roles.
          for (Member member : members) {
@@ -107,7 +113,7 @@ public class GroupGamesCommand extends Command {
 
          //Log
          logger.info(String.format("[%s] Game Grouping Disabled by %s.",
-             event.getGuild(),
+             guild,
              event.getAuthor().getName()));
 
          //Prepare message.
@@ -116,19 +122,19 @@ public class GroupGamesCommand extends Command {
 
       } else {
          //Enable
-         GuildInfoUtil.enableGameGrouping(event.getGuild().getIdLong());
+         GuildInfoUtil.enableGameGrouping(guild);
 
          //Add to roles.
          for (Member member : members) {
             if (member.getGame() != null) {
-               GameGroupUtil.handleRoleAssignment(event, gi.getGameGroupMappings(),
+               GameGroupUtil.handleRoleAssignment(guild, gi.getGameGroupMappings(),
                    member.getGame().getName(), member);
             }
          }
 
          //Log
          logger.info(String.format("[%s] Game Grouping Enabled by %s.",
-             event.getGuild(),
+             guild,
              event.getAuthor().getName()));
 
          //Prepare message.
@@ -211,7 +217,7 @@ public class GroupGamesCommand extends Command {
    private void update(CommandEvent event) {
       Guild guild = event.getGuild();
       GuildController gc = guild.getController();
-      GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
       List<Member> members = guild.getMembers();
       Collection<String> roleNames = gi.getGameGroupMappings().values();
       Collection<Role> roles = new ArrayList<>();
@@ -269,8 +275,8 @@ public class GroupGamesCommand extends Command {
                }
 
                if (!next) {
-                  GameGroupUtil.handleRoleAssignment(event, gi.getGameGroupMappings(), game.getName(),
-                      member);
+                  GameGroupUtil.handleRoleAssignment(guild, gi.getGameGroupMappings(),
+                      game.getName(), member);
                }
             }
          }

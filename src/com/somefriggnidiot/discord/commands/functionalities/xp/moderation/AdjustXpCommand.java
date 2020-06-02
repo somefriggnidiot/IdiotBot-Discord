@@ -10,6 +10,10 @@ import net.dv8tion.jda.core.entities.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * {@link Command} used to modify the XP balance on a
+ * {@link com.somefriggnidiot.discord.data_access.models.DatabaseUser}.
+ */
 public class AdjustXpCommand extends Command {
 
    private final Logger logger = LoggerFactory.getLogger(AdjustXpCommand.class);

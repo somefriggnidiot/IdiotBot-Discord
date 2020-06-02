@@ -17,9 +17,11 @@ public class GuildInfo {
    private final Long guildId;
    private Boolean groupMappingsActive;
    private Boolean messageXpActive;
+   private Boolean luckBonusActive;
 
    /**
-    * Key = Game as displayed on Discord Value = Name of group/role associated with game.
+    * Key = Game as displayed on Discord<br />
+    * Value = Name of group/role associated with game.
     */
    private HashMap<String, String> gameGroupMappings;
    private Boolean levelRolesActive;
@@ -36,6 +38,7 @@ public class GuildInfo {
       this.guildId = guildId;
       this.groupMappingsActive = false;
       this.messageXpActive = false;
+      this.luckBonusActive = false;
       this.gameGroupMappings = new HashMap<>();
       this.levelRolesActive = false;
       this.roleLevelMappings = new HashMap<>();
@@ -94,6 +97,14 @@ public class GuildInfo {
 
    public void setGrantingMessageXp(Boolean messageXpActive) {
       this.messageXpActive = messageXpActive;
+   }
+
+   public Boolean luckBonusActive() {
+      return luckBonusActive == null ? false : luckBonusActive;
+   }
+
+   public void setLuckBonusActive(Boolean luckBonusActive) {
+      this.luckBonusActive = luckBonusActive;
    }
 
    public Boolean getLevelRolesActive() {

@@ -20,23 +20,27 @@ import com.somefriggnidiot.discord.commands.functionalities.raffle.ListRafflesCo
 import com.somefriggnidiot.discord.commands.functionalities.tokens.AdjustTokensCommand;
 import com.somefriggnidiot.discord.commands.functionalities.tokens.ResetAllTokensCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.AdjustXpCommand;
-import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.AddRoleLevelCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.ClearXpCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.SetVoiceSpecialCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.ToggleLuckBonusCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.ToggleXpGainCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.AddRoleLevelCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.RemoveRoleLevelCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.ShowXpCommand;
-import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.SetVoiceSpecialCommand;
-import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.ToggleXpGainCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.XpLeaderboardCommand;
 import com.somefriggnidiot.discord.commands.moderation.AddAllUsersToRoleCommand;
 import com.somefriggnidiot.discord.commands.moderation.GetWarningsCommand;
 import com.somefriggnidiot.discord.commands.moderation.RemoveAllUsersFromRoleCommand;
 import com.somefriggnidiot.discord.commands.moderation.SoftBanCommand;
+import com.somefriggnidiot.discord.commands.moderation.TagLogCommand;
 import com.somefriggnidiot.discord.commands.moderation.WarningCommand;
+import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.GuildMemberListener;
 import com.somefriggnidiot.discord.events.GuildVoiceListener;
 import com.somefriggnidiot.discord.events.MessageListener;
 import com.somefriggnidiot.discord.events.UserUpdateGameListener;
+import com.somefriggnidiot.discord.util.GameGroupUtil;
 import com.somefriggnidiot.discord.util.VoiceXpUtil;
 import java.net.URL;
 import java.util.List;
@@ -61,7 +65,7 @@ public class Main {
 
       try {
          CommandClientBuilder client = new CommandClientBuilder()
-             .setGame(Game.playing("quidditch."))
+             .setGame(Game.playing("Bot-it League"))
              .setOwnerId(args[1])
              .setPrefix("!")
              .setHelpWord("help")
@@ -94,7 +98,8 @@ public class Main {
                  new AdjustXpCommand(),
                  new ClearXpCommand(),
                  new SetVoiceSpecialCommand(),
-                 new ToggleXpGainCommand()
+                 new ToggleXpGainCommand(),
+                 new ToggleLuckBonusCommand()
               )
              .addCommands( //XP - Role Levels
                  new AddRoleLevelCommand(),
@@ -109,6 +114,7 @@ public class Main {
                  new GetWarningsCommand(),
                  new RemoveAllUsersFromRoleCommand(),
                  new WarningCommand(),
+                 new TagLogCommand(),
                  new SoftBanCommand()
              )
 //             .addCommand(new KarmaCommand())
@@ -151,11 +157,20 @@ public class Main {
              users,
              jda.getUsers().size() - users));
 
+         //Start up Guilds
          for (Guild guild : jda.getGuilds()) {
-            if (GuildInfoUtil.getGuildInfo(guild.getIdLong()).isGrantingMessageXp()) {
+            GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
+
+            if (gi.isGrantingMessageXp()) {
                VoiceXpUtil.startTimer(guild.getIdLong());
                logger.info(String.format("[%s] Started voice XP timer.",
                    guild));
+            }
+
+            if (gi.isGroupingGames()) {
+               logger.info(String.format("[%s] Started Game Groups tracking. Refreshing role "
+                   + "assignments.", guild));
+               GameGroupUtil.refreshGameGroups(guild);
             }
          }
       } catch (LoginException e) {

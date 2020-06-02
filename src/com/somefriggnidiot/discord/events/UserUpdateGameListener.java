@@ -60,13 +60,15 @@ public class UserUpdateGameListener extends ListenerAdapter {
       Role role = null;
       try {
          role = event.getGuild().getRolesByName(groupName, false).get(0);
+
+         if (role == null) {
+            logger.warn(String.format("[%s] No GameGroup set for \"%s\"", event.getGuild(),
+                groupName));
+            return;
+         }
       } catch (IndexOutOfBoundsException e) {
          logger.debug(String.format("%s does not have a role matching %s", event.getGuild()
              .getName(), groupName));
-      }
-      if (role == null) {
-         logger.warn(String.format("[%s] Role not found for \"%s\"", event.getGuild(), groupName));
-         return;
       }
 
       // Do the actual role shit.
@@ -105,67 +107,72 @@ public class UserUpdateGameListener extends ListenerAdapter {
       }
 
       //Check for old role.
-      Role oldRole = null;
+      Role oldRole;
       try {
          oldRole = event.getGuild().getRolesByName(oldGameName, false).get(0);
+
+         if (oldRole == null) {
+            logger
+                .warn(String.format("[%s] Role not found for previous game: \"%s\"",
+                    event.getGuild(),
+                    oldGameName));
+            return;
+         } else {
+            //Log it
+            logger.info(String.format("[%s] %s has stopped playing %s.",
+                event.getGuild(),
+                event.getMember().getEffectiveName(),
+                event.getOldGame().getName()));
+
+            //Revoke role
+            try {
+               event.getGuild().getController()
+                   .removeSingleRoleFromMember(event.getMember(), oldRole)
+                   .queue();
+            } catch (Exception e) {
+               logger.warn(String.format("[%s] Role has gone missing: %s",
+                   event.getGuild(),
+                   oldRole));
+            }
+         }
       } catch (IndexOutOfBoundsException e) {
          logger
              .debug(String.format("[%s] Previous game not present: \"%s\"",
                  event.getGuild(),
                  oldGameName));
       }
-      if (oldRole == null) {
-         logger
-             .warn(String.format("[%s] Role not found for previous game: \"%s\"",
-                 event.getGuild(),
-                 oldGameName));
-         return;
-      } else {
-         //Log it
-         logger.info(String.format("[%s] %s has stopped playing %s.",
-             event.getGuild(),
-             event.getMember().getEffectiveName(),
-             event.getOldGame().getName()));
 
-         //Revoke role
-         try {
-            event.getGuild().getController().removeSingleRoleFromMember(event.getMember(), oldRole)
-                .queue();
-         } catch (Exception e) {
-            logger.warn(String.format("[%s] Role not found for \"%s\"",
-                event.getGuild(),
-                oldRole));
-         }
-      }
-
-      Role newRole = null;
+      Role newRole;
       try {
          newRole = event.getGuild().getRolesByName(newGameName, false).get(0);
-      } catch (IndexOutOfBoundsException e) {
-         logger
-             .debug(String.format("[%s] New game not present: \"%s\"",
-                 event.getGuild(),
-                 newGameName));
-      }
-      if (newRole == null) {
-         logger
-             .warn(String.format("[%s] Role not found for new game: \"%s\"",
-                 event.getGuild(),
-                 newGameName));
-      } else {
-         //Log it
-         logger.info(String.format("[%s] %s has started playing %s.",
-             event.getGuild(),
-             event.getMember().getEffectiveName(),
-             event.getNewGame().getName()));
 
-         //Assign role
-         try {
-            event.getGuild().getController().addSingleRoleToMember(event.getMember(), newRole)
-                .queue();
-         } catch (Exception e) {
-            logger.warn(String.format("[%s] Role not found for \"%s\"", event.getGuild(), newRole));
+         if (newRole == null) {
+            logger
+                .info(String.format("[%s] Game Group not found for new role: \"%s\"",
+                    event.getGuild(),
+                    newGameName));
+         } else {
+            //Log it
+            logger.info(String.format("[%s] %s has started playing %s.",
+                event.getGuild(),
+                event.getMember().getEffectiveName(),
+                event.getNewGame().getName()));
+
+            //Assign role
+            try {
+               event.getGuild().getController().addSingleRoleToMember(event.getMember(), newRole)
+                   .queue();
+            } catch (Exception e) {
+               logger.warn(String.format("[%s] Role has gone missing: %s", event
+                   .getGuild(), newRole));
+               logger.error(event.toString(), e);
+            }
          }
+      } catch (IndexOutOfBoundsException e) { //No role found for new game.
+         logger
+             .info(String.format("[%s] New game not present: \"%s\"",
+                 event.getGuild(),
+                 newGameName));
       }
    }
 }

@@ -5,6 +5,9 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Listener class for {@code GuildMember} events.
+ */
 public class GuildMemberListener extends ListenerAdapter {
 
    private final Logger logger = LoggerFactory.getLogger(MessageListener.class);
@@ -13,6 +16,34 @@ public class GuildMemberListener extends ListenerAdapter {
 
    @Override
    public void onGuildMemberNickChange(GuildMemberNickChangeEvent event) {
+
+      logNicknameChange(event);
+      resetBannedName(event);
+   }
+
+   /**
+    * Resets a the nickname of a {@link net.dv8tion.jda.core.entities.User} if their new nickname
+    * contains a banned word.
+    *
+    * @param event the {@link GuildMemberNickChangeEvent} including the {@code User} being scanned.
+    */
+   private void resetBannedName(GuildMemberNickChangeEvent event) {
+      String newName = event.getNewNick() == null ? event.getMember().getEffectiveName() :
+          event.getNewNick();
+
+      for (String bannedSegment : bannedNames) {
+         if (newName.contains(bannedSegment)) {
+            event.getGuild().getController().setNickname(event.getMember(), null).queue();
+         }
+      }
+   }
+
+   /**
+    * Logs the {@link GuildMemberNickChangeEvent} details to the console and log file.
+    *
+    * @param event {@link GuildMemberNickChangeEvent} being logged.
+    */
+   private void logNicknameChange(GuildMemberNickChangeEvent event) {
       String oldName = event.getPrevNick() == null ? event.getMember().getUser().getName() :
           event.getPrevNick();
       String newName = event.getNewNick() == null ? event.getMember().getEffectiveName() :
@@ -22,11 +53,5 @@ public class GuildMemberListener extends ListenerAdapter {
           event.getGuild(),
           oldName,
           newName));
-
-      for (String bannedSegment : bannedNames) {
-         if (newName.contains(bannedSegment)) {
-            event.getGuild().getController().setNickname(event.getMember(), null).queue();
-         }
-      }
    }
 }
