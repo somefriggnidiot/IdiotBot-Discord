@@ -5,8 +5,9 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
 import com.somefriggnidiot.discord.util.HighscoreObject;
-import com.somefriggnidiot.discord.util.XpUtil;
-import java.text.DecimalFormat;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -15,20 +16,15 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class XpLeaderboardCommand extends Command {
+public class LatestXpLeaderboardCommand extends Command {
 
-   public XpLeaderboardCommand() {
-      this.name = "leaderboard";
-      this.aliases = new String[]{"xpleaderboard", "top"};
-      this.arguments = "(count)";
+   public LatestXpLeaderboardCommand() {
+      this.name = "latest";
+      this.aliases = new String[]{"latest-top", "recent"};
       this.category = new Category("Xp Info");
-      this.help = "Displays the top XP earners in this guild. Defaults to 10 records, but can be "
-          + "overridden.";
-      this.botPermissions = new Permission[]{Permission.MESSAGE_READ,
-         Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
+      this.help = "Displays the top XP earners in this guild who have earned XP in the past week..";
+      this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE, Permission.MESSAGE_READ};
       this.guildOnly = true;
       this.cooldown = 1;
       this.cooldownScope = CooldownScope.USER;
@@ -43,9 +39,6 @@ public class XpLeaderboardCommand extends Command {
              .getContentDisplay().split("\\s", 2)[1]);
       } catch (IndexOutOfBoundsException ex) {
          count = 10;
-      } catch (NumberFormatException nf) {
-         event.reply("Invalid request. Arguments must be positive integer.");
-         return;
       }
 
       Guild guild = event.getGuild();
@@ -65,10 +58,13 @@ public class XpLeaderboardCommand extends Command {
          highScoreObjects.add(new HighscoreObject(dbu, xp, dbu.getLatestGain()));
       }
 
-      //Sort the scores.
-      List<HighscoreObject> sortedScores;
-      sortedScores = highScoreObjects.stream()
-          .sorted(Comparator.comparing(HighscoreObject::getXp).reversed())
+      highScoreObjects = highScoreObjects.stream()
+          .filter(e -> e.getLastGain()
+              .after(Timestamp.valueOf(LocalDateTime.now().minusDays(7))))
+          .collect(Collectors.toList());
+
+      List<HighscoreObject> sortedScores = highScoreObjects.stream()
+          .sorted(Comparator.comparing(HighscoreObject::getLastGain).reversed())
           .filter(e -> e.getXp() > 0)
           .collect(Collectors.toList());
 
@@ -76,14 +72,14 @@ public class XpLeaderboardCommand extends Command {
       int index = (count - 10) < 0 ? 0 : (count - 10); //Set start index to 10 before top, or 0.
       int rank = (count - 10) < 0 ? 1 : (count - 9);
       int startRank = rank;
+      SimpleDateFormat format = new SimpleDateFormat("EEE, MMM d, hh:mm a");
 
       while (index < count) {
          try {
-            top += String.format("**%s. %s** - Level %s - %s XP\n",
+            top += String.format("**%s. %s** - %s\n",
                 rank++,
                 guild.getMemberById(sortedScores.get(index).getUser().getId()).getEffectiveName(),
-                XpUtil.getLevelForXp(sortedScores.get(index).getXp()),
-                new DecimalFormat("###,###").format(sortedScores.get(index).getXp()));
+                format.format(sortedScores.get(index).getLastGain()));
             index++;
          } catch (IndexOutOfBoundsException e) {
             rank--;
@@ -92,7 +88,7 @@ public class XpLeaderboardCommand extends Command {
       }
 
       EmbedBuilder eb = new EmbedBuilder()
-          .setTitle(String.format("XP Leaderboard - %s to %s - %s",
+          .setTitle(String.format("Latest XP Grinders - %s to %s - %s",
               startRank,
               rank - 1,
               guild.getName()))
@@ -100,6 +96,5 @@ public class XpLeaderboardCommand extends Command {
 
       event.getChannel().sendMessage(eb.build()).queue();
    }
-
 
 }

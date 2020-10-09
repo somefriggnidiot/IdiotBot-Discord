@@ -6,6 +6,7 @@ import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.util.XpUtil;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import javax.persistence.EntityManager;
 
 public class DatabaseUserUtil {
@@ -84,7 +85,8 @@ public class DatabaseUserUtil {
 
       em.getTransaction().begin();
       dbu.updateXp(guildId, newXp);
-      dbu.setLastMessageDtTm(Timestamp.from(Instant.now()));
+      dbu.setLastMessageDtTm(Timestamp.valueOf(LocalDateTime.now()));
+      dbu.setLatestGain(Timestamp.valueOf(LocalDateTime.now()));
       em.persist(dbu);
       em.getTransaction().commit();
 
@@ -96,7 +98,8 @@ public class DatabaseUserUtil {
 
       em.getTransaction().begin();
       dbu.updateXp(guildId, xpValue);
-      dbu.setLastMessageDtTm(Timestamp.from(Instant.now()));
+      dbu.setLastMessageDtTm(Timestamp.valueOf(LocalDateTime.now()));
+      dbu.setLatestGain(Timestamp.valueOf(LocalDateTime.now()));
       em.persist(dbu);
       em.getTransaction().commit();
    }

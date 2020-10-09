@@ -44,7 +44,8 @@ public class ListRafflesCommand extends Command {
 
       for (RaffleObject raffle : raffles) {
          String tokenPlural = raffle.getTicketCost() > 1 ? "tokens" : "token";
-         String raffleListing = format("**%s**: %s", raffle.getId(), raffle.getRaffleName());
+         String raffleListing = format("**(ID %s)** Name: %s", raffle.getId(), raffle
+             .getRaffleName());
          String raffleDetails = format("**Ticket Cost:** %s %s\n"
              + "**Max Tickets:** %s per user",
              raffle.getTicketCost(),

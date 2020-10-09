@@ -3,6 +3,8 @@ package com.somefriggnidiot.discord.events;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.util.MessageListenerUtil;
+import java.util.ArrayList;
+import java.util.List;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
@@ -30,8 +32,9 @@ public class MessageListener extends ListenerAdapter {
       MessageChannel channel = event.getChannel();
       String msg = event.getMessage().getContentDisplay();
 
-      handleXp(event, msg);
       logEvent(event, author, channel, msg);
+      handleXp(event, msg);
+      handleBotChannel(event.getGuild().getIdLong(), author, event.getMessage());
    }
 
    /**
@@ -46,7 +49,7 @@ public class MessageListener extends ListenerAdapter {
 
       Boolean isGrantingXp;
 
-      if (gi != null || gi.isGrantingMessageXp() == null) {
+      if (gi == null || gi.isGrantingMessageXp() == null) {
          isGrantingXp = false;
       } else {
          isGrantingXp = gi.isGrantingMessageXp();
@@ -89,34 +92,42 @@ public class MessageListener extends ListenerAdapter {
       }
    }
 
-   private void bridgeToGuilded(final String webhooUrl, final Message message) {
-      CloseableHttpClient httpClient = HttpClients.createDefault();
-      HttpPost request = new HttpPost(webhooUrl);
-      JSONObject payload = new JSONObject();
-      request.addHeader("content-type", "application/json");
+   /**
+    * Deprecated. This shouldn't even exist in the first place.
+    *
+    * Method specific to Celestial Brothers guild, deletes any messages in the bot channel not
+    * preceeded with specified known bot prefixes.
+    *
+    * @param guildId the ID of the guild within which a message was sent.
+    * @param author the User object of the sender of the message.
+    * @param message the Message which was sent.
+    */
+   @Deprecated
+   private void handleBotChannel(final Long guildId, final User author, final Message message) {
+      List<String> allowedPrefixes = new ArrayList<>();
+      List<Long> moderatedChannelIds = new ArrayList<>();
 
-      //Add author and any plaintext message to payload.
-      String template = "%s: %s";
-      String author = message.getGuild().getMember(message.getAuthor()).getEffectiveName();
-      String payloadContent = String.format(template, author, message.getContentDisplay());
+      //TODO Finish BotModeEntry model / BotModeUtil / BotModeCommand and make this flexible.
+      moderatedChannelIds.add(728748254275305482L);
 
-      payload.put("content", payloadContent);
+      if (guildId == 217175952701128714L && !author.isBot()) {
+         if (moderatedChannelIds.contains(message.getChannel().getIdLong())) {
+            allowedPrefixes.add(".rs ");
+            allowedPrefixes.add(".pc ");
 
-      //Add any embeds to the message.
-      if(message.getEmbeds().size() > 0) {
-         JSONArray embedArray = new JSONArray();
-         message.getEmbeds().forEach(e -> embedArray.put(e.toJSONObject()));
-         payload.put("embeds", new JSONArray());
-      }
+            Boolean allowed = false;
 
-      try {
-         request.setEntity(new StringEntity(payload.toString()));
-         HttpResponse response = httpClient.execute(request);
-         httpClient.close();
+            for(String prefix : allowedPrefixes) {
+               if (message.getContentRaw().startsWith(prefix)) {
+                  allowed = true;
+               }
+            }
 
-         logger.info(response.toString());
-      } catch (Exception e) {
-         logger.warn("Error when trying to bridge to Guilded", e);
+            if (!allowed) {
+               message.delete().queue();
+            }
+         }
       }
    }
+
 }

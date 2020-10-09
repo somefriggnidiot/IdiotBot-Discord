@@ -142,7 +142,7 @@ public class XpUtil {
       }
 
       level--;
-      return level;
+      return level <= 0 ? 0 : level;
    }
 
    /**

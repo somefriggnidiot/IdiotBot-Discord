@@ -5,16 +5,14 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
 import com.somefriggnidiot.discord.util.XpUtil;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.User;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ProfileCommand extends Command {
-
-   private EmbedBuilder eb;
 
    public ProfileCommand() {
       this.name = "profile";
@@ -30,6 +28,7 @@ public class ProfileCommand extends Command {
 
    @Override
    protected void execute(final CommandEvent event) {
+      EmbedBuilder eb;
       DatabaseUser dbu;
       String level;
       Integer xp;
@@ -37,8 +36,10 @@ public class ProfileCommand extends Command {
       Integer tokens;
       Integer guildRank;
       Integer guildRanks;
+      Timestamp created;
+      Timestamp lastXpGain;
       DecimalFormat df = new DecimalFormat("###,###");
-
+      SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, hh:mm a");
 
       if (event.getMessage().getMentionedUsers().size() == 0) {
          dbu = DatabaseUserUtil.getUser(event.getAuthor().getIdLong());
@@ -51,6 +52,9 @@ public class ProfileCommand extends Command {
              .getTokenMap().get(event.getGuild().getIdLong());
          guildRank = XpUtil.getGuildRank(event.getGuild(), event.getAuthor());
          guildRanks = XpUtil.getGuildLeaderboardSize(event.getGuild());
+         created = Timestamp.valueOf(event.getGuild().getMember(event.getAuthor())
+             .getJoinDate().toLocalDateTime());
+         lastXpGain = dbu.getLatestGain();
 
          eb = new EmbedBuilder()
              .setTitle(String.format("%s - %s",
@@ -64,7 +68,9 @@ public class ProfileCommand extends Command {
              .addField("Rank", String.format("%s of %s", guildRank, guildRanks), true)
              .addField("Progress to Next Level",
                  String.format("%s / %s XP", df.format(xp), df.format(nextXp)), true)
-             .addField("Tokens", tokens.toString(), true);
+             .addField("Tokens", tokens.toString(), true)
+             .addField("Joined", dateFormat.format(created), true)
+             .addField("Last Active", dateFormat.format(lastXpGain), true);
 
          event.getChannel().sendMessage(eb.build()).queue();
       } else {
@@ -79,6 +85,9 @@ public class ProfileCommand extends Command {
              .getTokenMap().get(event.getGuild().getIdLong());
          guildRank = XpUtil.getGuildRank(event.getGuild(), user);
          guildRanks = XpUtil.getGuildLeaderboardSize(event.getGuild());
+         created = Timestamp.valueOf(event.getGuild().getMember(user).getJoinDate()
+             .toLocalDateTime());
+         lastXpGain = dbu.getLatestGain();
 
          eb = new EmbedBuilder()
              .setTitle(String.format("%s - %s",
@@ -92,7 +101,9 @@ public class ProfileCommand extends Command {
              .addField("Rank", String.format("%s of %s", guildRank, guildRanks), true)
              .addField("Progress to Next Level",
                  String.format("%s / %s XP", df.format(xp), df.format(nextXp)), true)
-             .addField("Tokens", tokens.toString(), true);
+             .addField("Tokens", tokens.toString(), true)
+             .addField("Joined", dateFormat.format(created), true)
+             .addField("Last Active", dateFormat.format(lastXpGain), true);;
 
          event.getChannel().sendMessage(eb.build()).queue();
       }

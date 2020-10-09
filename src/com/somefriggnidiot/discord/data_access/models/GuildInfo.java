@@ -18,7 +18,6 @@ public class GuildInfo {
    private Boolean groupMappingsActive;
    private Boolean messageXpActive;
    private Boolean luckBonusActive;
-
    /**
     * Key = Game as displayed on Discord<br />
     * Value = Name of group/role associated with game.
@@ -28,6 +27,7 @@ public class GuildInfo {
    private HashMap<Long, Integer> roleLevelMappings;
    private double voiceXpMultiplier;
    private List<Long> raffleIds;
+   private List<Long> botModeEntryIds;
 
    /**
     * Initializes a new GuildInfo object denoted by the given Discord Guild ID.
@@ -44,6 +44,7 @@ public class GuildInfo {
       this.roleLevelMappings = new HashMap<>();
       this.voiceXpMultiplier = 0.0;
       this.raffleIds = new ArrayList<>();
+      this.botModeEntryIds = new ArrayList<>();
    }
 
    /**
@@ -112,14 +113,6 @@ public class GuildInfo {
       return levelRolesActive;
    }
 
-   public void setLevelRolesActive(Boolean isActive) {
-      this.levelRolesActive = isActive;
-   }
-
-   public void setRoleLevelMappings(HashMap<Long, Integer> roleLevelMappings) {
-      this.roleLevelMappings = roleLevelMappings;
-   }
-
    public HashMap<Long, Integer> getRoleLevelMappings() {
       return roleLevelMappings == null ? new HashMap<>() : roleLevelMappings;
    }
@@ -148,6 +141,14 @@ public class GuildInfo {
 
    public void setRaffleIds(List<Long> raffleIds) {
       this.raffleIds = raffleIds;
+   }
+
+   public List<Long> getBotModeEntryIds() {
+      return botModeEntryIds;
+   }
+
+   public void setBotModeEntryIds(List<Long> botModeEntryIds) {
+      this.botModeEntryIds = botModeEntryIds;
    }
 
    @Override

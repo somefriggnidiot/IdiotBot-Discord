@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
@@ -17,6 +18,9 @@ import net.dv8tion.jda.core.managers.GuildController;
 import net.dv8tion.jda.core.managers.GuildManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+//TODO Refactor GameGroups to create roles and auto-group for any game with 2+ players or allow
+// forced role creation.
 
 /**
  * Various helper functions for GameGroups. <br />
@@ -78,6 +82,37 @@ public class GameGroupUtil {
       }
    }
 
+   public static void removeAllUserRoles(Guild guild) {
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
+      GuildController gc = guild.getController();
+      Collection<String> roleNames = gi.getGameGroupMappings().values();
+      Collection<Role> roles = new ArrayList<>();
+      /**
+       * List of all members across the guild who currently
+       * belong to one of the GameGroup roles.
+       */
+      List<Member> members = guild.getMembers().stream().filter(
+          member -> member.getRoles().stream().filter(
+              role -> roleNames.contains(
+                  role.getName())).collect(Collectors.toList())
+              .size() > 0)
+          .collect(Collectors.toList());
+
+      for (String roleName : roleNames) {
+         roles.add(guild.getRolesByName(roleName, false).get(0));
+      }
+
+      if (!roles.isEmpty()) {
+         List<String> removedRoleNames = new ArrayList<>();
+         roles.forEach(role -> removedRoleNames.add(role.getName()));
+         for (Member member : members) {
+            gc.removeRolesFromMember(member, roles).queue();
+            logger.info(String.format("[%s] Removed %s from the following roles: %s", guild, member
+                .getEffectiveName(), roles.toString()));
+         }
+      }
+
+   }
    /**
     * Scans a mapping of game display names (key) and role names to determine if a {@link Game}
     * has a valid GameGroup mapping.

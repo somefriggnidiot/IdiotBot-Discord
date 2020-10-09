@@ -1,6 +1,8 @@
 package com.somefriggnidiot.discord.data_access.models;
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +23,8 @@ public class DatabaseUser {
    private HashMap<Long, Integer> levelMap;
    private HashMap<Long, Integer> tokenMap;
    private Timestamp lastMessageDtTm;
+   private Timestamp created;
+   private Timestamp latestGain;
 
    public DatabaseUser(Long userId) {
       this.userId = userId;
@@ -29,6 +33,7 @@ public class DatabaseUser {
       this.xpMap = new HashMap<>();
       this.levelMap = new HashMap<>();
       this.tokenMap = new HashMap<>();
+      this.created = Timestamp.valueOf(LocalDateTime.now());
    }
 
    public Long getId() {
@@ -132,10 +137,24 @@ public class DatabaseUser {
 
    public void setLastMessageDtTm(Timestamp lastMessageDtTm) {
       this.lastMessageDtTm = lastMessageDtTm;
+      this.latestGain = lastMessageDtTm;
+   }
+
+   public void setLatestGain(Timestamp latestGain) {
+      this.latestGain = latestGain;
+   }
+
+   public Timestamp getLatestGain() {
+      return latestGain == null ? Timestamp.from(Instant.EPOCH) : latestGain;
    }
 
    public DatabaseUser withUpdatedDtTm(Timestamp updatedDtTm) {
       this.lastMessageDtTm = updatedDtTm;
       return this;
+   }
+
+   public Timestamp getCreated() {
+      created = created == null ? Timestamp.valueOf("") : created;
+      return created;
    }
 }

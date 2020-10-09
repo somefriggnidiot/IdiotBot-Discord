@@ -67,7 +67,7 @@ public class GuildInfoUtil {
       members.forEach(member -> dbus
           .add(DatabaseUserUtil.getUser(member.getUser().getIdLong())));
       dbus.forEach(dbu -> rankedList.add(new HighscoreObject(dbu, dbu.getXpMap().get(guild
-          .getIdLong()) == null ? 0 : dbu.getXpMap().get(guild.getIdLong()))));
+          .getIdLong()) == null ? 0 : dbu.getXpMap().get(guild.getIdLong()), dbu.getLatestGain())));
 
       return rankedList.stream()
           .sorted(Comparator.comparing(HighscoreObject::getXp).reversed())

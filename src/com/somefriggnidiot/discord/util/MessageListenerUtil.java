@@ -48,19 +48,23 @@ public class MessageListenerUtil {
          Boolean luckMultiplierActivated = XpUtil.luckMultiplierActivated();
          Double multiplier = luckMultiplierActivated ? XpUtil.getLuckMultiplier() : 1.0;
          Integer xpGain = calculateXpGain(event.getMessage().getContentDisplay(), multiplier);
-         Integer newXp = DatabaseUserUtil.addXp(event.getGuild().getIdLong(), userId, xpGain);
+         Integer playerLevel = DatabaseUserUtil.getUser(userId).getLevelMap()
+             .get(event.getGuild().getIdLong()) == null ? 0 : DatabaseUserUtil
+             .getUser(userId).getLevelMap().get(event.getGuild().getIdLong());
+         Integer newXp = DatabaseUserUtil.addXp(event.getGuild().getIdLong(), userId, xpGain +
+             playerLevel) - 5; //Throws NPR on playerLevel
 
          if (luckMultiplierActivated) {
-            String user = event.getGuild().getMember(event.getAuthor()).getEffectiveName();
+            String user = event.getGuild().getMember(event.getAuthor()).getNickname();
             String multStr = multiplier.toString();
             String xpGainStr = xpGain.toString();
-            String message = user + " has gotten a random XP multiplier of " + multStr + " for a "
-                + "drop of " + xpGainStr + " XP!";
+            String message = user + " has gotten a random XP multiplier of " + multStr + " for"
+                + " a drop of " + xpGainStr + " XP!";
             event.getGuild().getTextChannelsByName("bot-spam", true).get(0)
                 .sendMessage(message).queue();
          }
 
-         handleLogging(event, xpGain, newXp, dbu);
+         handleLogging(event, xpGain + playerLevel, newXp, dbu);
       }
    }
 
@@ -90,13 +94,13 @@ public class MessageListenerUtil {
     * @return the amount of XP gained based on the message size and contents.
     */
    private static Integer calculateXpGain(String messageContentDisplay, Double multiplier) {
-      //If message contains link or is embed.
+      //If message contains link or empty (image, embed, etc.).
       if (messageContentDisplay.contains("http")
           || messageContentDisplay.isEmpty()) {
          return 5;
       } else {
-         Integer baseXp = ThreadLocalRandom.current().nextInt(10, 31);
-         Integer lengthBonus = messageContentDisplay.length() / 20;
+         Integer baseXp = ThreadLocalRandom.current().nextInt(15, 31);
+         Integer lengthBonus = messageContentDisplay.length() / 25;
 
          Double totalGain = (baseXp + lengthBonus) * multiplier;
 
