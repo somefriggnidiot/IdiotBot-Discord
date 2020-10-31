@@ -1,5 +1,9 @@
 package com.somefriggnidiot.discord.events;
 
+import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
+import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
+import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
+import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberNickChangeEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;
@@ -21,6 +25,26 @@ public class GuildMemberListener extends ListenerAdapter {
       resetBannedName(event);
    }
 
+   @Override
+   public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
+      logger.info(String.format("[%s] %s has left the server.",
+          event.getGuild(),
+          event.getMember().getEffectiveName()));
+   }
+
+   @Override
+   public void onGuildMemberJoin(GuildMemberJoinEvent event) {
+      Long guildId = event.getGuild().getIdLong();
+      Long memberId = event.getMember().getUser().getIdLong();
+
+      DatabaseUserUtil.setXp(guildId, memberId, 0);
+      DatabaseUserUtil.getUser(memberId).updateLevel(guildId, 0);
+
+      logger.info(String.format("[%s] %s has joined the server.",
+          event.getGuild(),
+          event.getMember().getEffectiveName()));
+   }
+
    /**
     * Resets a the nickname of a {@link net.dv8tion.jda.core.entities.User} if their new nickname
     * contains a banned word.
@@ -32,7 +56,7 @@ public class GuildMemberListener extends ListenerAdapter {
           event.getNewNick();
 
       for (String bannedSegment : bannedNames) {
-         if (newName.contains(bannedSegment)) {
+         if (newName.toLowerCase().contains(bannedSegment)) {
             event.getGuild().getController().setNickname(event.getMember(), null).queue();
          }
       }

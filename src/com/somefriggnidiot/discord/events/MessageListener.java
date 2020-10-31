@@ -1,10 +1,13 @@
 package com.somefriggnidiot.discord.events;
 
+import com.somefriggnidiot.discord.data_access.models.BotModeEntry;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
+import com.somefriggnidiot.discord.util.BotModeUtil;
 import com.somefriggnidiot.discord.util.MessageListenerUtil;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
@@ -34,7 +37,7 @@ public class MessageListener extends ListenerAdapter {
 
       logEvent(event, author, channel, msg);
       handleXp(event, msg);
-      handleBotChannel(event.getGuild().getIdLong(), author, event.getMessage());
+      handleBotChannel(event);
    }
 
    /**
@@ -89,6 +92,36 @@ public class MessageListener extends ListenerAdapter {
              userName,
              channel.getName(),
              msg));
+      }
+   }
+
+   private void handleBotChannel(final MessageReceivedEvent event) {
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild());
+
+      //Exit if no BotMode entries.
+      if (gi.getBotModeEntryIds().size() > 0) {
+         //Retrieve list of entries for current channel.
+         List<BotModeEntry> bmes = gi.getBotModeEntryIds().stream()
+             .map(BotModeUtil::getBotModeEntry)
+             .filter(bme -> bme.getChannelId().equals(event.getChannel().getIdLong()))
+             .collect(Collectors.toList());
+
+         logger.info(bmes.toString());
+
+         List<String> allowedPrefixes = new ArrayList<>();
+         bmes.forEach(bme -> allowedPrefixes.add(bme.getCommandPrefix()));
+
+         Boolean allowed = false;
+
+         for (String prefix : allowedPrefixes) {
+            if (event.getMessage().getContentRaw().startsWith(prefix)) {
+               allowed = true;
+            }
+         }
+
+         if (!allowed) {
+            event.getMessage().delete().queue();
+         }
       }
    }
 

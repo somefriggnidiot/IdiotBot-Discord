@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 public class CreatePrivateChannelCommand extends Command {
 
-   private final Logger logger = LoggerFactory.getLogger(MessageListener.class);
+   private final Logger logger = LoggerFactory.getLogger(this.getClass());
    private final EventWaiter waiter;
 
    public CreatePrivateChannelCommand(EventWaiter waiter) {
@@ -70,13 +70,20 @@ public class CreatePrivateChannelCommand extends Command {
           name,
           channelOwner.getName()));
 
-      List<Permission> allowed = new ArrayList<>();
-      allowed.add(Permission.MANAGE_CHANNEL);
-      allowed.add(Permission.VOICE_CONNECT);
-      allowed.add(Permission.VOICE_SPEAK);
-      allowed.add(Permission.VIEW_CHANNEL);
+      List<Permission> vipAllowed = new ArrayList<>();
+      vipAllowed.add(Permission.MANAGE_CHANNEL);
+      vipAllowed.add(Permission.VOICE_CONNECT);
+      vipAllowed.add(Permission.VOICE_SPEAK);
+      vipAllowed.add(Permission.VIEW_CHANNEL);
+      vipAllowed.add(Permission.CREATE_INSTANT_INVITE);
+      vipAllowed.add(Permission.MANAGE_PERMISSIONS);
+      vipAllowed.add(Permission.VOICE_MUTE_OTHERS);
+      vipAllowed.add(Permission.VOICE_DEAF_OTHERS);
+      vipAllowed.add(Permission.VOICE_MOVE_OTHERS);
+      vipAllowed.add(Permission.VOICE_USE_VAD);
+      vipAllowed.add(Permission.PRIORITY_SPEAKER);
 
-      List<Permission> denied = new ArrayList<>();
+      List<Permission> emptyList = new ArrayList<>();
 
       List<Permission> allDenied = new ArrayList<>();
       allDenied.add(Permission.VOICE_CONNECT);
@@ -86,8 +93,8 @@ public class CreatePrivateChannelCommand extends Command {
       ChannelAction action =
           event.getGuild().getCategoriesByName("\uD83D\uDE0E VIP", true).get(0)
               .createVoiceChannel(name)
-              .addPermissionOverride(event.getGuild().getMember(channelOwner), allowed, denied)
-              .addPermissionOverride(event.getGuild().getPublicRole(), denied, allDenied)
+              .addPermissionOverride(event.getGuild().getMember(channelOwner), vipAllowed, emptyList)
+              .addPermissionOverride(event.getGuild().getPublicRole(), emptyList, allDenied)
               .setBitrate(64000);
 
       action.queue(channel -> {

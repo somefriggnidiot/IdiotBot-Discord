@@ -33,6 +33,7 @@ import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.LatestXpLe
 import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.ShowXpCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.XpLeaderboardCommand;
 import com.somefriggnidiot.discord.commands.moderation.AddAllUsersToRoleCommand;
+import com.somefriggnidiot.discord.commands.moderation.BotModeCommand;
 import com.somefriggnidiot.discord.commands.moderation.GetWarningsCommand;
 import com.somefriggnidiot.discord.commands.moderation.RemoveAllUsersFromRoleCommand;
 import com.somefriggnidiot.discord.commands.moderation.SoftBanCommand;
@@ -106,6 +107,7 @@ public class Main {
              )
              .addCommands( //XP - Moderation
                  new AdjustXpCommand(),
+                 new BotModeCommand(),
                  new ClearXpCommand(),
                  new SetVoiceSpecialCommand(),
                  new ToggleXpGainCommand(),
@@ -132,7 +134,7 @@ public class Main {
              .addCommand(new ProfileCommand())
              .addCommand(new StatusCommand());
 
-         jda = new JDABuilder(args[0])
+         jda = new JDABuilder()
              .addEventListener(new MessageListener())
              .addEventListener(new UserUpdateGameListener())
              .addEventListener(new GuildVoiceListener())
@@ -142,7 +144,7 @@ public class Main {
              .addEventListener(client.build())
              .build();
 
-         jda.awaitReady();
+         jda.awaitReady().awaitStatus();
 
          try {
             Icon icon = Icon.from(

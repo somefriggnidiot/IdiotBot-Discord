@@ -2,6 +2,7 @@ package com.somefriggnidiot.discord.commands.moderation;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import com.somefriggnidiot.discord.util.BotModeUtil;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import org.slf4j.Logger;
@@ -40,7 +41,10 @@ public class BotModeCommand extends Command {
       Guild guild = event.getGuild();
 
       if (actionArg.equalsIgnoreCase("on")) {
-         //TODO enable workflow
+         BotModeUtil.createBotModeEntry(guild.getIdLong(), event.getChannel().getIdLong(), prefix);
+         event.reply(String.format("BotMode has been enabled for this channel. Any messages sent "
+             + "to this channel not prefixed '%s' will be automatically deleted.",
+             prefix));
       } else if (actionArg.equalsIgnoreCase("off")) {
          //TODO disable workflow
       } else {

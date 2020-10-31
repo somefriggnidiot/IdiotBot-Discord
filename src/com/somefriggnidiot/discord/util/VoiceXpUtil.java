@@ -175,7 +175,7 @@ public class VoiceXpUtil {
                      if (member != null && (
                          member.getVoiceState() == null ||
                              !member.getVoiceState().inVoiceChannel())) {
-                        resetUserExecutionsDelayed(member.getUser(), 5);
+                        resetUserExecutionsDelayed(member.getUser(), 20);
                      }
                   }
                } catch (ConcurrentModificationException cme) {
@@ -288,7 +288,7 @@ public class VoiceXpUtil {
          } catch (Exception e) {
             logger.debug(format("[%s] %s is not in a game group role. Game: %s",
                 guild,
-                user.getName(),
+                guild.getMember(user).getEffectiveName(),
                 guild.getMember(user).getGame()));
          }
 
@@ -309,7 +309,7 @@ public class VoiceXpUtil {
              xpGained);
 
          if (luckMultActive) {
-            String multStr = multiplier.toString().substring(0, 6);
+            String multStr = multiplier.toString().substring(0, 4);
             String xpGainStr = String.valueOf(xpGained.doubleValue());
             String message = guild.getMemberById(user.getIdLong()).getEffectiveName() + " has gotten"
                 + " a random XP multiplier of " + multStr + " for a drop of " + xpGainStr + " XP!";
@@ -343,7 +343,7 @@ public class VoiceXpUtil {
          logger.info(format("[%s] %s gained %s xp for participating in voice. "
                  + "They're now at %s xp.",
              guild,
-             user.getName(),
+             guild.getMember(user).getEffectiveName(),
              xpGained,
              df.format(newXp)));
       }

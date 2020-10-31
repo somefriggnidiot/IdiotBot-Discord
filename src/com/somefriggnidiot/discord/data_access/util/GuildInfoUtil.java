@@ -3,9 +3,11 @@ package com.somefriggnidiot.discord.data_access.util;
 import com.somefriggnidiot.discord.core.Main;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector.Table;
+import com.somefriggnidiot.discord.data_access.models.BotModeEntry;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.util.HighscoreObject;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -87,6 +89,19 @@ public class GuildInfoUtil {
 
          em.getTransaction().begin();
          em.persist(getGuildInfo(guild.getIdLong()));
+         em.getTransaction().commit();
+      }
+   }
+
+   public void addBotModeEntryId(Instant bmeId) {
+      List<Instant> bmeIds = getGuildInfo(guild).getBotModeEntryIds();
+
+      if (!bmeIds.contains(bmeId)) {
+         bmeIds.add(bmeId);
+         getGuildInfo(guild).setBotModeEntryIds(bmeIds);
+
+         em.getTransaction().begin();
+         em.persist(getGuildInfo(guild));
          em.getTransaction().commit();
       }
    }

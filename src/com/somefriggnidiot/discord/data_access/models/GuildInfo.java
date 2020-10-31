@@ -1,5 +1,6 @@
 package com.somefriggnidiot.discord.data_access.models;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +28,7 @@ public class GuildInfo {
    private HashMap<Long, Integer> roleLevelMappings;
    private double voiceXpMultiplier;
    private List<Long> raffleIds;
-   private List<Long> botModeEntryIds;
+   private List<Instant> botModeEntryIds;
 
    /**
     * Initializes a new GuildInfo object denoted by the given Discord Guild ID.
@@ -143,11 +144,11 @@ public class GuildInfo {
       this.raffleIds = raffleIds;
    }
 
-   public List<Long> getBotModeEntryIds() {
-      return botModeEntryIds;
+   public List<Instant> getBotModeEntryIds() {
+      return botModeEntryIds == null ? new ArrayList<>() : botModeEntryIds;
    }
 
-   public void setBotModeEntryIds(List<Long> botModeEntryIds) {
+   public void setBotModeEntryIds(List<Instant> botModeEntryIds) {
       this.botModeEntryIds = botModeEntryIds;
    }
 
