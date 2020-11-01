@@ -12,15 +12,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Game;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.managers.GuildController;
-import net.dv8tion.jda.core.managers.GuildManager;
-import net.dv8tion.jda.core.requests.restaction.RoleAction;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.requests.restaction.RoleAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,7 +95,6 @@ public class GroupGamesCommand extends Command {
 
    private void toggle(CommandEvent event, Boolean enable) {
       Guild guild = event.getGuild();
-      GuildController gc = guild.getController();
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
       List<Member> members = guild.getMembers();
       Collection<String> roleNames = gi.getGameGroupMappings().values();
@@ -114,7 +111,7 @@ public class GroupGamesCommand extends Command {
 
          //Remove from roles.
          for (Member member : members) {
-            gc.removeRolesFromMember(member, roles).queue();
+            roles.forEach(r -> guild.removeRoleFromMember(member, r).queue());
          }
 
          //Log
@@ -132,9 +129,9 @@ public class GroupGamesCommand extends Command {
 
          //Add to roles.
          for (Member member : members) {
-            if (member.getGame() != null) {
+            if (member.getActivities().size() > 0) {
                GameGroupUtil.handleRoleAssignment(guild, gi.getGameGroupMappings(),
-                   member.getGame().getName(), member);
+                   member.getActivities().get(0).getName(), member);
             }
          }
 
@@ -222,7 +219,6 @@ public class GroupGamesCommand extends Command {
 
    private void update(CommandEvent event) {
       Guild guild = event.getGuild();
-      GuildController gc = guild.getController();
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
       List<Member> members = guild.getMembers();
       Collection<String> roleNames = gi.getGameGroupMappings().values();
@@ -238,11 +234,12 @@ public class GroupGamesCommand extends Command {
             logger.trace(String.format("[%s] Member: %s\nGame: %s",
                 guild,
                 member.toString(),
-                member.getGame()));
-            Game game = member.getGame();
+                member.getActivities().get(0)));
+            Activity game = member.getActivities().get(0);
 
             if(game == null || game.getName().isEmpty()) { //If not playing game
-               gc.removeRolesFromMember(member, roles).queue(); //Remove game roles.
+               roles.forEach(r -> guild.removeRoleFromMember(member, r).queue()); //Remove game
+               // roles.
                logger.debug(String.format("[%s] %s is not playing any game, removing all game "
                    + "roles.",
                    guild,
@@ -262,7 +259,7 @@ public class GroupGamesCommand extends Command {
                             member.getEffectiveName()));
                      } else {
                         if (GameGroupUtil.isValidGame(gi.getGameGroupMappings(), game.getName())) {
-                           gc.addSingleRoleToMember(member, GameGroupUtil.getGameRole(guild, game))
+                           guild.addRoleToMember(member, GameGroupUtil.getGameRole(guild, game))
                                .queue();
                            logger.info(String.format("[%s] Removing %s from existing game roles and "
                                    + "adding to %s.",
@@ -270,7 +267,7 @@ public class GroupGamesCommand extends Command {
                                member.getEffectiveName(),
                                GameGroupUtil.getGameRole(guild, game)));
                         } else {
-                           gc.removeRolesFromMember(member, roles).queue();
+                           roles.forEach(r -> guild.removeRoleFromMember(member, r).queue());
                            logger.info(String.format("[%s] Removing %s from existing game roles.",
                                guild,
                                member.getEffectiveName()));
@@ -292,7 +289,7 @@ public class GroupGamesCommand extends Command {
              + "grouping enabled. Removing all game roles from members.",
              guild));
          for (Member member : members) {
-            gc.removeRolesFromMember(member, roles);
+            roles.forEach(r -> guild.removeRoleFromMember(member, r).queue());
          }
       }
    }
@@ -302,7 +299,7 @@ public class GroupGamesCommand extends Command {
 
       //Create group for game.
       Guild guild = event.getGuild();
-      RoleAction role = guild.getController().createRole();
+      RoleAction role = guild.createRole();
       role.setName(gameName)
           .setMentionable(false)
           .setHoisted(true)
@@ -312,7 +309,7 @@ public class GroupGamesCommand extends Command {
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
       List<String> gameGroups = new ArrayList<>(gi.getGameGroupMappings().values());
       Role firstGameGroup = guild.getRolesByName(gameGroups.get(0), true).get(0);
-      Integer lastGameGroupPosition = guild.getController().modifyRolePositions(false)
+      Integer lastGameGroupPosition = guild.modifyRolePositions(false)
           .selectPosition(firstGameGroup).getSelectedPosition() + gameGroups.size();
 
       //Move group to bottom of grouped games list.
@@ -321,7 +318,7 @@ public class GroupGamesCommand extends Command {
       } catch (InterruptedException e) {
          logger.error("Sleep interrupted during GameGroupsCommand create.");
       }
-      guild.getController().modifyRolePositions(false)
+      guild.modifyRolePositions(false)
           .selectPosition(guild.getRolesByName(gameName, true).get(0))
           .moveTo(lastGameGroupPosition)
           .queue();

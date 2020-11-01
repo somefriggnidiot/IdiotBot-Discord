@@ -4,7 +4,7 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.api.Permission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -5,9 +5,9 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.models.RaffleObject;
 import com.somefriggnidiot.discord.data_access.util.RaffleUtil;
 import java.util.List;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Role;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

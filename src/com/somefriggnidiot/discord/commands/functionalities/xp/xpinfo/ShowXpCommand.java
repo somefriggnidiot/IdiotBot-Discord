@@ -6,9 +6,9 @@ import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
 import com.somefriggnidiot.discord.util.XpUtil;
 import java.text.DecimalFormat;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

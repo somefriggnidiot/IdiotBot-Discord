@@ -7,9 +7,9 @@ import com.jagrosh.jdautilities.menu.ButtonMenu;
 import com.somefriggnidiot.discord.core.Main;
 import com.somefriggnidiot.discord.util.GameGroupUtil;
 import java.util.List;
-import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.MessageReaction.ReactionEmote;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.MessageReaction.ReactionEmote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -2,7 +2,7 @@ package com.somefriggnidiot.discord.commands.fun;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.api.Permission;
 
 public class EchoCommand extends Command {
    public EchoCommand() {

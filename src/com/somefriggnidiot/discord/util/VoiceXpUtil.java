@@ -19,12 +19,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.GuildVoiceState;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.entities.VoiceChannel;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildVoiceState;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -289,7 +289,7 @@ public class VoiceXpUtil {
             logger.debug(format("[%s] %s is not in a game group role. Game: %s",
                 guild,
                 guild.getMember(user).getEffectiveName(),
-                guild.getMember(user).getGame()));
+                guild.getMember(user).getActivities().get(0)));
          }
 
          Integer usersInGame = usersPlayingTogether(channel, gameGroupRole);

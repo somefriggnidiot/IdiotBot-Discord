@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.api.entities.Guild;
 
 /**
  * Database storage object used for tracking various non-Discord information about a {@link Guild}.

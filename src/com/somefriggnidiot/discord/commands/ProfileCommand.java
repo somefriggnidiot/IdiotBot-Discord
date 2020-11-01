@@ -8,9 +8,9 @@ import com.somefriggnidiot.discord.util.XpUtil;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.User;
 
 public class ProfileCommand extends Command {
 
@@ -53,7 +53,7 @@ public class ProfileCommand extends Command {
          guildRank = XpUtil.getGuildRank(event.getGuild(), event.getAuthor());
          guildRanks = XpUtil.getGuildLeaderboardSize(event.getGuild());
          created = Timestamp.valueOf(event.getGuild().getMember(event.getAuthor())
-             .getJoinDate().toLocalDateTime());
+             .getTimeJoined().toLocalDateTime());
          lastXpGain = dbu.getLatestGain();
 
          eb = new EmbedBuilder()
@@ -85,7 +85,7 @@ public class ProfileCommand extends Command {
              .getTokenMap().get(event.getGuild().getIdLong());
          guildRank = XpUtil.getGuildRank(event.getGuild(), user);
          guildRanks = XpUtil.getGuildLeaderboardSize(event.getGuild());
-         created = Timestamp.valueOf(event.getGuild().getMember(user).getJoinDate()
+         created = Timestamp.valueOf(event.getGuild().getMember(user).getTimeJoined()
              .toLocalDateTime());
          lastXpGain = dbu.getLatestGain();
 

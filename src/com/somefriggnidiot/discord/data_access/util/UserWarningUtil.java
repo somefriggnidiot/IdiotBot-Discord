@@ -5,7 +5,7 @@ import com.somefriggnidiot.discord.data_access.DatabaseConnector.Table;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.models.UserWarning;
 import javax.persistence.EntityManager;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.api.entities.User;
 
 public class UserWarningUtil {
 

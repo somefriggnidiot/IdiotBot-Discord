@@ -5,11 +5,11 @@ import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.util.GameGroupUtil;
 import com.somefriggnidiot.discord.util.VoiceXpUtil;
 import java.util.List;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.events.ReadyEvent;
-import net.dv8tion.jda.core.events.ReconnectedEvent;
-import net.dv8tion.jda.core.events.ResumedEvent;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.events.ReconnectedEvent;
+import net.dv8tion.jda.api.events.ResumedEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

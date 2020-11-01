@@ -8,9 +8,9 @@ import com.somefriggnidiot.discord.data_access.models.RaffleObject;
 import com.somefriggnidiot.discord.data_access.util.RaffleUtil;
 import java.util.List;
 import java.util.stream.Collectors;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 
 public class ListRafflesCommand extends Command {
 

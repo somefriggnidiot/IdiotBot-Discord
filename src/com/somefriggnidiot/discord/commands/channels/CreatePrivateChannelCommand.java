@@ -7,14 +7,13 @@ import com.jagrosh.jdautilities.menu.ButtonMenu;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector.Table;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
-import com.somefriggnidiot.discord.events.MessageListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Channel;
-import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.requests.restaction.ChannelAction;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,19 +96,27 @@ public class CreatePrivateChannelCommand extends Command {
               .addPermissionOverride(event.getGuild().getPublicRole(), emptyList, allDenied)
               .setBitrate(64000);
 
-      action.queue(channel -> {
-         logger.info(String.format("[%s] Created voice channel named \"%s\" for %s",
-             event.getGuild(),
-             name,
-             channelOwner.getName()));
+      action.queue();
+      try {
+         Thread.sleep(500L);
+      } catch (InterruptedException e) {
+         logger.error("Wait interrupted when trying to create VIP channel!");
+      }
 
-         updateDatabase(channelOwner, channel);
+      VoiceChannel channel = event.getGuild().getVoiceChannelsByName(name, false).get(0);
 
-         logger.info(String.format("[%s] Added %s as private channel of %s.",
-             event.getGuild(),
-             channel,
-             channelOwner.getName()));
-      });
+      updateDatabase(channelOwner,
+          event.getGuild().getVoiceChannelsByName(name, false).get(0));
+
+      logger.info(String.format("[%s] Created voice channel named \"%s\" for %s",
+          event.getGuild(),
+          name,
+          channelOwner.getName()));
+
+      logger.info(String.format("[%s] Added %s as private channel of %s.",
+          event.getGuild(),
+          channel,
+          channelOwner.getName()));
    }
 
    private boolean hasChannel(User user) {
@@ -121,7 +128,7 @@ public class CreatePrivateChannelCommand extends Command {
       return dbu != null && dbu.getPrivateChannel() != null;
    }
 
-   private void updateDatabase(User user, Channel channel) {
+   private void updateDatabase(User user, VoiceChannel channel) {
       DatabaseConnector c = new DatabaseConnector();
       EntityManager em = c.getEntityManager(Table.DATABASE_USER);
 

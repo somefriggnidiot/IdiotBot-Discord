@@ -50,14 +50,19 @@ import com.somefriggnidiot.discord.util.GameGroupUtil;
 import com.somefriggnidiot.discord.util.VoiceXpUtil;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.security.auth.login.LoginException;
-import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.entities.Game;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Icon;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Icon;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +79,7 @@ public class Main {
 
       try {
          CommandClientBuilder client = new CommandClientBuilder()
-             .setGame(Game.playing("Bot-it League"))
+             .setActivity(Activity.playing("Bot-it League"))
              .setOwnerId(ownerId)
              .setPrefix("!")
              .setHelpWord("help")
@@ -134,24 +139,31 @@ public class Main {
              .addCommand(new ProfileCommand())
              .addCommand(new StatusCommand());
 
-         jda = new JDABuilder()
-             .addEventListener(new MessageListener())
-             .addEventListener(new UserUpdateGameListener())
-             .addEventListener(new GuildVoiceListener())
-             .addEventListener(new GuildMemberListener())
-             .addEventListener(new ReconnectedEventListener())
-             .addEventListener(waiter)
-             .addEventListener(client.build())
+         jda = new JDABuilder().addEventListeners(
+             new MessageListener(),
+             new UserUpdateGameListener(),
+             new GuildVoiceListener(),
+             new GuildMemberListener(),
+             new ReconnectedEventListener(),
+             waiter,
+             client.build())
+             .setAutoReconnect(true)
+             .setEnabledIntents(EnumSet.allOf(GatewayIntent.class))
+             .setToken(args[0])
              .build();
 
-         jda.awaitReady().awaitStatus();
+         jda.awaitReady();
 
          try {
             Icon icon = Icon.from(
                 new URL("http://www.foundinaction.com/wp-content/uploads/2018/10/Neon_v2.png")
                     .openStream());
             logger.info("Attempting to set avatar.");
-            jda.getSelfUser().getManager().setAvatar(icon).queue();
+            jda.getSelfUser().getManager().setAvatar(icon).onErrorMap(error -> {
+               logger.error("Error while attempting to set avatar: ", error.getCause());
+               return null;
+            })
+                .queue();
             logger.info("Avatar set successfully.");
          } catch (Exception e) {
             logger.error("Error while setting avatar: ", e.getMessage());

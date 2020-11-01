@@ -3,7 +3,7 @@ package com.somefriggnidiot.discord.commands.functionalities.xp.moderation;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
-import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.api.Permission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -8,14 +8,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-import net.dv8tion.jda.core.entities.Game;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.MessageChannel;
-import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.exceptions.HierarchyException;
-import net.dv8tion.jda.core.managers.GuildController;
-import net.dv8tion.jda.core.managers.GuildManager;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.exceptions.HierarchyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,8 +23,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Various helper functions for GameGroups. <br />
  * GameGrouping is a concept of assigning a Discord {@link Role} to a
- * {@link net.dv8tion.jda.core.entities.User} temporarily while that {@code User}
- * is playing a certain {@link Game} as defined by {@code User}-defined rules.
+ * {@link net.dv8tion.jda.api.entities.User} temporarily while that {@code User}
+ * is playing a certain {@link Activity} as defined by {@code User}-defined rules.
  *
  * @see com.somefriggnidiot.discord.commands.functionalities.gamegroups.AddGameGroupCommand
  * @see com.somefriggnidiot.discord.commands.functionalities.gamegroups.RemoveGameGroupCommand
@@ -37,8 +35,8 @@ public class GameGroupUtil {
    private static final Logger logger = LoggerFactory.getLogger(MessageListener.class);
 
    /**
-    * Assigns the GameGroup {@link Role} to a {@link net.dv8tion.jda.core.entities.User} playing
-    * a {@link Game} that has a valid GameGroup mapping in the {@link Guild}.
+    * Assigns the GameGroup {@link Role} to a {@link Member} playing
+    * a {@link Activity} that has a valid GameGroup mapping in the {@link Guild}.
     *
     * @param guild the guild in which these actions are taking place.
     * @param gameMap the complete {@link HashMap} mapping {@code Game} display names to
@@ -72,10 +70,10 @@ public class GameGroupUtil {
       logger.info(String.format("[%s] %s has started playing %s.",
           guild,
           member.getEffectiveName(),
-          member.getGame().getName()));
+          member.getActivities().get(0).getName()));
 
       try {
-         guild.getController().addSingleRoleToMember(member, role).queue();
+         guild.addRoleToMember(member, role).queue();
       } catch (Exception e) {
          logger.warn(String.format("[%s] Role not found: %s", guild, role));
          logger.error("Role is no longer available", e);
@@ -84,7 +82,6 @@ public class GameGroupUtil {
 
    public static void removeAllUserRoles(Guild guild) {
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
-      GuildController gc = guild.getController();
       Collection<String> roleNames = gi.getGameGroupMappings().values();
       Collection<Role> roles = new ArrayList<>();
       /**
@@ -106,7 +103,7 @@ public class GameGroupUtil {
          List<String> removedRoleNames = new ArrayList<>();
          roles.forEach(role -> removedRoleNames.add(role.getName()));
          for (Member member : members) {
-            gc.removeRolesFromMember(member, roles).queue();
+            roles.forEach(r -> guild.removeRoleFromMember(member, r).queue());
             logger.info(String.format("[%s] Removed %s from the following roles: %s", guild, member
                 .getEffectiveName(), roles.toString()));
          }
@@ -114,12 +111,12 @@ public class GameGroupUtil {
 
    }
    /**
-    * Scans a mapping of game display names (key) and role names to determine if a {@link Game}
+    * Scans a mapping of game display names (key) and role names to determine if a {@link Activity}
     * has a valid GameGroup mapping.
     *
     * @param gameMap a complete {@link HashMap} of game display names to role names for a given
     * {@link Guild}.
-    * @param gameName the name of the {@link Game}.
+    * @param gameName the name of the {@link Activity}.
     * @return {@code true} if the {@code Game} name is in the list of mapping values, otherwise
     * {@code false}.
     */
@@ -128,13 +125,13 @@ public class GameGroupUtil {
    }
 
    /**
-    * Returns the {@link Role} mapped to a valid GameGroup {@link Game} if a valid mapping exists.
+    * Returns the {@link Role} mapped to a valid GameGroup {@link Activity} if a valid mapping exists.
     *
     * @param guild the {@link Guild} containing GameGroup Roles.
-    * @param game the {@link Game} being scanned for a GameGroup Role mapping.
-    * @return the GameGroup {@link Role} mapped to the {@link Game} or {@code null}
+    * @param game the {@link Activity} being scanned for a GameGroup Role mapping.
+    * @return the GameGroup {@link Role} mapped to the {@link Activity} or {@code null}
     */
-   public static Role getGameRole(Guild guild, Game game) {
+   public static Role getGameRole(Guild guild, Activity game) {
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
 
       if (game == null || game.getName().isEmpty()) {
@@ -147,7 +144,6 @@ public class GameGroupUtil {
    }
 
    public static void refreshGameGroups(Guild guild) {
-      GuildController gc = guild.getController();
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
       List<Member> members = guild.getMembers();
       Collection<String> roleNames = gi.getGameGroupMappings().values();
@@ -163,17 +159,18 @@ public class GameGroupUtil {
             logger.trace(String.format("[%s] Member: %s\nGame: %s",
                 guild,
                 member.toString(),
-                member.getGame()));
-            Game game = member.getGame();
+                member.getActivities().size() > 0 ? member.getActivities().get(0) : ""));
+            Activity game = member.getActivities().size() > 0 ? member.getActivities().get(0) :
+                null;
 
             if (game == null || game.getName().isEmpty()) { //If not playing game
                try {
-                  gc.removeRolesFromMember(member, roles).queue(); //Remove game roles.
+                  roles.forEach(role -> guild.removeRoleFromMember(member, role).queue()); //Remove
+                  // game roles.
                } catch (HierarchyException e) {
                   logger.error(String.format("[%s] Unable to modify role above your station.",
                       guild), e);
-                  GuildManager gm = new GuildManager(guild);
-                  MessageChannel channel = gm.getGuild()
+                  MessageChannel channel = guild
                       .getTextChannelsByName("general", true).get(0);
                   channel.sendMessage(String.format("Error! Cannot apply Game Groups to %s "
                           + "as they are higher in the hierarchy than me!",
@@ -200,17 +197,17 @@ public class GameGroupUtil {
                             member.getEffectiveName()));
                      } else {
                         if (GameGroupUtil.isValidGame(gi.getGameGroupMappings(), game.getName())) {
-                           gc.addSingleRoleToMember(member, GameGroupUtil.getGameRole(guild, game))
+                           guild.addRoleToMember(member, GameGroupUtil.getGameRole(guild, game))
                                .queue();
                            logger
-                               .info(String.format("[%s] Removing %s from existing game roles and "
-                                       + "adding to %s.",
+                               .info(String.format("[%s] Removed %s from existing game roles and "
+                                       + "added to %s.",
                                    guild,
                                    member.getEffectiveName(),
                                    GameGroupUtil.getGameRole(guild, game)));
                         } else {
-                           gc.removeRolesFromMember(member, roles).queue();
-                           logger.info(String.format("[%s] Removing %s from existing game roles.",
+                           roles.forEach(r -> guild.removeRoleFromMember(member, r).queue());
+                           logger.info(String.format("[%s] Removed %s from existing game roles.",
                                guild,
                                member.getEffectiveName()));
                         }
@@ -232,7 +229,7 @@ public class GameGroupUtil {
                  + "grouping enabled. Removing all game roles from members.",
              guild));
          for (Member member : members) {
-            gc.removeRolesFromMember(member, roles);
+            roles.forEach(r -> guild.removeRoleFromMember(member, r).queue()); //TODO modify instead
          }
       }
    }

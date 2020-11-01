@@ -8,8 +8,8 @@ import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.data_access.util.RaffleUtil;
 import java.awt.Color;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 
 public class StatusCommand extends Command {
 
@@ -29,7 +29,7 @@ public class StatusCommand extends Command {
    @Override
    protected void execute(final CommandEvent event) {
       GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild().getIdLong());
-      Long ping = event.getGuild().getJDA().getPing();
+      Long ping = event.getGuild().getJDA().getGatewayPing();
       Long userCount = event.getGuild().getMembers().stream().filter(member -> !member.getUser
           ().isBot()).count();
       Long botCount = event.getGuild().getMembers().stream().filter(member -> member.getUser()

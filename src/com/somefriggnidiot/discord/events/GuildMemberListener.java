@@ -1,11 +1,10 @@
 package com.somefriggnidiot.discord.events;
 
-import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
-import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
-import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent;
-import net.dv8tion.jda.core.events.guild.member.GuildMemberNickChangeEvent;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
+import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateNicknameEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,14 +18,14 @@ public class GuildMemberListener extends ListenerAdapter {
        "hitler", "fuck"};
 
    @Override
-   public void onGuildMemberNickChange(GuildMemberNickChangeEvent event) {
+   public void onGuildMemberUpdateNickname(GuildMemberUpdateNicknameEvent event) {
 
       logNicknameChange(event);
       resetBannedName(event);
    }
 
    @Override
-   public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
+   public void onGuildMemberRemove(GuildMemberRemoveEvent event) {
       logger.info(String.format("[%s] %s has left the server.",
           event.getGuild(),
           event.getMember().getEffectiveName()));
@@ -46,32 +45,32 @@ public class GuildMemberListener extends ListenerAdapter {
    }
 
    /**
-    * Resets a the nickname of a {@link net.dv8tion.jda.core.entities.User} if their new nickname
+    * Resets a the nickname of a {@link net.dv8tion.jda.api.entities.User} if their new nickname
     * contains a banned word.
     *
-    * @param event the {@link GuildMemberNickChangeEvent} including the {@code User} being scanned.
+    * @param event the {@link GuildMemberUpdateNicknameEvent} including the {@code User} being scanned.
     */
-   private void resetBannedName(GuildMemberNickChangeEvent event) {
-      String newName = event.getNewNick() == null ? event.getMember().getEffectiveName() :
-          event.getNewNick();
+   private void resetBannedName(GuildMemberUpdateNicknameEvent event) {
+      String newName = event.getNewNickname() == null ? event.getMember().getEffectiveName() :
+          event.getNewNickname();
 
       for (String bannedSegment : bannedNames) {
          if (newName.toLowerCase().contains(bannedSegment)) {
-            event.getGuild().getController().setNickname(event.getMember(), null).queue();
+            event.getGuild().modifyNickname(event.getMember(), null).queue();
          }
       }
    }
 
    /**
-    * Logs the {@link GuildMemberNickChangeEvent} details to the console and log file.
+    * Logs the {@link GuildMemberUpdateNicknameEvent} details to the console and log file.
     *
-    * @param event {@link GuildMemberNickChangeEvent} being logged.
+    * @param event {@link GuildMemberUpdateNicknameEvent} being logged.
     */
-   private void logNicknameChange(GuildMemberNickChangeEvent event) {
-      String oldName = event.getPrevNick() == null ? event.getMember().getUser().getName() :
-          event.getPrevNick();
-      String newName = event.getNewNick() == null ? event.getMember().getEffectiveName() :
-          event.getNewNick();
+   private void logNicknameChange(GuildMemberUpdateNicknameEvent event) {
+      String oldName = event.getOldNickname() == null ? event.getMember().getUser().getName() :
+          event.getOldNickname();
+      String newName = event.getNewNickname() == null ? event.getMember().getEffectiveName() :
+          event.getNewNickname();
 
       logger.info(String.format("[%s] %s changed their name to %s.",
           event.getGuild(),

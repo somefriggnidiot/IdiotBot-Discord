@@ -6,8 +6,8 @@ import com.somefriggnidiot.discord.data_access.util.UserWarningUtil;
 import com.somefriggnidiot.discord.events.MessageListener;
 import java.util.Timer;
 import java.util.TimerTask;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Role;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +43,7 @@ public class SoftBanCommand extends Command {
 
       Role softbanRole = event.getGuild().getRolesByName("softban", false).get(0);
 
-      event.getGuild().getController().addSingleRoleToMember(target, softbanRole).queue();
+      event.getGuild().addRoleToMember(target, softbanRole).queue();
 
       logger.info(String.format("[%s] %s has been soft-banned for %s minutes by %s for: %s",
           event.getGuild(),
@@ -58,8 +58,7 @@ public class SoftBanCommand extends Command {
       timer.schedule((new TimerTask() {
          @Override
          public void run() {
-            event.getGuild().getController().removeSingleRoleFromMember(target, softbanRole)
-                .queue();
+            event.getGuild().removeRoleFromMember(target, softbanRole).queue();
             target.getUser().openPrivateChannel().queue(success ->
                 success.sendMessage(String.format(
                     "Your ban has been lifted in %s. Please be sure to better follow the rules in the future.",

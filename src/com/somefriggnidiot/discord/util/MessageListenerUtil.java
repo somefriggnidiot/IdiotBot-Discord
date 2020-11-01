@@ -7,7 +7,7 @@ import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ThreadLocalRandom;
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +24,7 @@ public class MessageListenerUtil {
    private static final DecimalFormat df = new DecimalFormat("###,###");
 
    /**
-    * Assigns XP to the authoring {@link net.dv8tion.jda.core.entities.User} of a valid
+    * Assigns XP to the authoring {@link net.dv8tion.jda.api.entities.User} of a valid
     * text message.
     *
     * @param event the {@link MessageReceivedEvent} containing the potentially valid message.
@@ -34,7 +34,7 @@ public class MessageListenerUtil {
 
       Long userId = event.getAuthor().getIdLong();
       DatabaseUser dbu = DatabaseUserUtil.getUser(userId);
-      Instant messageTime = event.getMessage().getCreationTime()
+      Instant messageTime = event.getMessage().getTimeCreated()
           .toInstant().truncatedTo(ChronoUnit.MINUTES);
       Instant userLastMessageTime;
 

@@ -4,7 +4,7 @@ import com.somefriggnidiot.discord.data_access.DatabaseConnector;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector.Table;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import javax.persistence.EntityManager;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.api.entities.User;
 
 /**
  * Helper methods used to modify Karma score for for a {@link DatabaseUser}.

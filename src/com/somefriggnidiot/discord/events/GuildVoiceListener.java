@@ -1,24 +1,9 @@
 package com.somefriggnidiot.discord.events;
 
-import com.somefriggnidiot.discord.data_access.models.GuildInfo;
-import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
-import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
-import com.somefriggnidiot.discord.util.VoiceXpUtil;
-import com.somefriggnidiot.discord.util.XpUtil;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.GuildVoiceState;
-import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.entities.VoiceChannel;
-import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent;
-import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent;
-import net.dv8tion.jda.core.events.guild.voice.GuildVoiceMoveEvent;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
