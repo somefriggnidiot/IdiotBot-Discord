@@ -33,7 +33,13 @@ public class SoftBanCommand extends Command {
       Member target = event.getGuild().getMember(event.getMessage().getMentionedUsers().get(0));
       Long duration = Long.parseLong(
           event.getMessage().getContentDisplay().split("\\s", 4)[2]) * 60 * 1000;
-      String reason = event.getMessage().getContentDisplay().split("\\s", 4)[3];
+      String reason = null;
+      try {
+         reason = event.getMessage().getContentDisplay().split("\\s", 4)[3];
+      } catch (IndexOutOfBoundsException e) {
+         event.reply("Invalid number of arguments. Please ensure a reason is provided with the "
+             + "ban and duration.");
+      }
       Timer timer = new Timer();
 
       if (reason.isEmpty()) {
@@ -44,6 +50,8 @@ public class SoftBanCommand extends Command {
       Role softbanRole = event.getGuild().getRolesByName("softban", false).get(0);
 
       event.getGuild().addRoleToMember(target, softbanRole).queue();
+      event.reply(String.format("%s has been soft-banned for %s minutes for: %s",
+          target.getEffectiveName(), duration / 60000, reason));
 
       logger.info(String.format("[%s] %s has been soft-banned for %s minutes by %s for: %s",
           event.getGuild(),
@@ -55,6 +63,7 @@ public class SoftBanCommand extends Command {
       UserWarningUtil.warnUser(event.getMessage().getMentionedUsers().get(0), reason,
           event.getAuthor().getIdLong());
 
+      //TODO Add as field on user object and have timer watching to un-ban.
       timer.schedule((new TimerTask() {
          @Override
          public void run() {
