@@ -5,15 +5,14 @@ import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.MessageListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.exceptions.HierarchyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +45,7 @@ public class GameGroupUtil {
     */
    public static void handleRoleAssignment(Guild guild, HashMap<String, String> gameMap,
        String gameName, Member member) {
+      logger.info("Handling role assignment via GameGroupUtil.");
       if (!isValidGame(gameMap, gameName)) {
          return;
       }
@@ -73,7 +73,10 @@ public class GameGroupUtil {
           member.getActivities().get(0).getName()));
 
       try {
-         guild.addRoleToMember(member, role).queue();
+         guild.addRoleToMember(member, role).queue(
+             success -> logger.info("Successfully added member to role."),
+             error -> logger.error("Error adding member to role.", error)
+         );
       } catch (Exception e) {
          logger.warn(String.format("[%s] Role not found: %s", guild, role));
          logger.error("Role is no longer available", e);
@@ -144,93 +147,110 @@ public class GameGroupUtil {
    }
 
    public static void refreshGameGroups(Guild guild) {
-      GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
-      List<Member> members = guild.getMembers();
-      Collection<String> roleNames = gi.getGameGroupMappings().values();
-      Collection<Role> roles = new ArrayList<>();
+      GuildInfo guildInfo = GuildInfoUtil.getGuildInfo(guild);
+      List<Member> guildMembers = guild.getMembers();
+      Collection<String> groupedRoleNames = guildInfo.getGameGroupMappings().values();
+      Collection<Role> groupedRoles = groupedRoleNames.stream().map(name -> guild.getRolesByName
+          (name, false).get(0)).collect(Collectors.toList());
 
-      for (String roleName : roleNames) {
-         roles.add(guild.getRolesByName(roleName, false).get(0));
-      }
+      if (guildInfo.isGroupingGames()) { //Add gamegroup role to appropriate members.
+         //Add gamegroup roles to applicable members.
 
-      if (gi.isGroupingGames()) { //Only do if guild is grouping.
-         for (Member member : members) { //For each
-            // member
-            logger.trace(String.format("[%s] Member: %s\nGame: %s",
-                guild,
-                member.toString(),
-                member.getActivities().size() > 0 ? member.getActivities().get(0) : ""));
-            Activity game = member.getActivities().size() > 0 ? member.getActivities().get(0) :
-                null;
+         for (Member member : guildMembers) {
+            /*
+               For each member, we want to filter down a list of their activities which match any
+                of the grouped role names. From that list, we want to add the member to the
+                top-displayed activity/game role.
+             */
+            List<Activity> memberActivities = member.getActivities();
+            memberActivities = memberActivities.stream().filter(ma -> groupedRoleNames.contains
+                (ma.getName())).collect(Collectors.toList());
 
-            if (game == null || game.getName().isEmpty()) { //If not playing game
-               try {
-                  roles.forEach(role -> guild.removeRoleFromMember(member, role).queue()); //Remove
-                  // game roles.
-               } catch (HierarchyException e) {
-                  logger.error(String.format("[%s] Unable to modify role above your station.",
-                      guild), e);
-                  MessageChannel channel = guild
-                      .getTextChannelsByName("general", true).get(0);
-                  channel.sendMessage(String.format("Error! Cannot apply Game Groups to %s "
-                          + "as they are higher in the hierarchy than me!",
-                      member.getEffectiveName())).queue();
+            if (memberActivities.size() > 0) {
+               Activity topActivity = memberActivities.get(0);
 
-                  return;
-               }
-               logger.debug(String.format("[%s] %s is not playing any game, removing all game "
-                       + "roles.",
-                   guild,
-                   member.getEffectiveName()));
-            } else { //Playing game
+               if (GameGroupUtil
+                   .isValidGame(guildInfo.getGameGroupMappings(), topActivity.getName())) {
+                  Role ggRole = GameGroupUtil.getGameRole(guild, topActivity);
 
-               //So check if they have a game role
-               List<Role> memberRoles = member.getRoles();
+                  if (!member.getRoles().contains(ggRole)) {
+                     guild.addRoleToMember(member, ggRole).queue();
 
-               Boolean next = false;
-
-               for (Role role : memberRoles) {
-                  if (roles.contains(role)) { //User's role is a game role.
-                     if (GameGroupUtil.getGameRole(guild, game) == role) { //User has correct role.
-                        logger.info(String.format("[%s] %s already has the correct role.",
-                            guild,
-                            member.getEffectiveName()));
-                     } else {
-                        if (GameGroupUtil.isValidGame(gi.getGameGroupMappings(), game.getName())) {
-                           guild.addRoleToMember(member, GameGroupUtil.getGameRole(guild, game))
-                               .queue();
-                           logger
-                               .info(String.format("[%s] Removed %s from existing game roles and "
-                                       + "added to %s.",
-                                   guild,
-                                   member.getEffectiveName(),
-                                   GameGroupUtil.getGameRole(guild, game)));
-                        } else {
-                           roles.forEach(r -> guild.removeRoleFromMember(member, r).queue());
-                           logger.info(String.format("[%s] Removed %s from existing game roles.",
-                               guild,
-                               member.getEffectiveName()));
-                        }
-                     }
-                     next = true;
+                     logger.info(String.format("[%s] GameGroups: Added %s to %s.", guild, member
+                         .getEffectiveName(), ggRole.getName()));
                   }
                }
+            } else {
+               //If member has no activities, ensure they're removed from any existing group roles.
+               guild.modifyMemberRoles(member, Collections.EMPTY_SET, groupedRoles).queue();
 
-               if (!next) {
-                  GameGroupUtil
-                      .handleRoleAssignment(guild, gi.getGameGroupMappings(), game.getName(),
-                          member);
-               }
+               logger.debug(String.format("[%s] GameGroups: Removed %s from all grouped roles.",
+                   guild, member.getEffectiveName()));
             }
          }
       } else {
-         //Report that it can't be done.
-         logger.warn(String.format("[%s] Attempted to refresh gamegroups but guild does not have "
-                 + "grouping enabled. Removing all game roles from members.",
-             guild));
-         for (Member member : members) {
-            roles.forEach(r -> guild.removeRoleFromMember(member, r).queue()); //TODO modify instead
+         //Remove all gamegroup roles from all members.
+         List<Member> rolledMembers = new ArrayList<>();
+         for (Role groupedRole : groupedRoles) {
+            for (Member member : guildMembers) {
+               if (member.getRoles().contains(groupedRole)) {
+                  rolledMembers.add(member);
+               }
+            }
          }
+         rolledMembers.forEach(m ->
+             guild.modifyMemberRoles(m, Collections.EMPTY_SET, groupedRoles).queue());
+
+         logger.info(String.format("[%s] GameGroups: Disables for guild. Removing all members "
+             + "from grouped roles.", guild));
+      }
+   }
+
+   public static void refreshMemberGameGroups(Member member) {
+      Guild guild = member.getGuild();
+      GuildInfo guildInfo = GuildInfoUtil.getGuildInfo(guild);
+      List<Member> guildMembers = guild.getMembers();
+      Collection<String> groupedRoleNames = guildInfo.getGameGroupMappings().values();
+      Collection<Role> groupedRoles = groupedRoleNames.stream().map(name -> guild.getRolesByName
+          (name, false).get(0)).collect(Collectors.toList());
+
+      /*
+         We want to filter down a list of the member's activities which match any
+          of the grouped role names. From that list, we want to add the member to the
+          top-displayed activity/game role.
+       */
+      List<Activity> memberActivities = member.getActivities();
+      memberActivities = memberActivities.stream().filter(ma -> groupedRoleNames.contains
+          (ma.getName())).collect(Collectors.toList());
+
+      if (memberActivities.size() > 0) {
+         Activity topActivity = memberActivities.get(0);
+
+         if (GameGroupUtil
+             .isValidGame(guildInfo.getGameGroupMappings(), topActivity.getName())) {
+            Role ggRole = GameGroupUtil.getGameRole(guild, topActivity);
+
+            if (!member.getRoles().contains(ggRole)) {
+               guild.addRoleToMember(member, ggRole).queue();
+
+               logger.info(String.format("[%s] GameGroups: Added %s to %s.", guild, member
+                   .getEffectiveName(), ggRole.getName()));
+            }
+         }
+      } else {
+         //If member has no activities, ensure they're removed from any existing group roles.
+         Collection<Role> memberGroupedRoles = member.getRoles().stream()
+             .filter(mr -> groupedRoles.contains(mr))
+             .collect(Collectors.toList());
+
+         guild.modifyMemberRoles(member, Collections.EMPTY_SET, memberGroupedRoles).queue();
+
+         memberGroupedRoles.forEach(r -> logger.info(String.format("[%s] GameGroups: Removed %s "
+                 + "from %s.",
+             guild, member.getEffectiveName(), r.getName())));
+
+//         logger.debug(String.format("[%s] GameGroups: Removed %s from all grouped roles.",
+//             guild, member.getEffectiveName()));
       }
    }
 }

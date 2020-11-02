@@ -120,7 +120,7 @@ public class MessageListenerUtil {
        DatabaseUser dbu) {
       logger.info(String.format("[%s] %s gained %s xp for messaging. They're now at %s xp.",
           event.getGuild(),
-          event.getAuthor(),
+          event.getGuild().getMember(event.getAuthor()).getEffectiveName(),
           df.format(xpGain),
           df.format(newXp)));
 

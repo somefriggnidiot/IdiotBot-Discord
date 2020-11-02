@@ -289,7 +289,8 @@ public class VoiceXpUtil {
             logger.debug(format("[%s] %s is not in a game group role. Game: %s",
                 guild,
                 guild.getMember(user).getEffectiveName(),
-                guild.getMember(user).getActivities().get(0)));
+                guild.getMember(user).getActivities().size() > 0 ? guild.getMember(user)
+                    .getActivities().get(0) : ""));
          }
 
          Integer usersInGame = usersPlayingTogether(channel, gameGroupRole);

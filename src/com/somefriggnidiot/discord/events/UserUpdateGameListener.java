@@ -1,9 +1,14 @@
 package com.somefriggnidiot.discord.events;
 
+import static java.lang.String.format;
+
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
+import com.somefriggnidiot.discord.util.GameGroupUtil;
 import java.util.HashMap;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.events.user.UserActivityEndEvent;
+import net.dv8tion.jda.api.events.user.UserActivityStartEvent;
 import net.dv8tion.jda.api.events.user.update.UserUpdateActivityOrderEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.entities.Role;
@@ -15,39 +20,66 @@ public class UserUpdateGameListener extends ListenerAdapter {
    private final Logger logger = LoggerFactory.getLogger(MessageListener.class);
 
    @Override
+   public void onUserActivityStart(UserActivityStartEvent event) {
+      GameGroupUtil.refreshMemberGameGroups(event.getMember());
+
+//      if (GuildInfoUtil.getGuildInfo(event.getGuild()).isGroupingGames()) {
+//         logger.info(format("[%s] %s has started %s %s",
+//             event.getGuild(),
+//             event.getMember().getEffectiveName(),
+//             event.getNewActivity().getType(),
+//             event.getNewActivity().getName()));
+//      }
+   }
+
+   @Override
+   public void onUserActivityEnd(UserActivityEndEvent event) {
+      GameGroupUtil.refreshMemberGameGroups(event.getMember());
+
+//      if (GuildInfoUtil.getGuildInfo(event.getGuild()).isGroupingGames()) {
+//         logger.info(format("[%s] %s has stopped %s %s",
+//             event.getGuild(),
+//             event.getMember().getEffectiveName(),
+//             event.getOldActivity().getType(),
+//             event.getOldActivity().getName()));
+//      }
+
+   }
+
+   @Override
    public void onUserUpdateActivityOrder(UserUpdateActivityOrderEvent event) {
       //TODO Make swaps less frequent by checking all activities instead of "top" activity.
       GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild().getIdLong());
-      final HashMap<String, String> groupMappings = gi.getGameGroupMappings();
+//      final HashMap<String, String> groupMappings = gi.getGameGroupMappings();
 
       if (gi.isGroupingGames()) {
-
-         try {
-
-            Activity oldActivity = event.getOldValue().size() > 0 ? event.getOldValue().get(0) :
-                null;
-            Activity newActivity = event.getNewValue().size() > 0 ? event.getOldValue().get(0) :
-                null;
-
-            if (newActivity != null && oldActivity != null) {
-               // started playing from another game, ignore updates to same game
-               if (newActivity.getName().equalsIgnoreCase(oldActivity.getName())) {
-                  return;
-               }
-
-               handleSwap(event, groupMappings, oldActivity.getName(), newActivity.getName());
-            } else if (newActivity != null && oldActivity == null) {
-               // started playing from nothing
-               handleRoleAssignment(event, groupMappings, newActivity.getName(), true);
-            } else {
-               // done gaming
-               handleRoleAssignment(event, groupMappings, oldActivity.getName(), false);
-            }
-         } catch (IllegalArgumentException e) {
-            logger.error(
-                String.format("Excption thrown with %s on %s", event.getUser(), event.getGuild()));
-            logger.error("Trace: ", e);
-         }
+         GameGroupUtil.refreshMemberGameGroups(event.getMember());
+//         try {
+//
+//            Activity oldActivity = event.getOldValue().size() > 0 ? event.getOldValue().get(0) :
+//                null;
+//            Activity newActivity = event.getNewValue().size() > 0 ? event.getOldValue().get(0) :
+//                null;
+//
+//            if (newActivity != null && oldActivity != null) {
+//               // started playing from another game, ignore updates to same game
+//               if (newActivity.getName().equalsIgnoreCase(oldActivity.getName())) {
+//                  return;
+//               }
+//
+//               handleSwap(event, groupMappings, oldActivity.getName(), newActivity.getName());
+//            } else if (newActivity != null && oldActivity == null) {
+//               // started playing from nothing
+//               handleRoleAssignment(event, groupMappings, newActivity.getName(), true);
+//            } else {
+//               // done gaming
+//               handleRoleAssignment(event, groupMappings, oldActivity.getName(), false);
+//            }
+//         } catch (IllegalArgumentException e) {
+//            logger.error(
+//                String.format("Excption thrown with %s on %s", event.getUser(), event.getGuild()));
+//            logger.error("Trace: ", e);
+//         }
       }
    }
 
@@ -57,6 +89,7 @@ public class UserUpdateGameListener extends ListenerAdapter {
 
    private void handleRoleAssignment(UserUpdateActivityOrderEvent event, HashMap<String, String> gameMap,
        String gameName, Boolean assign) {
+      logger.info("Handling role assignment via UpdateGameListener.");
       if (!isValidGame(gameMap, gameName)) {
          return;
       }
@@ -68,18 +101,18 @@ public class UserUpdateGameListener extends ListenerAdapter {
          role = event.getGuild().getRolesByName(groupName, false).get(0);
 
          if (role == null) {
-            logger.warn(String.format("[%s] No GameGroup set for \"%s\"", event.getGuild(),
+            logger.warn(format("[%s] No GameGroup set for \"%s\"", event.getGuild(),
                 groupName));
             return;
          }
       } catch (IndexOutOfBoundsException e) {
-         logger.debug(String.format("%s does not have a role matching %s", event.getGuild()
+         logger.debug(format("%s does not have a role matching %s", event.getGuild()
              .getName(), groupName));
       }
 
       // Do the actual role shit.
       if (assign) {
-         logger.info(String.format("[%s] %s has started playing %s.",
+         logger.info(format("[%s] %s has started playing %s.",
              event.getGuild(),
              event.getMember().getEffectiveName(),
              event.getNewValue().get(0).getName()));
@@ -87,10 +120,10 @@ public class UserUpdateGameListener extends ListenerAdapter {
          try {
             event.getGuild().addRoleToMember(event.getMember(), role).queue();
          } catch (Exception e) {
-            logger.warn(String.format("[%s] Role not found: %s", event.getGuild(), role));
+            logger.warn(format("[%s] Role not found: %s", event.getGuild(), role));
          }
       } else {
-         logger.info(String.format("[%s] %s has stopped playing %s.",
+         logger.info(format("[%s] %s has stopped playing %s.",
              event.getGuild(),
              event.getMember().getEffectiveName(),
              event.getOldValue().get(0).getName()));
@@ -98,7 +131,7 @@ public class UserUpdateGameListener extends ListenerAdapter {
          try {
             event.getGuild().addRoleToMember(event.getMember(), role).queue();
          } catch (Exception e) {
-            logger.warn(String.format("[%s] Role not found for \"%s\"", event.getGuild(), role));
+            logger.warn(format("[%s] Role not found for \"%s\"", event.getGuild(), role));
          }
       }
    }
@@ -117,13 +150,13 @@ public class UserUpdateGameListener extends ListenerAdapter {
 
          if (oldRole == null) {
             logger
-                .warn(String.format("[%s] Role not found for previous game: \"%s\"",
+                .warn(format("[%s] Role not found for previous game: \"%s\"",
                     event.getGuild(),
                     oldGameName));
             return;
          } else {
             //Log it
-            logger.info(String.format("[%s] %s has stopped playing %s.",
+            logger.info(format("[%s] %s has stopped playing %s.",
                 event.getGuild(),
                 event.getMember().getEffectiveName(),
                 event.getOldValue().get(0).getName()));
@@ -132,14 +165,14 @@ public class UserUpdateGameListener extends ListenerAdapter {
             try {
                event.getGuild().removeRoleFromMember(event.getMember(), oldRole).queue();
             } catch (Exception e) {
-               logger.warn(String.format("[%s] Role has gone missing: %s",
+               logger.warn(format("[%s] Role has gone missing: %s",
                    event.getGuild(),
                    oldRole));
             }
          }
       } catch (IndexOutOfBoundsException e) {
          logger
-             .debug(String.format("[%s] Previous game not present: \"%s\"",
+             .debug(format("[%s] Previous game not present: \"%s\"",
                  event.getGuild(),
                  oldGameName));
       }
@@ -150,12 +183,12 @@ public class UserUpdateGameListener extends ListenerAdapter {
 
          if (newRole == null) {
             logger
-                .info(String.format("[%s] Game Group not found for new role: \"%s\"",
+                .info(format("[%s] Game Group not found for new role: \"%s\"",
                     event.getGuild(),
                     newGameName));
          } else {
             //Log it
-            logger.info(String.format("[%s] %s has started playing %s.",
+            logger.info(format("[%s] %s has started playing %s.",
                 event.getGuild(),
                 event.getMember().getEffectiveName(),
                 event.getNewValue().get(0).getName()));
@@ -164,14 +197,14 @@ public class UserUpdateGameListener extends ListenerAdapter {
             try {
                event.getGuild().addRoleToMember(event.getMember(), newRole).queue();
             } catch (Exception e) {
-               logger.warn(String.format("[%s] Role has gone missing: %s", event
+               logger.warn(format("[%s] Role has gone missing: %s", event
                    .getGuild(), newRole));
                logger.error(event.toString(), e);
             }
          }
       } catch (IndexOutOfBoundsException e) { //No role found for new game.
          logger
-             .info(String.format("[%s] New game not present: \"%s\"",
+             .info(format("[%s] New game not present: \"%s\"",
                  event.getGuild(),
                  newGameName));
       }
