@@ -29,6 +29,8 @@ public class GuildInfo {
    private double voiceXpMultiplier;
    private List<Long> raffleIds;
    private List<Instant> botModeEntryIds;
+   private Long streamerRoleId;
+   private List<Long> streamerMemberIds;
 
    /**
     * Initializes a new GuildInfo object denoted by the given Discord Guild ID.
@@ -46,6 +48,8 @@ public class GuildInfo {
       this.voiceXpMultiplier = 0.0;
       this.raffleIds = new ArrayList<>();
       this.botModeEntryIds = new ArrayList<>();
+      this.streamerRoleId = -1L;
+      this.streamerMemberIds = new ArrayList<>();
    }
 
    /**
@@ -150,6 +154,35 @@ public class GuildInfo {
 
    public void setBotModeEntryIds(List<Instant> botModeEntryIds) {
       this.botModeEntryIds = botModeEntryIds;
+   }
+
+   public void setStreamerRoleId(Long streamerRoleId) {
+      this.streamerRoleId = streamerRoleId;
+   }
+
+   public Long getStreamerRoleId() {
+      return streamerRoleId == null ? 0 : streamerRoleId;
+   }
+
+   public void setStreamerMemberIds(List<Long> streamerMemberIds) {
+      this.streamerMemberIds = streamerMemberIds;
+   }
+
+   public List<Long> getStreamerMemberIds() {
+      return streamerMemberIds;
+   }
+
+   public void addStreamerMemberId(Long streamerMemberId) {
+      streamerMemberIds = getStreamerMemberIds() == null ? new ArrayList<>() : streamerMemberIds;
+      if (!streamerMemberIds.contains(streamerMemberId)) {
+         streamerMemberIds.add(streamerMemberId);
+      }
+      setStreamerMemberIds(streamerMemberIds);
+   }
+
+   public Boolean removeStreamerMemberId(Long streamerMemberId) {
+      streamerMemberIds = streamerMemberIds == null ? new ArrayList<>() : streamerMemberIds;
+      return streamerMemberIds.remove(streamerMemberId);
    }
 
    @Override

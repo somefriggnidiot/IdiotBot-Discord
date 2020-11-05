@@ -57,11 +57,11 @@ public class VoiceXpUtil {
          guildTimer.schedule(getTimerTask(guildId), 300000, 300000);
          guildTimers.put(guildId, guildTimer);
 
-         logger.info(String.format("[%s] Started voice XP timer.",
+         logger.info(String.format("[%s] VoiceXP: Started voice XP timer.",
              Main.jda.getGuildById(guildId)));
       } else {
-         logger.warn(format("[%s] Attempted to start a voice XP timer, but one already existed "
-             + "for this guild.",
+         logger.warn(format("[%s] VoiceXP: Attempted to start a voice XP timer, but one already "
+                 + "existed for this guild.",
              Main.jda.getGuildById(guildId)));
       }
    }
@@ -77,7 +77,8 @@ public class VoiceXpUtil {
          guildTimer.cancel();
          guildTimer.purge();
       } else {
-         logger.warn(format("[%s] Attempted to stop voice XP timer, but no timer was found.",
+         logger.warn(format("[%s] VoiceXP: Attempted to stop voice XP timer, but no timer was "
+                 + "found.",
              Main.jda.getGuildById(guildId)));
       }
    }
@@ -115,7 +116,7 @@ public class VoiceXpUtil {
       if (Instant.now().isAfter(resetTime)) {
          Integer executions = userExecutions.remove(user.getIdLong());
 
-         logger.info(format("%s has had their executions reset. Was %s.",
+         logger.info(format("VoiceXP: %s has had their executions reset. Was %s.",
              user.getName(),
              executions));
       }
@@ -286,7 +287,7 @@ public class VoiceXpUtil {
                 .collect(Collectors.toList())
                 .get(0);
          } catch (Exception e) {
-            logger.debug(format("[%s] %s is not in a game group role. Game: %s",
+            logger.debug(format("[%s] VoiceXP: %s is not in a game group role. Game: %s",
                 guild,
                 guild.getMember(user).getEffectiveName(),
                 guild.getMember(user).getActivities().size() > 0 ? guild.getMember(user)
@@ -341,7 +342,7 @@ public class VoiceXpUtil {
          //Check for levelup.
          XpUtil.checkForLevelUp(guild, user, newXp);
 
-         logger.info(format("[%s] %s gained %s xp for participating in voice. "
+         logger.info(format("[%s] VoiceXP: %s gained %s xp for participating in voice. "
                  + "They're now at %s xp.",
              guild,
              guild.getMember(user).getEffectiveName(),

@@ -15,6 +15,7 @@ import com.somefriggnidiot.discord.commands.functionalities.core.DieCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.AddGameGroupCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.GroupGamesCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.RemoveGameGroupCommand;
+import com.somefriggnidiot.discord.commands.functionalities.gamegroups.StreamerFeatureCommand;
 import com.somefriggnidiot.discord.commands.functionalities.raffle.CloseRaffleCommand;
 import com.somefriggnidiot.discord.commands.functionalities.raffle.CreateRaffleCommand;
 import com.somefriggnidiot.discord.commands.functionalities.raffle.DrawRaffleCommand;
@@ -94,7 +95,8 @@ public class Main {
              .addCommands( // Functionalities - GameGroups
                  new AddGameGroupCommand(),
                  new GroupGamesCommand(),
-                 new RemoveGameGroupCommand()
+                 new RemoveGameGroupCommand(),
+                 new StreamerFeatureCommand()
              )
              .addCommands( // Raffles
                  new CloseRaffleCommand(),
@@ -156,11 +158,7 @@ public class Main {
                 new URL("http://www.foundinaction.com/wp-content/uploads/2018/10/Neon_v2.png")
                     .openStream());
             logger.info("Attempting to set avatar.");
-            jda.getSelfUser().getManager().setAvatar(icon).onErrorMap(error -> {
-               logger.error("Error while attempting to set avatar: ", error.getCause());
-               return null;
-            })
-                .queue();
+            jda.getSelfUser().getManager().setAvatar(icon).queue();
             logger.info("Avatar set successfully.");
          } catch (Exception e) {
             logger.error("Error while setting avatar: ", e.getMessage());

@@ -153,6 +153,42 @@ public class GuildInfoUtil {
       em.getTransaction().commit();
    }
 
+   public static void setStreamerRoleId(Long guildId, Long streamerRoleId) {
+      GuildInfo gi = getGuildInfo(guildId);
+
+      em.getTransaction().begin();
+      gi.setStreamerRoleId(streamerRoleId);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public static Long getStreamerRoleId(Long guildId) {
+      return getGuildInfo(guildId).getStreamerRoleId();
+   }
+
+   public static void addStreamerMemberId(Long guildId, Long streamerMemberId) {
+      GuildInfo gi = getDatabaseObject(guildId);
+
+      em.getTransaction().begin();
+      gi.addStreamerMemberId(streamerMemberId);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public static List<Long> getStreamerMemberIds(Long guildId) {
+      GuildInfo gi = getDatabaseObject(guildId);
+      return gi.getStreamerMemberIds();
+   }
+
+   public static void removeStreamerMemberId(Long guildId, Long streamerMemberId) {
+      GuildInfo gi = getDatabaseObject(guildId);
+
+      em.getTransaction().begin();
+      gi.removeStreamerMemberId(streamerMemberId);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
    public static void setXpTracking(Long guildId, Boolean isActive) {
       GuildInfo gi = getGuildInfo(guildId);
 

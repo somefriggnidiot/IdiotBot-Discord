@@ -117,7 +117,7 @@ public class GameGroupUtil {
              .collect(Collectors.toList());
 
          Collection<Role> memberGroupedRoles = member.getRoles().stream()
-             .filter(mr -> groupedRoles.contains(mr))
+             .filter(groupedRoles::contains)
              .collect(Collectors.toList());
 
          if (memberGroupedRoles.size() > 0) {

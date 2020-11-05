@@ -39,7 +39,7 @@ public class ProfileCommand extends Command {
       Timestamp created;
       Timestamp lastXpGain;
       DecimalFormat df = new DecimalFormat("###,###");
-      SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, hh:mm a");
+      SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy hh:mm a");
 
       if (event.getMessage().getMentionedUsers().size() == 0) {
          dbu = DatabaseUserUtil.getUser(event.getAuthor().getIdLong());
