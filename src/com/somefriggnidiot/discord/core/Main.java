@@ -35,6 +35,7 @@ import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.ShowXpComm
 import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.XpLeaderboardCommand;
 import com.somefriggnidiot.discord.commands.moderation.AddAllUsersToRoleCommand;
 import com.somefriggnidiot.discord.commands.moderation.BotModeCommand;
+import com.somefriggnidiot.discord.commands.functionalities.core.ConfigurationCommand;
 import com.somefriggnidiot.discord.commands.moderation.GetWarningsCommand;
 import com.somefriggnidiot.discord.commands.moderation.RemoveAllUsersFromRoleCommand;
 import com.somefriggnidiot.discord.commands.moderation.SoftBanCommand;
@@ -81,6 +82,9 @@ public class Main {
              .setOwnerId(ownerId)
              .setPrefix("!")
              .setHelpWord("help")
+             .addCommands( //Core
+                 new ConfigurationCommand()
+             )
              .addCommands( //Channels
                  new CreatePrivateChannelCommand(waiter),
                  new InviteToPrivateChannelCommand()

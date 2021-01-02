@@ -5,7 +5,6 @@ import com.somefriggnidiot.discord.data_access.DatabaseConnector.Table;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.util.XpUtil;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import javax.persistence.EntityManager;
 

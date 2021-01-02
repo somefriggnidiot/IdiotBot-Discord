@@ -31,6 +31,9 @@ public class GuildInfo {
    private List<Instant> botModeEntryIds;
    private Long streamerRoleId;
    private List<Long> streamerMemberIds;
+   private Long ownerRoleId;
+   private Long moderatorRoleId;
+   private Long botTextChannelId;
 
    /**
     * Initializes a new GuildInfo object denoted by the given Discord Guild ID.
@@ -50,6 +53,9 @@ public class GuildInfo {
       this.botModeEntryIds = new ArrayList<>();
       this.streamerRoleId = -1L;
       this.streamerMemberIds = new ArrayList<>();
+      this.ownerRoleId = 1L;
+      this.moderatorRoleId = 1L;
+      this.botTextChannelId = 1L;
    }
 
    /**
@@ -183,6 +189,30 @@ public class GuildInfo {
    public Boolean removeStreamerMemberId(Long streamerMemberId) {
       streamerMemberIds = streamerMemberIds == null ? new ArrayList<>() : streamerMemberIds;
       return streamerMemberIds.remove(streamerMemberId);
+   }
+
+   public Long getOwnerRoleId() {
+      return ownerRoleId == null ? 1L : ownerRoleId;
+   }
+
+   public void setOwnerRoleId(Long ownerRoleId) {
+      this.ownerRoleId = ownerRoleId;
+   }
+
+   public Long getModeratorRoleId() {
+      return moderatorRoleId == null ? 1L : moderatorRoleId;
+   }
+
+   public void setModeratorRoleId(Long moderatorRoleId) {
+      this.moderatorRoleId = moderatorRoleId;
+   }
+
+   public void setBotTextChannelId(Long botTextChannelId) {
+      this.botTextChannelId = botTextChannelId;
+   }
+
+   public Long getBotTextChannelId() {
+      return botTextChannelId == null ? 1L : botTextChannelId;
    }
 
    @Override

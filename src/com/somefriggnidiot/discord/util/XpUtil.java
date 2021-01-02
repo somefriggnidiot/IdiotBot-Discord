@@ -74,8 +74,7 @@ public class XpUtil {
             eb.addField("Role(s) Unlocked", roleList, true);
          }
 
-         guild.getTextChannelsByName("bot-spam", false).get(0)
-             .sendMessage(eb.build()).queue();
+         new GuildInfoUtil(guild).getBotTextChannel().sendMessage(eb.build()).queue();
 
       } else if (newXp < getXpThresholdForLevel(currentLevel)) {
          newLevel = new DatabaseUserUtil(userId).setGuildLevel(guild.getIdLong(), getLevelForXp(newXp));

@@ -5,6 +5,7 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.MessageListener;
 import com.somefriggnidiot.discord.util.GameGroupUtil;
+import com.somefriggnidiot.discord.util.command_util.CommandUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import org.slf4j.Logger;
@@ -19,7 +20,6 @@ public class RemoveGameGroupCommand extends Command {
       this.aliases = new String[]{"rgg"};
       this.arguments = "<gameName>";
       this.category = new Category("Game Groups");
-      this.requiredRole = "Staff";
       this.cooldown = 5;
       this.cooldownScope = CooldownScope.GUILD;
       this.help = "Removes the specified game from game groups.";
@@ -28,6 +28,12 @@ public class RemoveGameGroupCommand extends Command {
 
    @Override
    protected void execute(CommandEvent event) {
+      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
+      if (!CommandUtil.checkPermissions(event.getMember(), giu.getStaffRole())) {
+         event.reply("You do not have the necessary permissions to use this command.");
+         return;
+      }
+
       String cmd = event.getMessage().getContentDisplay().split("\\s", 2)[1];
       Guild guild = event.getGuild();
 

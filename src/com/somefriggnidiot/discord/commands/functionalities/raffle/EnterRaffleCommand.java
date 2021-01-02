@@ -1,9 +1,14 @@
 package com.somefriggnidiot.discord.commands.functionalities.raffle;
 
+import static java.lang.String.format;
+
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.models.RaffleObject;
+import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.data_access.util.RaffleUtil;
+import com.somefriggnidiot.discord.util.command_util.CommandUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
@@ -33,14 +38,21 @@ public class EnterRaffleCommand extends Command {
       Guild guild = event.getGuild();
       User author = event.getAuthor();
       String message = event.getMessage().getContentDisplay();
-      String raffleIdRaw = message.split("\\s", 3)[1];
-      String entriesRaw = message.split("\\s", 3)[2];
-      Long raffleId;
-      Integer entries;
+      String raffleIdRaw = null;
+      String entriesRaw = null;
+      try {
+         raffleIdRaw = message.split("\\s", 3)[1];
+         entriesRaw = message.split("\\s", 3)[2];
+      } catch (Exception e) {
+         event.reply("Invalid usage. Command requires ID and amount of times you wish to enter "
+             + "the raffle. Use `!enterraffle <id> <times>` to enter.");
+      }
 
+      Long raffleId;
+      Integer entriesAttemptedToPurchase;
       try { //See if we got valid params for raffle ID and entries.
          raffleId = Long.parseLong(raffleIdRaw);
-         entries = Integer.valueOf(entriesRaw);
+         entriesAttemptedToPurchase = Integer.valueOf(entriesRaw);
       } catch(Exception e) {
          event.reply("Invalid number provided for raffle ID or entries.");
          return;
@@ -65,10 +77,10 @@ public class EnterRaffleCommand extends Command {
 
       if (requiredRoleId == 0L) {
          //No required role, just purchase.
-         Integer entriesPurchased = ru.addEntriesForUser(author, entries);
+         Integer entriesPurchased = ru.addEntriesForUser(author, entriesAttemptedToPurchase);
          Integer tokenCost = entriesPurchased * ru.getRaffle().getTicketCost();
          String tokenPlural = tokenCost == 1 ? "token" : "tokens";
-         event.reply(String.format("You have spent %s %s to purchase %s entries.",
+         event.reply(format("You have spent %s %s to purchase %s entries.",
              tokenCost,
              tokenPlural,
              entriesPurchased));
@@ -78,22 +90,43 @@ public class EnterRaffleCommand extends Command {
 
             if (guild.getMember(author).getRoles().contains(requiredRole)) {
                //User is a member of the required role.
-               Integer entriesPurchased = ru.addEntriesForUser(author, entries);
+               Integer costPerEntry = raffle.getTicketCost();
+               Integer currentUserEntries = raffle.getEntryMap().getOrDefault(author.getIdLong(),
+                   0);
+               Integer userTokens = DatabaseUserUtil.getUser(author.getIdLong()).getTokenMap()
+                   .get(event.getGuild().getIdLong());
+               Integer maxEntries = raffle.getMaxTicketsPerPerson();
+
+               if (entriesAttemptedToPurchase + currentUserEntries > maxEntries) {
+                  event.reply(format("You cannot purchase more than %s entries for raffle %s. You"
+                          + " currently have %s entries.",
+                      maxEntries, raffle.getId(), currentUserEntries));
+                  return;
+               }
+
+               if ((entriesAttemptedToPurchase * costPerEntry) > userTokens) {
+                  event.reply("You cannot afford that many entries.");
+               }
+
+               Integer entriesPurchased = ru.addEntriesForUser(author, entriesAttemptedToPurchase);
                Integer tokenCost = entriesPurchased * ru.getRaffle().getTicketCost();
                String tokenPlural = tokenCost == 1 ? "token" : "tokens";
-               event.reply(String.format("You have spent %s %s to purchase %s entries.",
+               String entryPlural = entriesPurchased == 1 ? "entry" : "entries";
+               event.reply(format("You have spent %s %s to purchase %s %s.",
                    tokenCost,
                    tokenPlural,
-                   entriesPurchased));
+                   entriesPurchased,
+                   entryPlural));
             } else {
                //User is not a member of the required role.
-               event.reply(String.format("You need a member of the %s role to enter this raffle.",
+               event.reply(format("You need to be a member of the %s role to enter this raffle.",
                    requiredRole.getName()));
             }
          } catch (Exception e) {
             //Role cannot be found.
+            logger.error("Exception!", e);
             event.reply("The required role for this raffle does not exist!");
-            logger.warn(String.format("[%s] No role found for id %s, required for raffle '%s', "
+            logger.warn(format("[%s] No role found for id %s, required for raffle '%s', "
                 + "id %s.",
                 guild,
                 requiredRoleId,

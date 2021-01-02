@@ -2,7 +2,9 @@ package com.somefriggnidiot.discord.commands.moderation;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.MessageListener;
+import com.somefriggnidiot.discord.util.command_util.CommandUtil;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.dv8tion.jda.api.Permission;
@@ -31,6 +33,12 @@ public class RemoveAllUsersFromRoleCommand extends Command {
 
    @Override
    protected void execute(final CommandEvent event) {
+      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
+      if (!CommandUtil.checkPermissions(event.getMember(), giu.getStaffRole())) {
+         event.reply("You do not have the necessary permissions to use this command.");
+         return;
+      }
+
       String[] args = event.getMessage().getContentDisplay().split("\\s", 2);
       Role role;
 

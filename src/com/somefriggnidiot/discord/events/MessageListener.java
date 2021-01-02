@@ -80,10 +80,10 @@ public class MessageListener extends ListenerAdapter {
          } else {
             userName = guild.getMember(author).getEffectiveName();
          }
-         logger.info(String.format("[%s] %s in #%s: %s",
+         logger.info(String.format("[%s] [#%s] %s: %s",
              guild == null ? "DIRECT MESSAGE" : event.getGuild(),
-             userName,
              channel.getName(),
+             userName,
              msg));
       }
    }

@@ -5,11 +5,7 @@ import static java.lang.String.format;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.util.GameGroupUtil;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
-import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Activity.ActivityType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -36,16 +32,27 @@ public class UserUpdateGameListener extends ListenerAdapter {
          List<Long> featuredStreamers = gi.getStreamerMemberIds();
          Member member = event.getMember();
 
-         if (featuredStreamers.contains(member.getIdLong())) {
+         if (featuredStreamers != null && featuredStreamers.contains(member.getIdLong())) {
             Role streamerRole = guild.getRoleById(gi.getStreamerRoleId());
 
             if (streamerRole != null && !member.getRoles().contains(streamerRole)) {
                guild.addRoleToMember(member, streamerRole).queue();
+               new GuildInfoUtil(guild).getBotTextChannel()
+                   .sendMessage(format(
+                       "%s has gone live! Use `!streamers` for more details.",
+                       member.getEffectiveName())).queue();
                logger.info(format("[%s] %s has gone live: %s",
                    guild,
                    member.getEffectiveName(),
                    event.getNewActivity().getName()));
             } else {
+               try {
+                  guild.getTextChannelById(gi.getBotTextChannelId()).sendMessage("A featured "
+                          + "streamer has gone live, but no streamer role has been configured!")
+                      .queue();
+               } catch (Exception e) {
+                  return;
+               }
                logger.error(format("[%s] Attempted to add %s to Featured Streamer role, but no "
                    + "role was found for RoleID %s",
                    guild,
@@ -66,7 +73,7 @@ public class UserUpdateGameListener extends ListenerAdapter {
          List<Long> featuredStreamers = gi.getStreamerMemberIds();
          Member member = event.getMember();
 
-         if (featuredStreamers.contains(member.getIdLong())) {
+         if (featuredStreamers != null && featuredStreamers.contains(member.getIdLong())) {
             Role streamerRole = guild.getRoleById(gi.getStreamerRoleId());
 
             if (streamerRole != null && member.getRoles().contains(streamerRole)) {

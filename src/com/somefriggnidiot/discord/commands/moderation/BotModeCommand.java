@@ -2,7 +2,9 @@ package com.somefriggnidiot.discord.commands.moderation;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.util.BotModeUtil;
+import com.somefriggnidiot.discord.util.command_util.CommandUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import org.slf4j.Logger;
@@ -21,7 +23,6 @@ public class BotModeCommand extends Command {
       this.aliases = new String[]{"botonlymode", "botmode", "commandmode"};
       this.arguments = "<\"on\"|\"off\"> <prefix>";
       this.category = new Category("Moderation");
-      this.requiredRole = "Staff";
       this.cooldown = 5;
       this.cooldownScope = CooldownScope.GUILD;
       this.help = "Used to enable or disable bot-only / command-only mode. When enabled, any "
@@ -33,6 +34,12 @@ public class BotModeCommand extends Command {
 
    @Override
    protected void execute(CommandEvent event) {
+      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
+      if (!CommandUtil.checkPermissions(event.getMember(), giu.getStaffRole())) {
+         event.reply("You do not have the necessary permissions to use this command.");
+         return;
+      }
+
       String cmd = event.getMessage().getContentDisplay().split("\\s", 2)[1];
       String[] args = cmd.split("\\s", 2);
       String actionArg = args[0];

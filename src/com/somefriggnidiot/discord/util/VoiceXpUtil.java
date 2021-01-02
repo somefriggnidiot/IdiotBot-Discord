@@ -311,12 +311,12 @@ public class VoiceXpUtil {
              xpGained);
 
          if (luckMultActive) {
-            String multStr = multiplier.toString().substring(0, 4);
+            Double mult = multiplier + 0.00000;
+            String multStr = mult.toString().substring(0, 4);
             String xpGainStr = String.valueOf(xpGained.doubleValue());
             String message = guild.getMemberById(user.getIdLong()).getEffectiveName() + " has gotten"
                 + " a random XP multiplier of " + multStr + " for a drop of " + xpGainStr + " XP!";
-            guild.getTextChannelsByName("bot-spam", true).get(0)
-                .sendMessage(message).queue();
+            new GuildInfoUtil(guild).getBotTextChannel().sendMessage(message).queue();
          }
 
          logger.debug(format("user: %s "

@@ -2,7 +2,9 @@ package com.somefriggnidiot.discord.commands.functionalities.raffle;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.data_access.util.RaffleUtil;
+import com.somefriggnidiot.discord.util.command_util.CommandUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import org.slf4j.Logger;
@@ -20,13 +22,18 @@ public class CloseRaffleCommand extends Command {
       this.help = "Permanently closes a raffle";
       this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE, Permission.MESSAGE_READ};
       this.guildOnly = true;
-      this.requiredRole = "Staff";
       this.cooldown = 1;
       this.cooldownScope = CooldownScope.USER;
    }
 
    @Override
    protected void execute(final CommandEvent event) {
+      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
+      if (!CommandUtil.checkPermissions(event.getMember(), giu.getStaffRole())) {
+         event.reply("You do not have the necessary permissions to use this command.");
+         return;
+      }
+
       Guild guild = event.getGuild();
       String idRaw = event.getMessage().getContentDisplay().split("\\s", 2)[1];
       Long id = Long.parseLong(idRaw);

@@ -3,7 +3,6 @@ package com.somefriggnidiot.discord.data_access.util;
 import com.somefriggnidiot.discord.core.Main;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector.Table;
-import com.somefriggnidiot.discord.data_access.models.BotModeEntry;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.util.HighscoreObject;
@@ -15,6 +14,8 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 public class GuildInfoUtil {
 
@@ -48,6 +49,39 @@ public class GuildInfoUtil {
       em.getTransaction().commit();
 
       return level;
+   }
+
+   public void setOwnerId(Long ownerId) {
+      em.getTransaction().begin();
+      gi.setOwnerRoleId(ownerId);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public Role getOwnerRole() {
+      return guild.getRoleById(gi.getOwnerRoleId());
+   }
+
+   public void setModeratorId(Long moderatorId) {
+      em.getTransaction().begin();
+      gi.setModeratorRoleId(moderatorId);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public Role getStaffRole() {
+      return guild.getRoleById(gi.getModeratorRoleId());
+   }
+
+   public void setBotTextChannelId(Long botTextChannelId) {
+      em.getTransaction().begin();
+      gi.setBotTextChannelId(botTextChannelId);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public TextChannel getBotTextChannel() {
+      return guild.getTextChannelById(gi.getBotTextChannelId());
    }
 
    public void setVoiceXpMultiplier(double multiplier) {
@@ -189,9 +223,7 @@ public class GuildInfoUtil {
       em.getTransaction().commit();
    }
 
-   public static void setXpTracking(Long guildId, Boolean isActive) {
-      GuildInfo gi = getGuildInfo(guildId);
-
+   public void setXpTracking(Boolean isActive) {
       em.getTransaction().begin();
       gi.setGrantingMessageXp(isActive);
       em.persist(gi);

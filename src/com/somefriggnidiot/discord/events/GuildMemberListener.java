@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 public class GuildMemberListener extends ListenerAdapter {
 
    private final Logger logger = LoggerFactory.getLogger(MessageListener.class);
-   private final String[] bannedNames = new String[]{"bitch", "cunt", "whore", "fag", "slut",
+   private final String[] bannedNames = new String[]{"cunt", "whore", "fag", "slut",
        "hitler", "fuck"};
 
    @Override

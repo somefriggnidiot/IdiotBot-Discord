@@ -52,8 +52,11 @@ public class StatusCommand extends Command {
 
       EmbedBuilder eb = new EmbedBuilder();
       eb.setTitle(format("%s Information", event.getGuild().getName()));
-      eb.setColor(Color.GREEN);//ThreadLocalRandom.current().nextInt(0, 16777216));
+      eb.setColor(Color.GREEN);
       eb.setThumbnail(event.getGuild().getIconUrl());
+      eb.setFooter("Provided to you by IdiotBot. The most idiotic of bots.",
+          "http://www.foundinaction.com/wp-content/uploads/2018/08/"
+              + "Neon_600x600_Transparent.png");
       eb.addField("**Users**", userCount.toString(), true);
       eb.addField("**Bots**", botCount.toString(), true);
       eb.addField("**Ping**", format("%s ms", ping), true);

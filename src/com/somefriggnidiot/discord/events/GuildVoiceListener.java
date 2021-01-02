@@ -13,18 +13,18 @@ public class GuildVoiceListener extends ListenerAdapter {
 
    @Override
    public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
-      logger.info(String.format("[%s] %s connected to %s.",
+      logger.info(String.format("[%s] [VC | %s] %s connected.",
           event.getGuild(),
-          event.getMember().getEffectiveName(),
-          event.getChannelJoined()));
+          event.getChannelJoined().getName(),
+          event.getMember().getEffectiveName()));
       }
 
    @Override
    public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
-      logger.info(String.format("[%s] %s disconnected from %s.",
+      logger.info(String.format("[%s] [VC | %s] %s disconnected.",
           event.getGuild(),
-          event.getMember().getEffectiveName(),
-          event.getChannelLeft()));
+          event.getChannelLeft().getName(),
+          event.getMember().getEffectiveName()));
    }
 
    @Override

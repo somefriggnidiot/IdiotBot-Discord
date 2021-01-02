@@ -2,6 +2,7 @@ package com.somefriggnidiot.discord.util;
 
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.MessageListener;
 import java.text.DecimalFormat;
 import java.time.Instant;
@@ -60,8 +61,7 @@ public class MessageListenerUtil {
             String xpGainStr = xpGain.toString();
             String message = user + " has gotten a random XP multiplier of " + multStr + " for"
                 + " a drop of " + xpGainStr + " XP!";
-            event.getGuild().getTextChannelsByName("bot-spam", true).get(0)
-                .sendMessage(message).queue();
+            new GuildInfoUtil(event.getGuild()).getBotTextChannel().sendMessage(message).queue();
          }
 
          handleLogging(event, xpGain + playerLevel, newXp, dbu);

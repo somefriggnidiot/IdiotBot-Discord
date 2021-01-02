@@ -6,6 +6,7 @@ import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.MessageListener;
 import com.somefriggnidiot.discord.util.GameGroupUtil;
+import com.somefriggnidiot.discord.util.command_util.CommandUtil;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +29,6 @@ public class GroupGamesCommand extends Command {
       this.name = "gamegroups";
       this.aliases = new String[]{"groupbygame", "groupgames", "gamegroupings"};
       this.arguments = "<toggle/status/enable/disable/create> [create: gameName]";
-      this.requiredRole = "Staff";
       this.category = new Category("Game Groups");
       this.help = "Toggles whether or not this guild groups mambers by what game they are playing"
           + ". Members are \"grouped\" by being added to the specified group when Discord shows "
@@ -42,6 +42,12 @@ public class GroupGamesCommand extends Command {
 
    @Override
    protected void execute(final CommandEvent event) {
+      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
+      if (!CommandUtil.checkPermissions(event.getMember(), giu.getStaffRole())) {
+         event.reply("You do not have the necessary permissions to use this command.");
+         return;
+      }
+
       Guild guild = event.getGuild();
       String[] args = event.getMessage().getContentDisplay().split("\\s", 3);
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
@@ -61,7 +67,6 @@ public class GroupGamesCommand extends Command {
                try {
                   GameGroupUtil.refreshGameGroups(guild);
                } catch (Exception e) {
-//                  event.reply("Cannot modify roles of a higher rank.");
                   logger.error(e.getMessage(), e);
                }
                return;

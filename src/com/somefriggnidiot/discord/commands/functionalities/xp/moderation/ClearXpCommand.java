@@ -3,8 +3,8 @@ package com.somefriggnidiot.discord.commands.functionalities.xp.moderation;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
+import com.somefriggnidiot.discord.util.command_util.CommandUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import org.slf4j.Logger;
@@ -23,13 +23,17 @@ public class ClearXpCommand extends Command {
       this.botPermissions = new Permission[]{Permission.MESSAGE_READ,
           Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
       this.guildOnly = true;
-      this.requiredRole = "Founder";
       this.cooldown = 1;
       this.cooldownScope = CooldownScope.USER;
    }
 
    @Override
    protected void execute(CommandEvent event) {
+      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
+      if (!CommandUtil.checkPermissions(event.getMember(), giu.getOwnerRole())) {
+         event.reply("You do not have the necessary permissions to use this command.");
+         return;
+      }
 
       //Reset for all users.
 //      List<Member> xpMembers = event.getGuild().getMembers();

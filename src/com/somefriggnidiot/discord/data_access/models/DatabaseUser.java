@@ -113,6 +113,10 @@ public class DatabaseUser {
       return levelMap.put(guildId, newLevelValue);
    }
 
+   /**
+    *
+    * @return Map of Guild IDs to tokens in guild.
+    */
    public HashMap<Long, Integer> getTokenMap() {
       return tokenMap == null ? new HashMap<>() : tokenMap;
    }

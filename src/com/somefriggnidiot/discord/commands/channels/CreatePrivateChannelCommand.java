@@ -7,6 +7,9 @@ import com.jagrosh.jdautilities.menu.ButtonMenu;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector.Table;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
+import com.somefriggnidiot.discord.data_access.models.GuildInfo;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
+import com.somefriggnidiot.discord.util.command_util.CommandUtil;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -28,15 +31,21 @@ public class CreatePrivateChannelCommand extends Command {
       this.help = "Creates a private voice channel for use by a user and those invited to it.";
       this.arguments = "<owner> <name>";
       this.aliases = new String[]{"cpc", "createprivatechannel"};
-      this.ownerCommand = true;
       this.botPermissions = new Permission[]{Permission.MANAGE_SERVER, Permission.MANAGE_CHANNEL};
       this.category = new Category("VIP");
       this.cooldown = 1;
       this.cooldownScope = CooldownScope.USER;
+      this.guildOnly = true;
    }
 
    @Override
    protected void execute(final CommandEvent event) {
+      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
+      if (!CommandUtil.checkPermissions(event.getMember(), giu.getStaffRole())) {
+         event.reply("You do not have the necessary permissions to use this command.");
+         return;
+      }
+
       User channelOwner = event.getMessage().getMentionedUsers().get(0);
 
       if (hasChannel(channelOwner)) {

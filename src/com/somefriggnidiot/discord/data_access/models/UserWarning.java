@@ -1,9 +1,6 @@
 package com.somefriggnidiot.discord.data_access.models;
 
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.Id;

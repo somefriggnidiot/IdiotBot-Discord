@@ -4,6 +4,7 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
+import com.somefriggnidiot.discord.util.command_util.CommandUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import org.slf4j.Logger;
@@ -17,7 +18,6 @@ public class ToggleLuckBonusCommand extends Command {
       this.name = "toggleluckbonus";
       this.aliases = new String[]{"toggleluck"};
       this.arguments = "";
-      this.requiredRole = "Staff";
       this.category = new Category("Xp Moderation");
       this.help = "Toggles whether or not an additional luck factor is applied to XP gains.";
       this.botPermissions = new Permission[]{Permission.MESSAGE_READ, Permission.MESSAGE_WRITE,
@@ -29,6 +29,12 @@ public class ToggleLuckBonusCommand extends Command {
 
    @Override
    protected void execute(final CommandEvent event) {
+      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
+      if (!CommandUtil.checkPermissions(event.getMember(), giu.getStaffRole())) {
+         event.reply("You do not have the necessary permissions to use this command.");
+         return;
+      }
+
       Guild guild = event.getGuild();
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
 

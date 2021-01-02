@@ -3,6 +3,7 @@ package com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
+import com.somefriggnidiot.discord.util.command_util.CommandUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Role;
 import org.slf4j.Logger;
@@ -21,15 +22,19 @@ public class RemoveRoleLevelCommand extends Command {
       this.botPermissions = new Permission[]{Permission.MESSAGE_READ, Permission.MESSAGE_WRITE,
           Permission.MANAGE_ROLES};
       this.guildOnly = true;
-      this.requiredRole = "Staff";
       this.cooldown = 1;
       this.cooldownScope = CooldownScope.USER;
    }
 
    @Override
    protected void execute(final CommandEvent event) {
+      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
+      if (!CommandUtil.checkPermissions(event.getMember(), giu.getStaffRole())) {
+         event.reply("You do not have the necessary permissions to use this command.");
+         return;
+      }
+
       Role role = event.getMessage().getMentionedRoles().get(0);
-      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild().getIdLong());
 
       Integer level = giu.removeRoleLevelMapping(role.getIdLong());
 

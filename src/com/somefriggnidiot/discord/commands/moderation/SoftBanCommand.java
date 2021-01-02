@@ -2,8 +2,10 @@ package com.somefriggnidiot.discord.commands.moderation;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.data_access.util.UserWarningUtil;
 import com.somefriggnidiot.discord.events.MessageListener;
+import com.somefriggnidiot.discord.util.command_util.CommandUtil;
 import java.util.Timer;
 import java.util.TimerTask;
 import net.dv8tion.jda.api.entities.Member;
@@ -22,7 +24,6 @@ public class SoftBanCommand extends Command {
           + "speak or type until it is lifted. A soft-banned user will automatically receive a "
           + "warning for their ban.";
       this.arguments = "<user> <duration in minutes> <reason>";
-      this.requiredRole = "Staff";
       this.aliases = new String[]{"sb"};
       this.cooldown = 1;
       this.cooldownScope = CooldownScope.USER;
@@ -30,6 +31,12 @@ public class SoftBanCommand extends Command {
 
    @Override
    protected void execute(CommandEvent event) {
+      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
+      if (!CommandUtil.checkPermissions(event.getMember(), giu.getStaffRole())) {
+         event.reply("You do not have the necessary permissions to use this command.");
+         return;
+      }
+
       Member target = event.getGuild().getMember(event.getMessage().getMentionedUsers().get(0));
       Long duration = Long.parseLong(
           event.getMessage().getContentDisplay().split("\\s", 4)[2]) * 60 * 1000;

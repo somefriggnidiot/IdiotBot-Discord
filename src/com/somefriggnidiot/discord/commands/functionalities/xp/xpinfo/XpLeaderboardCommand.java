@@ -15,8 +15,6 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class XpLeaderboardCommand extends Command {
 
@@ -96,7 +94,10 @@ public class XpLeaderboardCommand extends Command {
               startRank,
               rank - 1,
               guild.getName()))
-          .setDescription(top);
+          .setDescription(top)
+          .setFooter("Provided to you by IdiotBot. The most idiotic of bots.",
+              "http://www.foundinaction.com/wp-content/uploads/2018/08/"
+                  + "Neon_600x600_Transparent.png");
 
       event.getChannel().sendMessage(eb.build()).queue();
    }

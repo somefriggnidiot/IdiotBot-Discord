@@ -8,7 +8,6 @@ import com.somefriggnidiot.discord.events.MessageListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -89,7 +88,7 @@ public class GameGroupUtil {
          rolledMembers.forEach(m ->
              guild.modifyMemberRoles(m, Collections.EMPTY_SET, groupedRoles).queue());
 
-         logger.info(format("[%s] GameGroups: Disables for guild. Removing all members "
+         logger.info(format("[%s] GameGroups: Disabled for guild. Removing all members "
              + "from grouped roles.", guild));
       }
    }

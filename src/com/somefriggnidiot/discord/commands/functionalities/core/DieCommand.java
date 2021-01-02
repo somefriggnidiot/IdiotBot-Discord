@@ -67,5 +67,4 @@ public class DieCommand extends Command {
 
       }
    }
-
 }
