@@ -67,12 +67,12 @@ import org.slf4j.LoggerFactory;
 
 public class Main {
 
-   private final static Logger logger = LoggerFactory.getLogger(Main.class);
    public static JDA jda;
    public static String ownerId;
 
    public static void main(String[] args) {
-      System.setProperty("log4j.configurationFile", "./resources/log4j2.xml");
+      System.setProperty("log4j.configurationFile", "resources/log4j2.xml");
+      final Logger logger = LoggerFactory.getLogger(Main.class);
       EventWaiter waiter = new EventWaiter();
       ownerId = args[1];
 
