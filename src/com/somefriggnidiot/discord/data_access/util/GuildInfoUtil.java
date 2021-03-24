@@ -69,6 +69,17 @@ public class GuildInfoUtil {
       em.getTransaction().commit();
    }
 
+   public void setGuestRoleId(Long guestRoleId) {
+      em.getTransaction().begin();
+      gi.setGuestRoleId(guestRoleId);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public Role getGuestRole() {
+      return guild.getRoleById(gi.getGuestRoleId());
+   }
+
    public Role getStaffRole() {
       return guild.getRoleById(gi.getModeratorRoleId());
    }
