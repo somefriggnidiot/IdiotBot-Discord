@@ -33,6 +33,7 @@ public class GuildInfo {
    private List<Long> streamerMemberIds;
    private Long ownerRoleId;
    private Long moderatorRoleId;
+   private Long guestRoleId;
    private Long botTextChannelId;
 
    /**
@@ -55,6 +56,7 @@ public class GuildInfo {
       this.streamerMemberIds = new ArrayList<>();
       this.ownerRoleId = 1L;
       this.moderatorRoleId = 1L;
+      this.guestRoleId = 1L;
       this.botTextChannelId = 1L;
    }
 
@@ -205,6 +207,14 @@ public class GuildInfo {
 
    public void setModeratorRoleId(Long moderatorRoleId) {
       this.moderatorRoleId = moderatorRoleId;
+   }
+
+   public Long getGuestRoleId() {
+      return guestRoleId == null ? 1L : guestRoleId;
+   }
+
+   public void setGuestRoleId(Long guestroleId) {
+      this.guestRoleId = guestroleId;
    }
 
    public void setBotTextChannelId(Long botTextChannelId) {

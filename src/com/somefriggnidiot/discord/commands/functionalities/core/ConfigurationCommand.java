@@ -104,6 +104,8 @@ public class ConfigurationCommand extends Command {
                return ccUtil.setOwnerRole(author, message.getMentionedRoles().get(0));
             case "staffRole":
                return ccUtil.setStaffRole(author, message.getMentionedRoles().get(0));
+            case "guestRole":
+               return ccUtil.setGuestRole(author, message.getMentionedRoles().get(0));
             case "streamingRole":
                return ccUtil.setStreamerRole(author, message.getMentionedRoles().get(0));
             case "voiceMultiplier":
@@ -143,6 +145,10 @@ public class ConfigurationCommand extends Command {
       eb.addField("staffRole",
           staffRole != null ? staffRole.getAsMention() : "Not Set", true);
 
+      Role guestRole = guild.getRoleById(gi.getGuestRoleId());
+      eb.addField("guestRole",
+          guestRole != null ? guestRole.getAsMention() : "Not Set", true);
+
       TextChannel textChannel = guild.getTextChannelById(gi.getBotTextChannelId());
       eb.addField("botTextChannel",
           textChannel != null ? textChannel.getAsMention() : "Not Set", true);
@@ -179,10 +185,15 @@ public class ConfigurationCommand extends Command {
           + "**Accepts:** Role as a mention.\n"
           + "**Description:** Designates a role as having access to staff-level commands, "
           + "including setting of most configuration items.");
+      config.put("guestRole", "**Requires:** ownerRole\n"
+          + "**Accepts:** Role as a mention.\n"
+          + "**Description:** Designates a role as the default `Guest` role of the server. If "
+          + "configured, this role is automatically assigned to all users upon joining the server, "
+          + "and may be removed by staff by using `!allow <userMention>`.");
       config.put("streamingRole", "**Requires:** staffRole.\n"
           + "**Accepts:** Role as a mention.\n"
           + "**Description:** Designates a role as the role to which featured streamers are added"
-          + ". For fuether information, see the documentation for \"!featurestreamer\".");
+          + ". For further information, see the documentation for \"!featurestreamer\".");
       config.put("voiceMultiplier", "**Requires:** staffRole\n"
           + "**Accepts:** Number, including decimal.\n"
           + "**Description:** Sets an additional multiplier to XP gained by members in voice chat"
