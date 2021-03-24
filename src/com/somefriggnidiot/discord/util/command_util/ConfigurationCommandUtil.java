@@ -72,6 +72,21 @@ public class ConfigurationCommandUtil {
        }
     }
 
+   public CommandUtilResponse setGuestRole(Member author, Role newGuestRole) {
+      if (checkPermissions(author, giu.getOwnerRole())) {
+         Long roleId = newGuestRole.getIdLong();
+         giu.setGuestRoleId(roleId);
+
+         if (gi.getGuestRoleId().equals(roleId)) {
+            return new CommandUtilResponse(true, CommandResponseMessage.SUCCESS);
+         } else {
+            return new CommandUtilResponse(false, CommandResponseMessage.UNKNOWN_ERROR);
+         }
+      } else {
+         return new CommandUtilResponse(false, CommandResponseMessage.PERMISSION_DENIED);
+      }
+   }
+
     public CommandUtilResponse setStreamerRole(Member author, Role newStreamerRole) {
        if (checkPermissions(author, giu.getStaffRole())) {
           GuildInfoUtil.setStreamerRoleId(guild.getIdLong(), newStreamerRole.getIdLong());

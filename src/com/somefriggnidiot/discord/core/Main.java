@@ -11,6 +11,7 @@ import com.somefriggnidiot.discord.commands.fun.CatCommand;
 import com.somefriggnidiot.discord.commands.fun.DogCommand;
 import com.somefriggnidiot.discord.commands.fun.DogeCommand;
 import com.somefriggnidiot.discord.commands.fun.EchoCommand;
+import com.somefriggnidiot.discord.commands.functionalities.core.ConfigurationCommand;
 import com.somefriggnidiot.discord.commands.functionalities.core.DieCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.AddGameGroupCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.GroupGamesCommand;
@@ -34,8 +35,8 @@ import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.LatestXpLe
 import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.ShowXpCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.XpLeaderboardCommand;
 import com.somefriggnidiot.discord.commands.moderation.AddAllUsersToRoleCommand;
+import com.somefriggnidiot.discord.commands.moderation.AllowCommand;
 import com.somefriggnidiot.discord.commands.moderation.BotModeCommand;
-import com.somefriggnidiot.discord.commands.functionalities.core.ConfigurationCommand;
 import com.somefriggnidiot.discord.commands.moderation.GetWarningsCommand;
 import com.somefriggnidiot.discord.commands.moderation.RemoveAllUsersFromRoleCommand;
 import com.somefriggnidiot.discord.commands.moderation.SoftBanCommand;
@@ -132,6 +133,7 @@ public class Main {
              )
              .addCommands( //Moderation
                  new AddAllUsersToRoleCommand(),
+                 new AllowCommand(),
                  new GetWarningsCommand(),
                  new RemoveAllUsersFromRoleCommand(),
                  new WarningCommand(),
