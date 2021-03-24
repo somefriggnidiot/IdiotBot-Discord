@@ -1,6 +1,8 @@
 package com.somefriggnidiot.discord.events;
 
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateNicknameEvent;
@@ -38,6 +40,16 @@ public class GuildMemberListener extends ListenerAdapter {
 
       DatabaseUserUtil.setXp(guildId, memberId, 0);
       DatabaseUserUtil.getUser(memberId).updateLevel(guildId, 0);
+
+      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
+      Role guestRole = giu.getGuestRole();
+      if (null != guestRole) {
+         event.getGuild().addRoleToMember(event.getMember(), guestRole).complete();
+         logger.info(String.format("[%s] %s has been assigned the %s role.",
+             event.getGuild(),
+             event.getMember().getEffectiveName(),
+             guestRole.getName()));
+      }
 
       logger.info(String.format("[%s] %s has joined the server.",
           event.getGuild(),
