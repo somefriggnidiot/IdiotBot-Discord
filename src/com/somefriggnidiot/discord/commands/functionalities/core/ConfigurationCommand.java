@@ -115,6 +115,10 @@ public class ConfigurationCommand extends Command {
                return ccUtil.setBotTextChannel(author, message.getMentionedChannels().get(0));
             case "xpEnabled":
                return ccUtil.setXpEnabled(author, configValue);
+            case "xpDegrades":
+               return ccUtil.setXpDegrades(author, configValue);
+            case "xpDegradeValue":
+               return ccUtil.setXpDegradeValue(author, configValue);
             default:
                return new CommandUtilResponse(false, CommandResponseMessage.INVALID_ARG);
          }
@@ -159,6 +163,10 @@ public class ConfigurationCommand extends Command {
 
       eb.addField("xpEnabled", String.valueOf(gi.isGrantingMessageXp()), true);
 
+      eb.addField("xpDegrades", String.valueOf(gi.isDegradingXp()), true);
+
+      eb.addField("xpDegradeValue", String.valueOf(gi.getXpDegradeAmount()), true);
+
       eb.addField("voiceMultiplier", String.valueOf(gi.getVoiceXpMultiplier()), true);
 
       event.reply(eb.build());
@@ -202,6 +210,14 @@ public class ConfigurationCommand extends Command {
       config.put("xpEnabled", "**Requires:** staffRole\n"
           + "**Accepts:** true/false\n"
           + "**Description:** Enables or disables the XP system accordingly.");
+      config.put("xpDegrades", "**Requires:** ownerRole\n"
+          + "**Accepts:** true/false\n"
+          + "**Description:** Enables or disables XP degradation. When enabled, user XP will "
+          + "degrade daily by the value configured for `xpDegradeValue`.");
+      config.put("xpDegradeValue", "**Requires:** ownerRole\n"
+          + "**Accepts:** Positive, whole numbers."
+          + "**Description:** The amount of XP deducted from all server members on a daily basis. "
+          + "Only applies when `xpDegrades` is `true`.");
 
       return config;
    }

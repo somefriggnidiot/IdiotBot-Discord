@@ -49,8 +49,10 @@ import com.somefriggnidiot.discord.events.GuildVoiceListener;
 import com.somefriggnidiot.discord.events.MessageListener;
 import com.somefriggnidiot.discord.events.ReconnectedEventListener;
 import com.somefriggnidiot.discord.events.UserUpdateGameListener;
+import com.somefriggnidiot.discord.util.DailyRunnerDaemon;
 import com.somefriggnidiot.discord.util.GameGroupUtil;
 import com.somefriggnidiot.discord.util.VoiceXpUtil;
+import com.somefriggnidiot.discord.util.XpDegradationUtil;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -183,6 +185,9 @@ public class Main {
              jda.getGuilds().size(),
              users,
              jda.getUsers().size() - users));
+
+         //General Startup
+         XpDegradationUtil.startDegraderDaemon();
 
          //Start up Guilds
          for (Guild guild : jda.getGuilds()) {

@@ -147,4 +147,42 @@ public class ConfigurationCommandUtil {
           return new CommandUtilResponse(false, CommandResponseMessage.PERMISSION_DENIED);
        }
     }
+
+    public CommandUtilResponse setXpDegrades(Member author, String value) {
+       if(checkPermissions(author, giu.getOwnerRole())) {
+          try {
+             Boolean setActive = Boolean.parseBoolean(value);
+             giu.setXpDegrades(setActive);
+
+             if (gi.isDegradingXp() == setActive) {
+                return new CommandUtilResponse(true, CommandResponseMessage.SUCCESS);
+             } else {
+                return new CommandUtilResponse(false, CommandResponseMessage.UNKNOWN_ERROR);
+             }
+          } catch (Exception e) {
+             return new CommandUtilResponse(false, CommandResponseMessage.INVALID_ARG);
+          }
+       } else {
+          return new CommandUtilResponse(false, CommandResponseMessage.PERMISSION_DENIED);
+       }
+    }
+
+    public CommandUtilResponse setXpDegradeValue(Member author, String value) {
+       if(checkPermissions(author, giu.getOwnerRole())) {
+          try {
+             Long degradeValue = Long.parseLong(value);
+             giu.setXpDegradeAmount(degradeValue);
+
+             if (degradeValue.equals(gi.getXpDegradeAmount())) {
+                return new CommandUtilResponse(true, CommandResponseMessage.SUCCESS);
+             } else {
+                return new CommandUtilResponse(false, CommandResponseMessage.UNKNOWN_ERROR);
+             }
+          } catch (Exception e) {
+             return new CommandUtilResponse(false, CommandResponseMessage.INVALID_ARG);
+          }
+       } else {
+          return new CommandUtilResponse(false, CommandResponseMessage.PERMISSION_DENIED);
+       }
+    }
 }

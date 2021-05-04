@@ -241,6 +241,20 @@ public class GuildInfoUtil {
       em.getTransaction().commit();
    }
 
+   public void setXpDegradeAmount(Long amount) {
+      em.getTransaction().begin();
+      gi.setXpDegradeAmount(amount);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public void setXpDegrades(Boolean isActive) {
+      em.getTransaction().begin();
+      gi.setXpDegrades(isActive);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
    public static void setLuckBonusActive(Long guildId, Boolean isActive) {
       GuildInfo gi = getGuildInfo(guildId);
 

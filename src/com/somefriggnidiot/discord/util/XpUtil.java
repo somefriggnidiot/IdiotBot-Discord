@@ -128,7 +128,7 @@ public class XpUtil {
     */
    public static Integer getLevelForXp(Integer xp) {
       Integer level = -1;
-      Integer thresholdXp  = getXpThresholdForLevel(level);
+      Integer thresholdXp = getXpThresholdForLevel(level);
 
       while (xp > thresholdXp) {
          thresholdXp = getXpThresholdForLevel(level);

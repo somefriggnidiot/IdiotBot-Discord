@@ -35,6 +35,8 @@ public class GuildInfo {
    private Long moderatorRoleId;
    private Long guestRoleId;
    private Long botTextChannelId;
+   private Boolean xpDegrades;
+   private Long xpDegradeAmount;
 
    /**
     * Initializes a new GuildInfo object denoted by the given Discord Guild ID.
@@ -58,6 +60,8 @@ public class GuildInfo {
       this.moderatorRoleId = 1L;
       this.guestRoleId = 1L;
       this.botTextChannelId = 1L;
+      this.xpDegrades = false;
+      this.xpDegradeAmount = 0L;
    }
 
    /**
@@ -113,6 +117,22 @@ public class GuildInfo {
       this.messageXpActive = messageXpActive;
    }
 
+   public Boolean isDegradingXp() {
+      return xpDegrades == null ? false : xpDegrades;
+   }
+
+   public void setXpDegrades(Boolean isActive) {
+      this.xpDegrades = isActive;
+   }
+
+   public Long getXpDegradeAmount() {
+      return xpDegradeAmount == null ? 0L : xpDegradeAmount;
+   }
+
+   public void setXpDegradeAmount(Long amount) {
+      this.xpDegradeAmount = amount;
+   }
+
    public Boolean luckBonusActive() {
       return luckBonusActive == null ? false : luckBonusActive;
    }
@@ -126,6 +146,10 @@ public class GuildInfo {
       return levelRolesActive;
    }
 
+   /**
+    *
+    * @return
+    */
    public HashMap<Long, Integer> getRoleLevelMappings() {
       return roleLevelMappings == null ? new HashMap<>() : roleLevelMappings;
    }
