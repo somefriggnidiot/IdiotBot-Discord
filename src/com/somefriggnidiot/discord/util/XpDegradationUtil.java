@@ -81,7 +81,7 @@ public class XpDegradationUtil {
                             + " now %s.", guildDegrading, member.getEffectiveName(), levelBefore,
                             levelAfter));
 
-                        //TODO Create utility to refresh level roles for a user.
+                        XpUtil.updateLevelRoleAssignments(guildDegrading);
                      }
 
                      membersDegraded++;

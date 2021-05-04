@@ -30,6 +30,7 @@ import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.SetVoi
 import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.ToggleLuckBonusCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.ToggleXpGainCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.AddRoleLevelCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.RefreshRoleLevelAssignmentsCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.RemoveRoleLevelCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.LatestXpLeaderboardCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.ShowXpCommand;
@@ -126,7 +127,8 @@ public class Main {
               )
              .addCommands( //XP - Role Levels
                  new AddRoleLevelCommand(),
-                 new RemoveRoleLevelCommand()
+                 new RemoveRoleLevelCommand(),
+                 new RefreshRoleLevelAssignmentsCommand()
              )
              .addCommands( // XP - XpInfo
                  new ShowXpCommand(),

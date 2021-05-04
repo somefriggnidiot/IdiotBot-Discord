@@ -1,5 +1,8 @@
 package com.somefriggnidiot.discord.util;
 
+import static java.lang.String.format;
+
+import com.somefriggnidiot.discord.core.Main;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
@@ -10,6 +13,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -45,7 +49,7 @@ public class XpUtil {
 
       if (newXp > xpThreshold) {
          newLevel = new DatabaseUserUtil(userId).setGuildLevel(guild.getIdLong(), getLevelForXp(newXp));
-         String newLevelString = String.format("**%s** (%s%s)",
+         String newLevelString = format("**%s** (%s%s)",
              newLevel.toString(),
              (newLevel - currentLevel)>=1 ? "+" : "",
              (newLevel - currentLevel)
@@ -56,7 +60,7 @@ public class XpUtil {
          EmbedBuilder eb = new EmbedBuilder()
              .setColor(Color.CYAN)
              .setThumbnail(user.getAvatarUrl())
-             .setTitle(String.format("%s has leveled up!", effectiveName))
+             .setTitle(format("%s has leveled up!", effectiveName))
              .addField("Current Level", newLevelString, true)
              .addField("Progress to Next Level",
                  df.format(newXp) + " / " + df.format(getXpThresholdForLevel(newLevel+1)),
@@ -78,7 +82,7 @@ public class XpUtil {
 
       } else if (newXp < getXpThresholdForLevel(currentLevel)) {
          newLevel = new DatabaseUserUtil(userId).setGuildLevel(guild.getIdLong(), getLevelForXp(newXp));
-         logger.info(String.format("[%s] Demoted %s to level %s.",
+         logger.info(format("[%s] Demoted %s to level %s.",
              guild,
              user.getName(),
              newLevel));
@@ -202,6 +206,61 @@ public class XpUtil {
    }
 
    /**
+    * Refreshes role level assignments for a Guild. All members of the Guild
+    * will be removed from mapped level roles for which they would not have the
+    * proper level, and will be added to all roles for which their level should
+    * have access.
+    *
+    * Operation will not affect roles which are not part of the server's role level
+    * mappings.
+    *
+    * @param guild the {@link Guild} for which role level assignments shall be
+    * recalculated.
+    */
+   public static void updateLevelRoleAssignments(Guild guild) {
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
+
+      if (gi.getLevelRolesActive() || gi.getRoleLevelMappings().size() > 0) {
+         List<Member> members = guild.getMembers();
+         /**
+          * Key / Long = Role ID
+          * Value / Integer = Level Unlocked
+          */
+         Map<Long, Integer> roleMappings = gi.getRoleLevelMappings();
+         List<Role> rolesMapped = guild.getRoles().stream()
+             .filter(roleMappings::containsKey).collect(Collectors.toList());
+
+
+         for (Member member : members) {
+            List<Role> rolesAllowed = new ArrayList<>();
+            List<Role> rolesToRevoke = new ArrayList<>();
+            Integer memberXp = DatabaseUserUtil.getUser(
+                member.getIdLong()).getXpMap().getOrDefault(guild.getIdLong(), 0);
+
+            for (Role role : rolesMapped) {
+               Integer roleLevel = roleMappings.get(role.getIdLong());
+               Integer memberLevel = XpUtil.getLevelForXp(memberXp) == null ? 0 : XpUtil
+                   .getLevelForXp(memberXp);
+
+               if (roleLevel > memberLevel) {
+                  //Revoke - Member's level is below required for role.
+                  logger.info(format("[%s] Removed %s from Level %s Role: %s", guild, member
+                      .getEffectiveName(), roleLevel, role.getName()));
+                  rolesToRevoke.add(role);
+               } else {
+                  //Allow
+                  logger.info(format("[%s] Added %s to Level %s Role: %s", guild, member
+                      .getEffectiveName(), roleLevel, role.getName()));
+                  rolesAllowed.add(role);
+               }
+            }
+
+            guild.modifyMemberRoles(member, rolesAllowed, rolesToRevoke).complete();
+         }
+      }
+   }
+
+   /**
     * Updates a user to apply an additional amount of tokens.
     *
     * <p>
@@ -218,7 +277,7 @@ public class XpUtil {
       DatabaseUserUtil dbuu = new DatabaseUserUtil(user.getIdLong());
       Integer newTokens = dbuu.addTokens(guild.getIdLong(), tokens);
 
-      logger.info(String.format("[%s] %s has gained %s token(s)! Now at %s.",
+      logger.info(format("[%s] %s has gained %s token(s)! Now at %s.",
           guild,
           user.getName(),
           tokens,
