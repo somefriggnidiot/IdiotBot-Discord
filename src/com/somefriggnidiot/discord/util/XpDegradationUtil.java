@@ -80,8 +80,6 @@ public class XpDegradationUtil {
                         logger.info(format("[%s] %s has lost a level from XP degradation. Was %s,"
                             + " now %s.", guildDegrading, member.getEffectiveName(), levelBefore,
                             levelAfter));
-
-                        XpUtil.updateLevelRoleAssignments(guildDegrading);
                      }
 
                      membersDegraded++;
@@ -91,6 +89,7 @@ public class XpDegradationUtil {
                          member));
                   }
                }
+               XpUtil.updateLevelRoleAssignments(guildDegrading);
                logger.info(format("[%s] Finished degrading XP for %s members.",
                    guildDegrading, membersDegraded));
             }

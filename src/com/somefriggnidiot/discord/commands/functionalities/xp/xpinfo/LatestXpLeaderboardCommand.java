@@ -23,7 +23,7 @@ public class LatestXpLeaderboardCommand extends Command {
       this.name = "latest";
       this.aliases = new String[]{"latest-top", "recent"};
       this.category = new Category("Xp Info");
-      this.help = "Displays the top XP earners in this guild who have earned XP in the past week..";
+      this.help = "Displays the rankings of members by when they last earned XP in the guild.";
       this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE, Permission.MESSAGE_READ};
       this.guildOnly = true;
       this.cooldown = 1;
@@ -65,7 +65,7 @@ public class LatestXpLeaderboardCommand extends Command {
 
       List<HighscoreObject> sortedScores = highScoreObjects.stream()
           .sorted(Comparator.comparing(HighscoreObject::getLastGain).reversed())
-          .filter(e -> e.getXp() > 0)
+//          .filter(e -> e.getXp() > 0)
           .collect(Collectors.toList());
 
       String top = ""; //String to be returned as leaderboard.

@@ -228,8 +228,7 @@ public class XpUtil {
           */
          Map<Long, Integer> roleMappings = gi.getRoleLevelMappings();
          List<Role> rolesMapped = guild.getRoles().stream()
-             .filter(roleMappings::containsKey).collect(Collectors.toList());
-
+             .filter(role -> roleMappings.containsKey(role.getIdLong())).collect(Collectors.toList());
 
          for (Member member : members) {
             List<Role> rolesAllowed = new ArrayList<>();
