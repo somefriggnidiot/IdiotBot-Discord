@@ -181,6 +181,9 @@ public class StreamerFeatureCommand extends Command {
       if (ids != null && ids.size() > 0) {
          for (Long id : ids) {
             Member member = guild.getMemberById(id);
+            if (member == null) {
+               continue;
+            }
             Activity streamingActivity = null;
             try {
                streamingActivity = member.getActivities().stream().filter(act -> act

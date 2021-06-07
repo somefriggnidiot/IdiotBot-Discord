@@ -63,7 +63,6 @@ public class GameGroupUtil {
                 .getEffectiveName(), roles.toString()));
          }
       }
-
    }
 
    public static void refreshGameGroups(Guild guild) {

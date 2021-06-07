@@ -88,7 +88,9 @@ public class Main {
              .setPrefix("!")
              .setHelpWord("help")
              .addCommands( //Core
-                 new ConfigurationCommand()
+                 new ConfigurationCommand(),
+                 new DieCommand(waiter),
+                 new StatusCommand()
              )
              .addCommands( //Channels
                  new CreatePrivateChannelCommand(waiter),
@@ -96,7 +98,6 @@ public class Main {
              )
              .addCommands( //Fun
                  new CatCommand(),
-                 new DieCommand(waiter), //TODO Make core functionality group and move.
                  new DogCommand(),
                  new DogeCommand(),
                  new EchoCommand()
@@ -146,9 +147,7 @@ public class Main {
                  new TagLogCommand(),
                  new SoftBanCommand()
              )
-//             .addCommand(new KarmaCommand())
-             .addCommand(new ProfileCommand())
-             .addCommand(new StatusCommand());
+             .addCommand(new ProfileCommand());
 
          jda = new JDABuilder().addEventListeners(
              new MessageListener(),

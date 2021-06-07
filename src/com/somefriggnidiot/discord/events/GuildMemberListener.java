@@ -21,7 +21,6 @@ public class GuildMemberListener extends ListenerAdapter {
 
    @Override
    public void onGuildMemberUpdateNickname(GuildMemberUpdateNicknameEvent event) {
-
       logNicknameChange(event);
       resetBannedName(event);
    }

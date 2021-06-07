@@ -45,6 +45,8 @@ public class UserUpdateGameListener extends ListenerAdapter {
                    guild,
                    member.getEffectiveName(),
                    event.getNewActivity().getName()));
+            } else if (streamerRole != null) {
+               guild.addRoleToMember(member, streamerRole).queue();
             } else {
                try {
                   guild.getTextChannelById(gi.getBotTextChannelId()).sendMessage("A featured "

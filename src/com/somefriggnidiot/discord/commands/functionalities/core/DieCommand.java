@@ -21,6 +21,7 @@ public class DieCommand extends Command {
    public DieCommand(EventWaiter waiter) {
       this.waiter = waiter;
       this.name = "die";
+      this.category = new Category("Core");
       this.guildOnly = false;
       this.cooldown = 1;
       this.cooldownScope = CooldownScope.USER_CHANNEL;

@@ -73,7 +73,8 @@ public class XpDegradationUtil {
 
                      DatabaseUserUtil.setXp(guildDegrading.getIdLong(),
                          member.getIdLong(),
-                         xpAfter);
+                         xpAfter,
+                         false);
 
                      //Check for level changes.
                      if (!levelBefore.equals(levelAfter)) {
