@@ -58,14 +58,13 @@ public class LatestXpLeaderboardCommand extends Command {
          highScoreObjects.add(new HighscoreObject(dbu, xp, dbu.getLatestGain()));
       }
 
-      highScoreObjects = highScoreObjects.stream()
-          .filter(e -> e.getLastGain()
-              .after(Timestamp.valueOf(LocalDateTime.now().minusDays(7))))
-          .collect(Collectors.toList());
+//      highScoreObjects = highScoreObjects.stream()
+//          .filter(e -> e.getLastGain()
+//              .after(Timestamp.valueOf(LocalDateTime.now().minusDays(30))))
+//          .collect(Collectors.toList());
 
       List<HighscoreObject> sortedScores = highScoreObjects.stream()
           .sorted(Comparator.comparing(HighscoreObject::getLastGain).reversed())
-//          .filter(e -> e.getXp() > 0)
           .collect(Collectors.toList());
 
       String top = ""; //String to be returned as leaderboard.

@@ -47,7 +47,7 @@ public class ListRafflesCommand extends Command {
       Guild guild = event.getGuild();
       EmbedBuilder eb = new EmbedBuilder()
           .setTitle("Active Raffles")
-          .setDescription(format("The following raffles are active in %s. \n`!enterrafle id "
+          .setDescription(format("The following raffles are active in %s. \n`!enterraffle id "
                   + "times` to enter.",
               guild.getName()))
           .setFooter("Provided to you by IdiotBot. The most idiotic of bots.",

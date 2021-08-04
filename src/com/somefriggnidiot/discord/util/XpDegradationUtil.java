@@ -48,6 +48,8 @@ public class XpDegradationUtil {
             for (Guild guildDegrading : guildsDegrading) {
                logger.info(format("[%s] Started daily XP degradation.", guildDegrading));
                GuildInfo gi = GuildInfoUtil.getGuildInfo(guildDegrading);
+               Long degradeValue = gi.getXpDegradeAmount();
+
                Integer degradeAmountAbs = gi.getXpDegradeAmount().intValue();
 
                List<Member> members = Main.jda.getGuildById(guildDegrading.getIdLong())
@@ -58,6 +60,11 @@ public class XpDegradationUtil {
                   DatabaseUser dbu = DatabaseUserUtil.getUser(member.getIdLong());
                   Integer xpBefore = dbu.getXpMap().get(guildDegrading.getIdLong()) == null ? 0 :
                       dbu.getXpMap().get(guildDegrading.getIdLong());
+
+                  if (degradeValue == -1L) {
+                     //degradeAmountAbs becomes 10*level + 10xp;
+                     degradeAmountAbs = XpUtil.getLevelForXp(xpBefore) * 10 +  10;
+                  }
 
                   if (xpBefore != 0) { //Don't bother if the user has no xp already.
                      Integer levelBefore = XpUtil.getLevelForXp(xpBefore);

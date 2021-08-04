@@ -170,7 +170,13 @@ public class ConfigurationCommandUtil {
     public CommandUtilResponse setXpDegradeValue(Member author, String value) {
        if(checkPermissions(author, giu.getOwnerRole())) {
           try {
-             Long degradeValue = Long.parseLong(value);
+             Long degradeValue = 0L;
+             if (value.equalsIgnoreCase("LINEAR")) {
+                degradeValue = -1L;
+             } else {
+                degradeValue = Long.parseLong(value);
+             }
+
              giu.setXpDegradeAmount(degradeValue);
 
              if (degradeValue.equals(gi.getXpDegradeAmount())) {
