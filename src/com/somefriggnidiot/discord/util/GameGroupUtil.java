@@ -39,7 +39,7 @@ public class GameGroupUtil {
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
       Collection<String> roleNames = gi.getGameGroupMappings().values();
       Collection<Role> roles = new ArrayList<>();
-      /**
+      /*
        * List of all members across the guild who currently
        * belong to one of the GameGroup roles.
        */

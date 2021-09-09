@@ -43,10 +43,6 @@ public class StreamerFeatureCommand extends Command {
    @Override
    protected void execute(final CommandEvent event) {
       GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
-      if (!CommandUtil.checkPermissions(event.getMember(), giu.getStaffRole())) {
-         event.reply("You do not have the necessary permissions to use this command.");
-         return;
-      }
 
       try {
          String action = event.getMessage().getContentDisplay().split("\\s", 3)[1];

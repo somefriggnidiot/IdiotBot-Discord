@@ -69,6 +69,8 @@ public class ConfigurationCommand extends Command {
             try {
                String configItem = params[2];
 
+               event.reply("This functionality has not yet been implemented.");
+
                //TODO unsetConfig(configItem, event.getMember());
             } catch (IndexOutOfBoundsException iobe) {
                event.reply("Invalid argument(s). You must specify the exact name of the "
