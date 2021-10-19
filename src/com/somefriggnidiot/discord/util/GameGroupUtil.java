@@ -105,7 +105,7 @@ public class GameGroupUtil {
 
          if (!member.getRoles().contains(groupRole)) {
             guild.addRoleToMember(member, groupRole).queue();
-            logger.info(format("[%s] GameGroups: Added %s to %s.",
+            logger.debug(format("[%s] GameGroups: Added %s to %s.",
                 guild, member.getEffectiveName(), groupRole.getName()));
          }
       } else {
@@ -121,7 +121,7 @@ public class GameGroupUtil {
          if (memberGroupedRoles.size() > 0) {
             guild.modifyMemberRoles(member, Collections.EMPTY_SET, memberGroupedRoles).queue();
 
-            memberGroupedRoles.forEach(r -> logger.info(
+            memberGroupedRoles.forEach(r -> logger.debug(
                 format("[%s] GameGroups: Removed %s from %s.",
                 guild, member.getEffectiveName(), r.getName())));
          }

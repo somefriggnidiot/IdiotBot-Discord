@@ -49,9 +49,7 @@ public class XpDegradationUtil {
                logger.info(format("[%s] Started daily XP degradation.", guildDegrading));
                GuildInfo gi = GuildInfoUtil.getGuildInfo(guildDegrading);
                Long degradeValue = gi.getXpDegradeAmount();
-
                Integer degradeAmountAbs = gi.getXpDegradeAmount().intValue();
-
                List<Member> members = Main.jda.getGuildById(guildDegrading.getIdLong())
                    .getMembers();
 

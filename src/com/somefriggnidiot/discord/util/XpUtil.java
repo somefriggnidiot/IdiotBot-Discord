@@ -243,12 +243,12 @@ public class XpUtil {
 
                if (roleLevel > memberLevel) {
                   //Revoke - Member's level is below required for role.
-                  logger.info(format("[%s] Removed %s from Level %s Role: %s", guild, member
+                  logger.debug(format("[%s] Removing %s from Level %s Role: %s", guild, member
                       .getEffectiveName(), roleLevel, role.getName()));
                   rolesToRevoke.add(role);
                } else {
                   //Allow
-                  logger.info(format("[%s] Added %s to Level %s Role: %s", guild, member
+                  logger.debug(format("[%s] Adding %s to Level %s Role: %s", guild, member
                       .getEffectiveName(), roleLevel, role.getName()));
                   rolesAllowed.add(role);
                }
