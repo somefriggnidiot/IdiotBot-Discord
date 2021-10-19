@@ -34,7 +34,6 @@ public class ToggleLuckBonusCommand extends Command {
          event.reply("You do not have the necessary permissions to use this command.");
          return;
       }
-
       Guild guild = event.getGuild();
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
 

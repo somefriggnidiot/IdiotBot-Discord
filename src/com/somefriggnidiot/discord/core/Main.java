@@ -191,13 +191,18 @@ public class Main {
 
          //General Startup
          XpDegradationUtil.startDegraderDaemon();
-
          //Start up Guilds
          for (Guild guild : jda.getGuilds()) {
             GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
 
             if (gi.isGrantingMessageXp()) {
                VoiceXpUtil.startTimer(guild.getIdLong());
+            }
+
+            if (gi.isGroupingGames()) {
+               logger.info(String.format("[%s] Started Game Groups tracking. Refreshing role "
+                   + "assignments.", guild));
+               GameGroupUtil.refreshGameGroups(guild);
             }
 
             if (gi.isGroupingGames()) {

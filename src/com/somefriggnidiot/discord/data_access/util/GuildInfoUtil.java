@@ -254,7 +254,6 @@ public class GuildInfoUtil {
       em.persist(gi);
       em.getTransaction().commit();
    }
-
    public static void setLuckBonusActive(Long guildId, Boolean isActive) {
       GuildInfo gi = getGuildInfo(guildId);
 

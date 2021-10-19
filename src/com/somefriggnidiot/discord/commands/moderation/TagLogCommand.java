@@ -33,7 +33,7 @@ public class TagLogCommand extends Command{
          event.reply("You do not have the necessary permissions to use this command.");
          return;
       }
-
+     
       String message = event.getMessage().getContentDisplay();
       String notes = message.contains(" ") ? message.split("\\s", 2)[1] : "";
       String uuid = UUID.randomUUID().toString();
