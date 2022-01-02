@@ -40,6 +40,7 @@ import com.somefriggnidiot.discord.commands.moderation.AddAllUsersToRoleCommand;
 import com.somefriggnidiot.discord.commands.moderation.AllowCommand;
 import com.somefriggnidiot.discord.commands.moderation.BotModeCommand;
 import com.somefriggnidiot.discord.commands.moderation.GetWarningsCommand;
+import com.somefriggnidiot.discord.commands.moderation.InfodumpCommand;
 import com.somefriggnidiot.discord.commands.moderation.RemoveAllUsersFromRoleCommand;
 import com.somefriggnidiot.discord.commands.moderation.SoftBanCommand;
 import com.somefriggnidiot.discord.commands.moderation.TagLogCommand;
@@ -147,7 +148,8 @@ public class Main {
                  new TagLogCommand(),
                  new SoftBanCommand()
              )
-             .addCommand(new ProfileCommand());
+             .addCommand(new ProfileCommand())
+             .addCommand(new InfodumpCommand());
 
          jda = new JDABuilder().addEventListeners(
              new MessageListener(),
