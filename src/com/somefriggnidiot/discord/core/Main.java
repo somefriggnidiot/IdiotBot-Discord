@@ -42,7 +42,6 @@ import com.somefriggnidiot.discord.commands.moderation.BotModeCommand;
 import com.somefriggnidiot.discord.commands.moderation.GetWarningsCommand;
 import com.somefriggnidiot.discord.commands.moderation.InfodumpCommand;
 import com.somefriggnidiot.discord.commands.moderation.RemoveAllUsersFromRoleCommand;
-import com.somefriggnidiot.discord.commands.moderation.SoftBanCommand;
 import com.somefriggnidiot.discord.commands.moderation.TagLogCommand;
 import com.somefriggnidiot.discord.commands.moderation.WarningCommand;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
@@ -52,7 +51,6 @@ import com.somefriggnidiot.discord.events.GuildVoiceListener;
 import com.somefriggnidiot.discord.events.MessageListener;
 import com.somefriggnidiot.discord.events.ReconnectedEventListener;
 import com.somefriggnidiot.discord.events.UserUpdateGameListener;
-import com.somefriggnidiot.discord.util.DailyRunnerDaemon;
 import com.somefriggnidiot.discord.util.GameGroupUtil;
 import com.somefriggnidiot.discord.util.VoiceXpUtil;
 import com.somefriggnidiot.discord.util.XpDegradationUtil;
@@ -145,8 +143,7 @@ public class Main {
                  new GetWarningsCommand(),
                  new RemoveAllUsersFromRoleCommand(),
                  new WarningCommand(),
-                 new TagLogCommand(),
-                 new SoftBanCommand()
+                 new TagLogCommand()
              )
              .addCommand(new ProfileCommand())
              .addCommand(new InfodumpCommand());
@@ -271,8 +268,7 @@ public class Main {
 //              new GetWarningsCommand(),
 //              new RemoveAllUsersFromRoleCommand(),
 //              new WarningCommand(),
-//              new TagLogCommand(),
-//              new SoftBanCommand()
+//              new TagLogCommand()
 //          )
 ////             .addCommand(new KarmaCommand())
 //          .addCommand(new ProfileCommand())
