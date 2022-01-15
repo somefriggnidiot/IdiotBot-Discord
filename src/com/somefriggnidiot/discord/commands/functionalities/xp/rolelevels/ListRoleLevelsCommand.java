@@ -65,7 +65,7 @@ public class ListRoleLevelsCommand extends Command {
                if (role != null) {
                   levelRolesBody = levelRolesBody.concat(role.getAsMention() + " ");
                } else {
-                  invalidRoles.add(role.getIdLong());
+                  invalidRoles.add(entry.getKey());
                }
             }
          }
