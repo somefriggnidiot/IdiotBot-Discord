@@ -61,15 +61,15 @@ public class XpDegradationUtil {
                   Integer xpBefore = dbu.getXpMap().get(guildDegrading.getIdLong()) == null ? 0 :
                       dbu.getXpMap().get(guildDegrading.getIdLong());
 
-                  if (degradeValue == -1L) {
-                     //degradeAmountAbs becomes 10*level + 10xp;
-                     degradeAmountAbs = XpUtil.getLevelForXp(xpBefore) * 10 + 10;
-                  }
-
-                  if (xpBefore != 0) { //Don't bother if the user has no xp already.
+                  if (xpBefore > 0) { //Ignore users without XP.
                      Integer levelBefore = XpUtil.getLevelForXp(xpBefore);
                      Integer xpAfter = xpBefore - degradeAmountAbs;
                      Integer levelAfter = XpUtil.getLevelForXp(xpAfter);
+
+                     if (degradeValue == -1L) {
+                        //degradeAmountAbs becomes 10*level + 10xp;
+                        degradeAmountAbs = XpUtil.getLevelForXp(xpBefore) * 10 + 10;
+                     }
 
                      if (degradeValue == -2L) {
                         //Progressive degredation, losing more the longer they're inactive.
