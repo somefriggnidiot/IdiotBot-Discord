@@ -53,9 +53,10 @@ public class BotModeCommand extends Command {
              + "to this channel not prefixed '%s' will be automatically deleted.",
              prefix));
       } else if (actionArg.equalsIgnoreCase("off")) {
-         //TODO disable workflow
+         return;
       } else {
-         //TODO error workflow
+         event.reply("Something went wrong. The botMode entry you attempted to create may already"
+             + "be in place.");
       }
    }
 }

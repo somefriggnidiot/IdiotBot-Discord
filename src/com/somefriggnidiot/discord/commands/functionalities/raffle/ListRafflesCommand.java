@@ -43,7 +43,7 @@ public class ListRafflesCommand extends Command {
 
       List<RaffleObject> raffles = RaffleUtil.getRaffles(true).stream().filter(raffle -> raffle
           .getGuildId() == event.getGuild().getIdLong()).collect(Collectors.toList());
-      //TODO make this not super inefficient.
+
       Guild guild = event.getGuild();
       EmbedBuilder eb = new EmbedBuilder()
           .setTitle("Active Raffles")

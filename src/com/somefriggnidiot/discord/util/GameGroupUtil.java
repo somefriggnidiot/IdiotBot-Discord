@@ -18,8 +18,7 @@ import net.dv8tion.jda.api.entities.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//TODO Refactor GameGroups to create roles and auto-group for any game with 2+ players or allow
-// forced role creation.
+//TODO Refactor GameGroups to create roles and auto-group for any game with 2+ players.
 
 /**
  * Various helper functions for GameGroups. <br />

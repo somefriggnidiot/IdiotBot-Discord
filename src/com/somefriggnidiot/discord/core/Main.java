@@ -227,7 +227,7 @@ public class Main {
 //          new InviteToPrivateChannelCommand()
 //          .addCommands( //Fun
 //              new CatCommand(),
-//              new DieCommand(), //TODO Make core functionality group and move.
+//              new DieCommand(),
 //              new DogCommand(),
 //              new DogeCommand(),
 //              new EchoCommand()

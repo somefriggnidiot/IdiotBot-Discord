@@ -69,9 +69,7 @@ public class ConfigurationCommand extends Command {
             try {
                String configItem = params[2];
 
-               event.reply("This functionality has not yet been implemented.");
-
-               //TODO unsetConfig(configItem, event.getMember());
+               unsetConfig(event.getGuild(), event.getMember(), configItem);
             } catch (IndexOutOfBoundsException iobe) {
                event.reply("Invalid argument(s). You must specify the exact name of the "
                    + "configuration field being cleared.");
@@ -89,6 +87,7 @@ public class ConfigurationCommand extends Command {
             printConfig(event);
             return;
          default:
+            printConfig(event);
             return;
       }
    }
@@ -121,6 +120,39 @@ public class ConfigurationCommand extends Command {
                return ccUtil.setXpDegrades(author, configValue);
             case "xpDegradeValue":
                return ccUtil.setXpDegradeValue(author, configValue);
+            default:
+               return new CommandUtilResponse(false, CommandResponseMessage.INVALID_ARG);
+         }
+      }
+   }
+
+   private CommandUtilResponse unsetConfig(Guild guild, Member author, String configItem) {
+      String validatedKey = validateConfig(configItem);
+      ConfigurationCommandUtil ccUtil = new ConfigurationCommandUtil(guild);
+
+      if (validatedKey.isEmpty()) {
+         return new CommandUtilResponse(false, CommandResponseMessage.MISSING_ARGS);
+      } else {
+         switch(validatedKey) {
+            case "ownerRole":
+               return ccUtil.clearOwnerRole(author);
+            case "staffRole":
+               return ccUtil.clearStaffRole(author);
+            case "guestRole":
+               return ccUtil.clearGuestRole(author);
+            case "streamingRole":
+               return ccUtil.clearStreamerRole(author);
+            case "voiceMultiplier":
+               Double multiplier = Double.parseDouble("0");
+               return ccUtil.setVoiceMultiplier(author, multiplier);
+            case "botTextChannel":
+               return ccUtil.setBotTextChannel(author, guild.getDefaultChannel());
+            case "xpEnabled":
+               return ccUtil.setXpEnabled(author, "false");
+            case "xpDegrades":
+               return ccUtil.setXpDegrades(author, "false");
+            case "xpDegradeValue":
+               return ccUtil.setXpDegradeValue(author, "0");
             default:
                return new CommandUtilResponse(false, CommandResponseMessage.INVALID_ARG);
          }

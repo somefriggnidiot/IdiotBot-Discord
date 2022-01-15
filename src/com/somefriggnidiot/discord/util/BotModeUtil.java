@@ -22,7 +22,7 @@ public class BotModeUtil {
       return botModeEntryIds.contains(botModeEntry.getId());
    }
 
-   public static BotModeEntry createBotModeEntry(Long guildId, Long channelId, String prefix) {
+   public static void createBotModeEntry(Long guildId, Long channelId, String prefix) {
       BotModeEntry bme = new BotModeEntry(guildId, channelId, prefix);
       GuildInfoUtil giu = new GuildInfoUtil(guildId);
 
@@ -34,8 +34,6 @@ public class BotModeUtil {
       } catch (InternalException ie) {
          throw ie;
       }
-
-      return bme;
    }
 
    public static BotModeEntry getBotModeEntry(Instant entryId) {

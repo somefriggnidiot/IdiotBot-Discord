@@ -58,6 +58,40 @@ public class ConfigurationCommandUtil {
        }
     }
 
+    public CommandUtilResponse clearOwnerRole(Member author) {
+       Boolean authorHasPermission = false;
+       Long ownerRoleId = gi.getOwnerRoleId();
+       List<Role> authorRoles = author.getRoles();
+
+       if (ownerRoleId > 1L) {
+          //Check author is owner.
+
+          for (Role authorRole : authorRoles) {
+             if (authorRole.getIdLong() == ownerRoleId) {
+                authorHasPermission = true;
+                break;
+             }
+          }
+       } else {
+          //Check author has a role with admin permissions.
+
+          for (Role authorRole : authorRoles) {
+             if (authorRole.getPermissions().contains(Permission.ADMINISTRATOR)) {
+                authorHasPermission = true;
+                break;
+             }
+          }
+       }
+
+       //
+       if (authorHasPermission) {
+          giu.setOwnerId(null);
+          return new CommandUtilResponse(true, CommandResponseMessage.SUCCESS);
+       } else {
+          return new CommandUtilResponse(false, CommandResponseMessage.PERMISSION_DENIED);
+       }
+    }
+
     public CommandUtilResponse setStaffRole(Member author, Role newStaffRole) {
        if (checkPermissions(author, giu.getOwnerRole())) {
           giu.setModeratorId(newStaffRole.getIdLong());
@@ -72,12 +106,40 @@ public class ConfigurationCommandUtil {
        }
     }
 
-   public CommandUtilResponse setGuestRole(Member author, Role newGuestRole) {
-      if (checkPermissions(author, giu.getOwnerRole())) {
+    public CommandUtilResponse clearStaffRole(Member author) {
+       if (checkPermissions(author, giu.getOwnerRole())) {
+          giu.setModeratorId(null);
+
+          if (gi.getModeratorRoleId() == 1L) {
+             return new CommandUtilResponse(true, CommandResponseMessage.SUCCESS);
+          } else {
+             return new CommandUtilResponse(false, CommandResponseMessage.UNKNOWN_ERROR);
+          }
+       } else {
+          return new CommandUtilResponse(false, CommandResponseMessage.PERMISSION_DENIED);
+       }
+    }
+
+    public CommandUtilResponse setGuestRole(Member author, Role newGuestRole) {
+       if (checkPermissions(author, giu.getOwnerRole())) {
          Long roleId = newGuestRole.getIdLong();
          giu.setGuestRoleId(roleId);
 
          if (gi.getGuestRoleId().equals(roleId)) {
+            return new CommandUtilResponse(true, CommandResponseMessage.SUCCESS);
+         } else {
+            return new CommandUtilResponse(false, CommandResponseMessage.UNKNOWN_ERROR);
+         }
+      } else {
+         return new CommandUtilResponse(false, CommandResponseMessage.PERMISSION_DENIED);
+      }
+   }
+
+    public CommandUtilResponse clearGuestRole(Member author) {
+      if (checkPermissions(author, giu.getOwnerRole())) {
+         giu.setGuestRoleId(null);
+
+         if (gi.getGuestRoleId().equals(1L)) {
             return new CommandUtilResponse(true, CommandResponseMessage.SUCCESS);
          } else {
             return new CommandUtilResponse(false, CommandResponseMessage.UNKNOWN_ERROR);
@@ -92,6 +154,20 @@ public class ConfigurationCommandUtil {
           GuildInfoUtil.setStreamerRoleId(guild.getIdLong(), newStreamerRole.getIdLong());
 
           if (gi.getStreamerRoleId() == newStreamerRole.getIdLong()) {
+             return new CommandUtilResponse(true, CommandResponseMessage.SUCCESS);
+          } else {
+             return new CommandUtilResponse(false, CommandResponseMessage.UNKNOWN_ERROR);
+          }
+       } else {
+          return new CommandUtilResponse(false, CommandResponseMessage.PERMISSION_DENIED);
+       }
+    }
+
+    public CommandUtilResponse clearStreamerRole(Member author) {
+       if (checkPermissions(author, giu.getStaffRole())) {
+          GuildInfoUtil.setStreamerRoleId(guild.getIdLong(), null);
+
+          if (gi.getStreamerRoleId() == 0L) {
              return new CommandUtilResponse(true, CommandResponseMessage.SUCCESS);
           } else {
              return new CommandUtilResponse(false, CommandResponseMessage.UNKNOWN_ERROR);
