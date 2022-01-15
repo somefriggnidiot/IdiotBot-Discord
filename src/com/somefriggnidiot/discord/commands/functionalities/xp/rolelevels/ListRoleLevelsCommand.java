@@ -59,8 +59,13 @@ public class ListRoleLevelsCommand extends Command {
 
          for (Entry<Long, Integer> entry : mappings.entrySet()) {
             if (entry.getValue().equals(groupLevel)) {
-               levelRolesBody = levelRolesBody.concat(
-                   guild.getRoleById(entry.getKey()).getAsMention() + " ");
+               Role role = guild.getRoleById(entry.getKey());
+
+               if (role != null) {
+                  levelRolesBody = levelRolesBody.concat(role.getAsMention() + " ");
+               } else {
+                  gi.removeRoleLevelMapping(entry.getKey());
+               }
             }
          }
 
