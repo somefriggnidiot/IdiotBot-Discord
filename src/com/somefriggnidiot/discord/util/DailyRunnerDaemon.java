@@ -8,9 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DailyRunnerDaemon {
-   private static final Logger logger = LoggerFactory.getLogger(DailyRunnerDaemon.class);
-
-
    private final Runnable dailyTask;
    private final int hour;
    private final int minute;
@@ -55,11 +52,8 @@ public class DailyRunnerDaemon {
       startTime.set(Calendar.MILLISECOND, 0);
 
       if(startTime.before(now) || startTime.equals(now)) {
-         logger.info("Start time set for next day.");
          startTime.add(Calendar.DATE, 1);
       }
-
-      logger.info("Start time:" + startTime.toString());
 
       return startTime.getTime();
    }

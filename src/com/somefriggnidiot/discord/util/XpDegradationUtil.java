@@ -7,6 +7,8 @@ import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -61,13 +63,33 @@ public class XpDegradationUtil {
 
                   if (degradeValue == -1L) {
                      //degradeAmountAbs becomes 10*level + 10xp;
-                     degradeAmountAbs = XpUtil.getLevelForXp(xpBefore) * 10 +  10;
+                     degradeAmountAbs = XpUtil.getLevelForXp(xpBefore) * 10 + 10;
                   }
 
                   if (xpBefore != 0) { //Don't bother if the user has no xp already.
                      Integer levelBefore = XpUtil.getLevelForXp(xpBefore);
                      Integer xpAfter = xpBefore - degradeAmountAbs;
                      Integer levelAfter = XpUtil.getLevelForXp(xpAfter);
+
+                     if (degradeValue == -2L) {
+                        //Progressive degredation, losing more the longer they're inactive.
+                        Integer daysInactive = Math.toIntExact(
+                            ChronoUnit.DAYS.between(dbu.getLatestGain().toInstant(), Instant.now()));
+                        Double modifier = daysInactive * 1.1;
+
+                        degradeAmountAbs = XpUtil.getLevelForXp(xpBefore) * 10 + 10;
+                        degradeAmountAbs = Math.toIntExact(Math.round(degradeAmountAbs * modifier));
+
+                        logger.info(format("[%s] %s has lost %s xp for being inactive %s days at "
+                                + "level %s.",
+                            guildDegrading,
+                            member.getEffectiveName(),
+                            degradeAmountAbs,
+                            daysInactive,
+                            levelBefore
+                        ));
+                     }
+
 
                      if (xpAfter <= 0) { //Make sure user doesn't go negative.
                         xpAfter = 0;

@@ -217,9 +217,13 @@ public class ConfigurationCommand extends Command {
           + "**Description:** Enables or disables XP degradation. When enabled, user XP will "
           + "degrade daily by the value configured for `xpDegradeValue`.");
       config.put("xpDegradeValue", "**Requires:** ownerRole\n"
-          + "**Accepts:** Positive, whole numbers."
+          + "**Accepts:** Positive integers. Special values: \"LINEAR\", \"PROGRESSIVE\"\n"
           + "**Description:** The amount of XP deducted from all server members on a daily basis. "
-          + "Only applies when `xpDegrades` is `true`.");
+          + "Only applies when `xpDegrades` is `true`. \n"
+          + "SPECIAL VALUES: \n"
+          + "`LINEAR` removes a base of 10xp, plus an additional 10 xp per level for the user.\n"
+          + "`PROGRESSIVE` acts the same as LINEAR, but with an additional 10% removed for each "
+          + "day the user has been inactive.");
 
       return config;
    }

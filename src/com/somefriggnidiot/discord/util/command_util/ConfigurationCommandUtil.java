@@ -173,6 +173,8 @@ public class ConfigurationCommandUtil {
              Long degradeValue = 0L;
              if (value.equalsIgnoreCase("LINEAR")) {
                 degradeValue = -1L;
+             } else if (value.equalsIgnoreCase("PROGRESSIVE")) {
+                degradeValue = -2L;
              } else {
                 degradeValue = Long.parseLong(value);
              }
