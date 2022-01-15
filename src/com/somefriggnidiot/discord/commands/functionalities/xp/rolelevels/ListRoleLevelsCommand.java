@@ -54,6 +54,7 @@ public class ListRoleLevelsCommand extends Command {
               "http://www.foundinaction.com/wp-content/uploads/2018/08/"
                   + "Neon_600x600_Transparent.png");
 
+      List<Long> invalidRoles = new ArrayList<>();
       for (Integer groupLevel : levelsRewarded) {
          String levelRolesBody = "";
 
@@ -64,13 +65,14 @@ public class ListRoleLevelsCommand extends Command {
                if (role != null) {
                   levelRolesBody = levelRolesBody.concat(role.getAsMention() + " ");
                } else {
-                  gi.removeRoleLevelMapping(entry.getKey());
+                  invalidRoles.add(role.getIdLong());
                }
             }
          }
 
          eb.addField(format("**Level %s**", groupLevel), levelRolesBody, false);
       }
+      invalidRoles.forEach(gi::removeRoleLevelMapping);
 
       event.reply(eb.build());
    }
