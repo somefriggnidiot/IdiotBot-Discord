@@ -25,7 +25,7 @@ public class XpDegradationUtil {
    public static void startDegraderDaemon() {
       Calendar timeOfDay = Calendar.getInstance();
       timeOfDay.set(Calendar.HOUR_OF_DAY, 0);
-      timeOfDay.set(Calendar.MINUTE, 30);
+      timeOfDay.set(Calendar.MINUTE, 45);
       timeOfDay.set(Calendar.SECOND, 0);
 
       new DailyRunnerDaemon(timeOfDay, getXpDegraderTask(), "degrader").start();
@@ -36,7 +36,7 @@ public class XpDegradationUtil {
       return new TimerTask() {
 
          @Override
-          public void run() {
+         public void run() {
             List<Guild> guilds = Main.jda.getGuilds();
             List<Guild> guildsDegrading = new ArrayList<>();
 
@@ -58,13 +58,11 @@ public class XpDegradationUtil {
                Integer membersDegraded = 0;
                for (Member member : members) {
                   DatabaseUser dbu = DatabaseUserUtil.getUser(member.getIdLong());
-                  Integer xpBefore = dbu.getXpMap().get(guildDegrading.getIdLong()) == null ? 0 :
+                  final Integer xpBefore = dbu.getXpMap().get(guildDegrading.getIdLong()) == null ?
+                      0 :
                       dbu.getXpMap().get(guildDegrading.getIdLong());
 
                   if (xpBefore > 0) { //Ignore users without XP.
-                     Integer levelBefore = XpUtil.getLevelForXp(xpBefore);
-                     Integer xpAfter = xpBefore - degradeAmountAbs;
-                     Integer levelAfter = XpUtil.getLevelForXp(xpAfter);
 
                      if (degradeValue == -1L) {
                         //degradeAmountAbs becomes 10*level + 10xp;
@@ -73,8 +71,13 @@ public class XpDegradationUtil {
 
                      if (degradeValue == -2L) {
                         //Progressive degredation, losing more the longer they're inactive.
+                        Integer levelBefore = XpUtil.getLevelForXp(xpBefore);
                         Integer daysInactive = Math.toIntExact(
-                            ChronoUnit.DAYS.between(dbu.getLatestGain().toInstant(), Instant.now()));
+                            ChronoUnit.DAYS
+                                .between(dbu.getLatestGain().toInstant(), Instant.now()));
+                        if (daysInactive <= 1) {
+                           continue;
+                        }
                         Double modifier = daysInactive * 1.1;
 
                         degradeAmountAbs = XpUtil.getLevelForXp(xpBefore) * 10 + 10;
@@ -88,9 +91,12 @@ public class XpDegradationUtil {
                             daysInactive,
                             levelBefore
                         ));
+
+
                      }
 
-
+                     Integer xpAfter = xpBefore - degradeAmountAbs;
+                     Integer levelAfter = XpUtil.getLevelForXp(xpAfter);
                      if (xpAfter <= 0) { //Make sure user doesn't go negative.
                         xpAfter = 0;
 
@@ -104,9 +110,10 @@ public class XpDegradationUtil {
                          false);
 
                      //Check for level changes.
+                     Integer levelBefore = XpUtil.getLevelForXp(xpBefore);
                      if (!levelBefore.equals(levelAfter)) {
                         logger.info(format("[%s] %s has lost a level from XP degradation. Was %s,"
-                            + " now %s.", guildDegrading, member.getEffectiveName(), levelBefore,
+                                + " now %s.", guildDegrading, member.getEffectiveName(), levelBefore,
                             levelAfter));
                      }
 
@@ -117,6 +124,7 @@ public class XpDegradationUtil {
                          member));
                   }
                }
+
                XpUtil.updateLevelRoleAssignments(guildDegrading);
                logger.info(format("[%s] Finished degrading XP for %s members.",
                    guildDegrading, membersDegraded));

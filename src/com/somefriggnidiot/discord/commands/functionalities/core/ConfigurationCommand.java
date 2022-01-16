@@ -69,7 +69,8 @@ public class ConfigurationCommand extends Command {
             try {
                String configItem = params[2];
 
-               unsetConfig(event.getGuild(), event.getMember(), configItem);
+               handleResult(event,
+                   unsetConfig(event.getGuild(), event.getMember(), configItem));
             } catch (IndexOutOfBoundsException iobe) {
                event.reply("Invalid argument(s). You must specify the exact name of the "
                    + "configuration field being cleared.");
