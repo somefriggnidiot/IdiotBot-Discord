@@ -200,7 +200,16 @@ public class ConfigurationCommand extends Command {
 
       eb.addField("xpDegrades", String.valueOf(gi.isDegradingXp()), true);
 
-      eb.addField("xpDegradeValue", String.valueOf(gi.getXpDegradeAmount()), true);
+      String xpDegradeAmountDisplay;
+      Long xpDegradeAmount = gi.getXpDegradeAmount();
+      if (xpDegradeAmount == -1L) {
+         xpDegradeAmountDisplay = "LINEAR";
+      } else if (xpDegradeAmount == -2L) {
+         xpDegradeAmountDisplay = "PROGRESSIVE";
+      } else {
+         xpDegradeAmountDisplay = String.valueOf(xpDegradeAmount);
+      }
+      eb.addField("xpDegradeValue", xpDegradeAmountDisplay, true);
 
       eb.addField("voiceMultiplier", String.valueOf(gi.getVoiceXpMultiplier()), true);
 
