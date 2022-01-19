@@ -25,8 +25,6 @@ import net.dv8tion.jda.api.requests.restaction.RoleAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//TODO Refactor GameGroups to create roles and auto-group for any game with 2+ players.
-
 /**
  * Various helper functions for GameGroups. <br />
  * GameGrouping is a concept of assigning a Discord {@link Role} to a
@@ -45,21 +43,34 @@ public class GameGroupUtil {
    private HashMap<String, Role> activeAutoGroups = new HashMap<>();
    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 
-   GameGroupUtil(Guild guild) {
+   private GameGroupUtil(Guild guild) {
       this.guild = guild;
       GameGroupUtil.guildGameGroups.put(guild, this);
    }
 
+   /**
+    * Retrieves the GameGroupUtil object for a guild. If none currently exists,
+    * a new one is created.
+    *
+    * @param guild the {@code Guild} participating in Game Groups.
+    * @return a GameGroupUtil for the guild.
+    */
    public static GameGroupUtil getGameGroupUtil(Guild guild) {
       return guildGameGroups.containsKey(guild) ? guildGameGroups.get(guild) :
           new GameGroupUtil(guild);
    }
-   /*
-      1. Update list of active auto-groups.
-      2. Remove any game from the list with less than 2 players in server.
-      3. Scan through those online to add to active auto-groups.
-    */
 
+   /**
+    * Initiates Auto-Grouping game groups for a guild. Auto-Grouping will persist
+    * until it is turned off, even between executions. <br />
+    * Initiation involves:
+    * <ol>
+    *    <li>Persisting the "on" state.</li>
+    *    <li>Initializing an in-memory map of activities to roles.</li>
+    *    <li>Initiating a full refresh of mapped role assignments for all members.</li>
+    *    <li>Starting a task to update the in-memory map at regular intervals.</li>
+    * </ol>
+    */
    public void startAutoGrouping() {
       logger.info(format("[%s] Starting auto groups.", guild));
       GuildInfoUtil.setGroupMappingsAutomatic(guild, true);
@@ -78,6 +89,9 @@ public class GameGroupUtil {
       refreshAutoGroupAssignments();
    }
 
+   /**
+    * Initiates shutdown of all
+    */
    public void stopAutoGrouping() {
       executorService.shutdown();
 
@@ -209,9 +223,9 @@ public class GameGroupUtil {
          Role createdRole = guild.getRolesByName(gameName, true).get(0);
          Role autoGroup = guild.getRolesByName("-- Auto Grouping --", true).get(0);
 
-         guild.modifyRolePositions(false)
+         guild.modifyRolePositions()
              .selectPosition(createdRole.getPosition())
-             .moveTo(autoGroup.getPosition() + 1)
+             .moveTo(autoGroup.getPosition() - 1)
              .queue();
       } catch (InterruptedException e) {
          logger.error("Sleep interrupted during GameGroupsCommand create.");
@@ -221,6 +235,8 @@ public class GameGroupUtil {
                  + "Grouping --` role has been created. Without this role, automatically-created "
                  + "game groups will not be able to be moved up the role list to their proper "
                  + "spot.").queue();
+      } catch (Exception ex) {
+         logger.error(ex.toString());
       }
 
       return guild.getRolesByName(gameName, true).get(0);
