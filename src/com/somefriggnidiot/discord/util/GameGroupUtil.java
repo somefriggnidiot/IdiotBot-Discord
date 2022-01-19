@@ -102,7 +102,7 @@ public class GameGroupUtil {
 
          allActivities.addAll(memberGames);
       }
-      logger.info(format("[%s] Discovered %s activities.", guild, allActivities.size()));
+      logger.debug(format("[%s] Discovered %s activities.", guild, allActivities.size()));
 
       HashMap<String, Role> newAutoGroups = new HashMap<>();
       List<String> eligibleActivities = filterDuplicateActivities(allActivities);
@@ -238,7 +238,7 @@ public class GameGroupUtil {
 
       eligibleActivities = eligibleActivities.stream().distinct().collect(Collectors.toList());
 
-      logger.info(format("[%s] Found %s eligible activities.",
+      logger.debug(format("[%s] Found %s eligible activities.",
           guild, eligibleActivities.size()));
 
       return eligibleActivities;
