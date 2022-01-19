@@ -1,5 +1,6 @@
 package com.somefriggnidiot.discord.data_access.models;
 
+import com.somefriggnidiot.discord.core.Main;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -256,7 +257,8 @@ public class GuildInfo {
    }
 
    public Long getBotTextChannelId() {
-      return botTextChannelId == null ? 1L : botTextChannelId;
+      return botTextChannelId == null ? Main.jda.getGuildById(guildId)
+          .getDefaultChannel().getIdLong() : botTextChannelId;
    }
 
    @Override

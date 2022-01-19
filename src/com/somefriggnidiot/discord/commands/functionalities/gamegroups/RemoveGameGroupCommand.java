@@ -20,7 +20,7 @@ public class RemoveGameGroupCommand extends Command {
       this.aliases = new String[]{"rgg"};
       this.arguments = "<gameName>";
       this.category = new Category("Game Groups");
-      this.cooldown = 5;
+      this.cooldown = 1;
       this.cooldownScope = CooldownScope.GUILD;
       this.help = "Removes the specified game from game groups.";
       this.botPermissions = new Permission[]{Permission.MESSAGE_WRITE, Permission.MESSAGE_READ};

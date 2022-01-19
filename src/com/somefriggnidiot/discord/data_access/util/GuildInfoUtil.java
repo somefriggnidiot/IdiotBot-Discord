@@ -198,6 +198,19 @@ public class GuildInfoUtil {
       em.getTransaction().commit();
    }
 
+   public static void setGroupMappingsAutomatic(Guild guild, Boolean active) {
+      GuildInfo gi = getDatabaseObject(guild.getIdLong());
+
+      em.getTransaction().begin();
+      gi.setGroupMappingsAutomatic(active);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public static Boolean getGroupMappingsAutomatic(Guild guild) {
+      return getGuildInfo(guild).gameGroupsAutomatic();
+   }
+
    public static void setStreamerRoleId(Long guildId, Long streamerRoleId) {
       GuildInfo gi = getGuildInfo(guildId);
 

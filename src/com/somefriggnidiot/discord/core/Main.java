@@ -199,15 +199,15 @@ public class Main {
             }
 
             if (gi.isGroupingGames()) {
-               logger.info(String.format("[%s] Started Game Groups tracking. Refreshing role "
-                   + "assignments.", guild));
-               GameGroupUtil.refreshGameGroups(guild);
-            }
-
-            if (gi.isGroupingGames()) {
-               logger.info(String.format("[%s] Started Game Groups tracking. Refreshing role "
-                   + "assignments.", guild));
-               GameGroupUtil.refreshGameGroups(guild);
+               if (gi.gameGroupsAutomatic()) {
+                  logger.info(String.format("[%s] Starting Auto Groups tracking. Refreshing role "
+                      + "assignments.", guild));
+                  GameGroupUtil.getGameGroupUtil(guild).startAutoGrouping();
+               } else {
+                  logger.info(String.format("[%s] Started Game Groups tracking. Refreshing role "
+                      + "assignments.", guild));
+                  GameGroupUtil.refreshGameGroups(guild);
+               }
             }
          }
       } catch (LoginException e) {

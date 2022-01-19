@@ -62,8 +62,7 @@ public class GameGroupUtil {
 
    public void startAutoGrouping() {
       logger.info(format("[%s] Starting auto groups.", guild));
-      GuildInfo guildInfo = GuildInfoUtil.getGuildInfo(guild);
-      guildInfo.setGroupMappingsAutomatic(true);
+      GuildInfoUtil.setGroupMappingsAutomatic(guild, true);
       activeAutoGroups.clear();
       activeAutoGroups.putAll(detectNewAutoGroups());
       refreshAutoGroupAssignments();
@@ -73,7 +72,7 @@ public class GameGroupUtil {
    }
 
    private void updateAutoGrouping() {
-      logger.info(format("[%s] Updating auto groups.", guild));
+      logger.debug(format("[%s] Updating auto groups.", guild));
       activeAutoGroups.putAll(detectNewAutoGroups());
       pruneAutoGroups();
       refreshAutoGroupAssignments();
@@ -82,8 +81,8 @@ public class GameGroupUtil {
    public void stopAutoGrouping() {
       executorService.shutdown();
 
-      GuildInfo guildInfo = GuildInfoUtil.getGuildInfo(guild);
-      guildInfo.setGroupMappingsAutomatic(false);
+      GuildInfoUtil.setGroupMappingsAutomatic(guild, false);
+
 
       Collection<Role> oldRoles = activeAutoGroups.values();
       activeAutoGroups.clear();
@@ -106,15 +105,14 @@ public class GameGroupUtil {
       logger.info(format("[%s] Discovered %s activities.", guild, allActivities.size()));
 
       HashMap<String, Role> newAutoGroups = new HashMap<>();
-      List<Activity> eligibleActivities = filterDuplicateActivities(allActivities);
-      for (Activity activity : eligibleActivities) {
+      List<String> eligibleActivities = filterDuplicateActivities(allActivities);
+      for (String activity : eligibleActivities) {
          //Only return activities not already active.
-         if (!activeAutoGroups.containsKey(activity.getName())) {
+         if (!activeAutoGroups.containsKey(activity)) {
             //Create role to associate with game.
-            Role newGroupRole = createGameGroup(activity.getName());
-            newAutoGroups.put(activity.getName(), newGroupRole);
-            logger.info(format("[%s] Adding activity to auto groups: %s", guild, activity
-                .toString()));
+            Role newGroupRole = createOrFindGameGroup(activity);
+            newAutoGroups.put(activity, newGroupRole);
+            logger.info(format("[%s] Adding activity to auto groups: %s", guild, activity));
          }
       }
 
@@ -137,7 +135,7 @@ public class GameGroupUtil {
       GuildInfo guildInfo = GuildInfoUtil.getGuildInfo(guild);
       List<Member> guildMembers = guild.getMembers();
 
-      logger.info(format("[%s] Refreshing all auto group assignments.", guild));
+      logger.debug(format("[%s] Refreshing all auto group assignments.", guild));
 
       if (guildInfo.isGroupingGames() && guildInfo.gameGroupsAutomatic()) {
          guildMembers.forEach(this::refreshMemberAutoGroups);
@@ -147,12 +145,31 @@ public class GameGroupUtil {
    public void refreshMemberAutoGroups(Member member) {
       List<Role> addRoles = new ArrayList<>();
       List<Role> deleteRoles = new ArrayList<>(activeAutoGroups.values());
-      logger.info(format("[%s] Refreshing auto group roles for %s.",
+      logger.debug(format("[%s] Refreshing auto group roles for %s.",
           guild, member.getEffectiveName()));
 
       for (Role memberActivityRole : getMemberActivityRoles(member)) {
          addRoles.add(memberActivityRole);
          deleteRoles.remove(memberActivityRole);
+      }
+
+      List<Role> memberRoles = member.getRoles();
+      if (deleteRoles.size() > 0) {
+         deleteRoles.forEach(role -> {
+            if (memberRoles.contains(role)) {
+               logger.info(format("[%s] Removing %s from role: %s",
+                   guild, member.getEffectiveName(), role.getName()));
+            }
+         });
+      }
+
+      if (addRoles.size() > 0) {
+         addRoles.forEach(role -> {
+            if (!memberRoles.contains(role)) {
+               logger.info(format("[%s] Adding %s to role: %s",
+                   guild, member.getEffectiveName(), role.getName()));
+            }
+         });
       }
 
       guild.modifyMemberRoles(member, addRoles, deleteRoles).queue();
@@ -166,13 +183,18 @@ public class GameGroupUtil {
          }
       }
 
-      logger.info(format("[%s] %s is active in %s roles: %s",
+      logger.debug(format("[%s] %s is active in %s roles: %s",
           guild, member.getEffectiveName(), memberActivityRoles.size(), memberActivityRoles.toArray()));
 
       return memberActivityRoles;
    }
 
-   private Role createGameGroup(String gameName) {
+   private Role createOrFindGameGroup(String gameName) {
+      List<Role> gameRoles = guild.getRolesByName(gameName, true);
+      if (gameRoles.size() > 0) {
+         return gameRoles.get(0);
+      }
+
       RoleAction role = guild.createRole();
       role.setName(gameName)
           .setMentionable(false)
@@ -180,18 +202,44 @@ public class GameGroupUtil {
           .setPermissions(Collections.EMPTY_SET)
           .queue();
 
+      logger.info(format("[%s] Created auto role for %s", guild, gameName));
+
+      try {
+         Thread.sleep(500);
+         Role createdRole = guild.getRolesByName(gameName, true).get(0);
+         Role autoGroup = guild.getRolesByName("-- Auto Grouping --", true).get(0);
+
+         guild.modifyRolePositions(false)
+             .selectPosition(createdRole.getPosition())
+             .moveTo(autoGroup.getPosition() + 1)
+             .queue();
+      } catch (InterruptedException e) {
+         logger.error("Sleep interrupted during GameGroupsCommand create.");
+      } catch (IndexOutOfBoundsException iob) {
+         guild.getTextChannelById(GuildInfoUtil.getGuildInfo(guild).getBotTextChannelId())
+             .sendMessage("Game Groups configuration has been set to AUTO, but no `-- Auto "
+                 + "Grouping --` role has been created. Without this role, automatically-created "
+                 + "game groups will not be able to be moved up the role list to their proper "
+                 + "spot.").queue();
+      }
+
       return guild.getRolesByName(gameName, true).get(0);
    }
 
-   private List<Activity> filterDuplicateActivities(List<Activity> allActivities) {
-      Set<Activity> checkerSet = new HashSet<>();
-      List<Activity> eligibleActivities = new ArrayList<>();
+   private List<String> filterDuplicateActivities(List<Activity> allActivities) {
+      Set<String> checkerSet = new HashSet<>();
+      List<String> eligibleActivities = new ArrayList<>();
 
       for (Activity activity : allActivities) {
-         if (!checkerSet.add(activity)) {
-            eligibleActivities.add(activity);
+         if (!checkerSet.add(activity.getName())) {
+            eligibleActivities.add(activity.getName());
          }
       }
+
+      eligibleActivities = eligibleActivities.stream().distinct().collect(Collectors.toList());
+
+      logger.info(format("[%s] Found %s eligible activities.",
+          guild, eligibleActivities.size()));
 
       return eligibleActivities;
    }
