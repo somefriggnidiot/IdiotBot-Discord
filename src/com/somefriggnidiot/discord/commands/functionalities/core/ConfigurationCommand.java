@@ -121,6 +121,8 @@ public class ConfigurationCommand extends Command {
                return ccUtil.setXpDegrades(author, configValue);
             case "xpDegradeValue":
                return ccUtil.setXpDegradeValue(author, configValue);
+            case "gameGroupsStatus":
+               return ccUtil.setGameGroupsStatus(author, configValue);
             default:
                return new CommandUtilResponse(false, CommandResponseMessage.INVALID_ARG);
          }
@@ -154,6 +156,8 @@ public class ConfigurationCommand extends Command {
                return ccUtil.setXpDegrades(author, "false");
             case "xpDegradeValue":
                return ccUtil.setXpDegradeValue(author, "0");
+            case "gameGroupsStatus":
+               return ccUtil.setGameGroupsStatus(author, "off");
             default:
                return new CommandUtilResponse(false, CommandResponseMessage.INVALID_ARG);
          }
@@ -213,6 +217,16 @@ public class ConfigurationCommand extends Command {
 
       eb.addField("voiceMultiplier", String.valueOf(gi.getVoiceXpMultiplier()), true);
 
+      String gameGroupsStatusDisplay;
+      if (gi.isGroupingGames() && gi.gameGroupsAutomatic()) {
+         gameGroupsStatusDisplay = "AUTO";
+      } else if (gi.isGroupingGames()) {
+         gameGroupsStatusDisplay = "ON";
+      } else {
+         gameGroupsStatusDisplay = "OFF";
+      }
+      eb.addField("gameGroupsStatus", gameGroupsStatusDisplay, true);
+
       event.reply(eb.build());
    }
 
@@ -266,6 +280,12 @@ public class ConfigurationCommand extends Command {
           + "`LINEAR` removes a base of 10xp, plus an additional 10 xp per level for the user.\n"
           + "`PROGRESSIVE` acts the same as LINEAR, but with an additional 10% removed for each "
           + "day the user has been inactive.");
+      config.put("gameGroupsStatus", "**Requires:** staffRole\n"
+          + "**Accepts:** `ON`/`OFF`/`AUTO`\n"
+          + "**Description:** Controls whether and how users will be grouped based on the game "
+          + "Discord detects them as playing. `AUTO` configuration will group for any game "
+          + "detected by multiple users in the server simultaneously. When `ON`, uses "
+          + "configuration from the `!gamegroups` command. Set to `OFF` to disable feature.");
 
       return config;
    }

@@ -17,6 +17,7 @@ public class GuildInfo {
    @Id
    private final Long guildId;
    private Boolean groupMappingsActive;
+   private Boolean groupMappingsAutomatic;
    private Boolean messageXpActive;
    private Boolean luckBonusActive;
    /**
@@ -46,6 +47,7 @@ public class GuildInfo {
    public GuildInfo(Long guildId) {
       this.guildId = guildId;
       this.groupMappingsActive = false;
+      this.groupMappingsAutomatic = false;
       this.messageXpActive = false;
       this.luckBonusActive = false;
       this.gameGroupMappings = new HashMap<>();
@@ -77,6 +79,14 @@ public class GuildInfo {
 
    public void setGroupMappingsActive(Boolean isGroupingGames) {
       this.groupMappingsActive = isGroupingGames;
+   }
+
+   public Boolean gameGroupsAutomatic() {
+      return groupMappingsAutomatic == null ? false : groupMappingsAutomatic;
+   }
+
+   public void setGroupMappingsAutomatic(Boolean groupMappingsAutomatic) {
+      this.groupMappingsAutomatic = groupMappingsAutomatic;
    }
 
    /**

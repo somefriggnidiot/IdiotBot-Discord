@@ -8,13 +8,20 @@ import com.somefriggnidiot.discord.events.MessageListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import net.dv8tion.jda.api.entities.Activity.ActivityType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.requests.restaction.RoleAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +40,147 @@ import org.slf4j.LoggerFactory;
 public class GameGroupUtil {
 
    private static final Logger logger = LoggerFactory.getLogger(MessageListener.class);
+   private static HashMap<Guild, GameGroupUtil> guildGameGroups  = new HashMap<>();
+   private final Guild guild;
+   private HashMap<String, Role> activeAutoGroups = new HashMap<>();
+   private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+
+   GameGroupUtil(Guild guild) {
+      this.guild = guild;
+      GameGroupUtil.guildGameGroups.put(guild, this);
+   }
+
+   public static GameGroupUtil getGameGroupUtil(Guild guild) {
+      return guildGameGroups.containsKey(guild) ? guildGameGroups.get(guild) :
+          new GameGroupUtil(guild);
+   }
+   /*
+      1. Update list of active auto-groups.
+      2. Remove any game from the list with less than 2 players in server.
+      3. Scan through those online to add to active auto-groups.
+    */
+
+   public void startAutoGrouping() {
+      GuildInfo guildInfo = GuildInfoUtil.getGuildInfo(guild);
+      guildInfo.setGroupMappingsAutomatic(true);
+      activeAutoGroups.clear();
+      activeAutoGroups.putAll(detectNewAutoGroups());
+      refreshAutoGroupAssignments();
+
+      executorService.scheduleAtFixedRate(this::updateAutoGrouping, 1, 1,
+          TimeUnit.MINUTES);
+   }
+
+   private void updateAutoGrouping() {
+      activeAutoGroups.putAll(detectNewAutoGroups());
+      pruneAutoGroups();
+      refreshAutoGroupAssignments();
+   }
+
+   public void stopAutoGrouping() {
+      executorService.shutdown();
+
+      GuildInfo guildInfo = GuildInfoUtil.getGuildInfo(guild);
+      guildInfo.setGroupMappingsAutomatic(false);
+
+      Collection<Role> oldRoles = activeAutoGroups.values();
+      activeAutoGroups.clear();
+
+      for (Member member : guild.getMembers()) {
+         guild.modifyMemberRoles(member, Collections.emptyList(), oldRoles)
+             .queue();
+      }
+   }
+
+   public HashMap<String, Role> detectNewAutoGroups() {
+      //Get list of every game being played by multiple people.
+      List<Activity> allActivities = new ArrayList<>();
+      for (Member member : guild.getMembers()) {
+         List<Activity> memberGames = member.getActivities().stream().filter(activity -> activity
+             .getType().equals(ActivityType.DEFAULT)).collect(Collectors.toList());
+
+         allActivities.addAll(memberGames);
+      }
+
+      HashMap<String, Role> newAutoGroups = new HashMap<>();
+      List<Activity> eligibleActivities = filterDuplicateActivities(allActivities);
+      for (Activity activity : eligibleActivities) {
+         //Only return activities not already active.
+         if (!activeAutoGroups.containsKey(activity.getName())) {
+            //Create role to associate with game.
+            Role newGroupRole = createGameGroup(activity.getName());
+            newAutoGroups.put(activity.getName(), newGroupRole);
+         }
+      }
+
+      return newAutoGroups;
+   }
+
+   public void pruneAutoGroups() {
+      for (Role activityRole : activeAutoGroups.values()) {
+         List<Member> players = guild.getMembersWithRoles(activityRole);
+         if (players.size() < 2) {
+            activeAutoGroups.remove(activityRole.getName());
+            activityRole.delete().queue();
+         }
+      }
+   }
+
+   public void refreshAutoGroupAssignments() {
+      GuildInfo guildInfo = GuildInfoUtil.getGuildInfo(guild);
+      List<Member> guildMembers = guild.getMembers();
+
+      if (guildInfo.isGroupingGames() && guildInfo.gameGroupsAutomatic()) {
+         guildMembers.forEach(this::refreshMemberAutoGroups);
+      }
+   }
+
+   public void refreshMemberAutoGroups(Member member) {
+      List<Role> addRoles = new ArrayList<>();
+      List<Role> deleteRoles = new ArrayList<>(activeAutoGroups.values());
+
+      for (Role memberActivityRole : getMemberActivityRoles(member)) {
+         addRoles.add(memberActivityRole);
+         deleteRoles.remove(memberActivityRole);
+      }
+
+      guild.modifyMemberRoles(member, addRoles, deleteRoles).queue();
+   }
+
+   private List<Role> getMemberActivityRoles(Member member) {
+      List<Role> memberActivityRoles = new ArrayList<>();
+      for (Activity activity : member.getActivities()) {
+         if (activeAutoGroups.containsKey(activity.getName())) {
+            memberActivityRoles.add(activeAutoGroups.get(activity.getName()));
+         }
+      }
+
+      return memberActivityRoles;
+   }
+
+   private Role createGameGroup(String gameName) {
+      RoleAction role = guild.createRole();
+      role.setName(gameName)
+          .setMentionable(false)
+          .setHoisted(true)
+          .setPermissions(Collections.EMPTY_SET)
+          .queue();
+
+      return guild.getRolesByName(gameName, true).get(0);
+   }
+
+   private List<Activity> filterDuplicateActivities(List<Activity> allActivities) {
+      Set<Activity> checkerSet = new HashSet<>();
+      List<Activity> eligibleActivities = new ArrayList<>();
+
+      for (Activity activity : allActivities) {
+         if (!checkerSet.add(activity)) {
+            eligibleActivities.add(activity);
+         }
+      }
+
+      return eligibleActivities;
+   }
 
    public static void removeAllUserRoles(Guild guild) {
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);

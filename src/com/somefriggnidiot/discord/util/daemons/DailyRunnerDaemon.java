@@ -1,4 +1,4 @@
-package com.somefriggnidiot.discord.util;
+package com.somefriggnidiot.discord.util.daemons;
 
 import java.util.Calendar;
 import java.util.Date;

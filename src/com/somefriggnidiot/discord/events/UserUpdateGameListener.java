@@ -24,13 +24,18 @@ public class UserUpdateGameListener extends ListenerAdapter {
 
    @Override
    public void onUserActivityStart(@NotNull UserActivityStartEvent event) {
-      GameGroupUtil.refreshMemberGameGroups(event.getMember());
+      Guild guild = event.getGuild();
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
+      Member member = event.getMember();
+
+      if (gi.isGroupingGames() && gi.gameGroupsAutomatic()) {
+         GameGroupUtil.getGameGroupUtil(guild).refreshMemberAutoGroups(member);
+      } else {
+         GameGroupUtil.refreshMemberGameGroups(event.getMember());
+      }
 
       if (event.getNewActivity().getType().equals(ActivityType.STREAMING)) {
-         Guild guild = event.getGuild();
-         GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
          List<Long> featuredStreamers = gi.getStreamerMemberIds();
-         Member member = event.getMember();
 
          if (featuredStreamers != null && featuredStreamers.contains(member.getIdLong())) {
             Role streamerRole = guild.getRoleById(gi.getStreamerRoleId());
@@ -67,13 +72,18 @@ public class UserUpdateGameListener extends ListenerAdapter {
 
    @Override
    public void onUserActivityEnd(@NotNull UserActivityEndEvent event) {
-      GameGroupUtil.refreshMemberGameGroups(event.getMember());
+      Guild guild = event.getGuild();
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
+      Member member = event.getMember();
+
+      if (gi.isGroupingGames() && gi.gameGroupsAutomatic()) {
+         GameGroupUtil.getGameGroupUtil(guild).refreshMemberAutoGroups(member);
+      } else {
+         GameGroupUtil.refreshMemberGameGroups(event.getMember());
+      }
 
       if (event.getOldActivity().getType().equals(ActivityType.STREAMING)) {
-         Guild guild = event.getGuild();
-         GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
          List<Long> featuredStreamers = gi.getStreamerMemberIds();
-         Member member = event.getMember();
 
          if (featuredStreamers != null && featuredStreamers.contains(member.getIdLong())) {
             Role streamerRole = guild.getRoleById(gi.getStreamerRoleId());
@@ -98,7 +108,9 @@ public class UserUpdateGameListener extends ListenerAdapter {
    public void onUserUpdateActivityOrder(@NotNull UserUpdateActivityOrderEvent event) {
       GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild().getIdLong());
 
-      if (gi.isGroupingGames()) {
+      if (gi.isGroupingGames() && gi.gameGroupsAutomatic()) {
+         GameGroupUtil.getGameGroupUtil(event.getGuild()).refreshMemberAutoGroups(event.getMember());
+      } else if (gi.isGroupingGames()) {
          GameGroupUtil.refreshMemberGameGroups(event.getMember());
       }
    }

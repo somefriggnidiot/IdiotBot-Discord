@@ -6,6 +6,7 @@ import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.util.CommandUtilResponse;
 import com.somefriggnidiot.discord.util.CommandUtilResponse.CommandResponseMessage;
+import com.somefriggnidiot.discord.util.GameGroupUtil;
 import java.util.List;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
@@ -263,6 +264,42 @@ public class ConfigurationCommandUtil {
                 return new CommandUtilResponse(false, CommandResponseMessage.UNKNOWN_ERROR);
              }
           } catch (Exception e) {
+             return new CommandUtilResponse(false, CommandResponseMessage.INVALID_ARG);
+          }
+       } else {
+          return new CommandUtilResponse(false, CommandResponseMessage.PERMISSION_DENIED);
+       }
+    }
+
+    public CommandUtilResponse setGameGroupsStatus(Member author, String value) {
+       if (checkPermissions(author, giu.getStaffRole())) {
+          if (value.equalsIgnoreCase("on")) {
+             GuildInfoUtil.enableGameGrouping(author.getGuild());
+             GuildInfoUtil.getGuildInfo(guild).setGroupMappingsAutomatic(false);
+
+             GameGroupUtil.getGameGroupUtil(guild).stopAutoGrouping();
+
+             return gi.isGroupingGames() && !gi.gameGroupsAutomatic() ?
+                 new CommandUtilResponse(true, CommandResponseMessage.SUCCESS) :
+                 new CommandUtilResponse(false, CommandResponseMessage.UNKNOWN_ERROR);
+          } else if (value.equalsIgnoreCase("off")) {
+             GuildInfoUtil.disableGameGrouping(author.getGuild());
+
+             GameGroupUtil.getGameGroupUtil(guild).stopAutoGrouping();
+
+             return !gi.isGroupingGames() ?
+                 new CommandUtilResponse(true, CommandResponseMessage.SUCCESS) :
+                 new CommandUtilResponse(false, CommandResponseMessage.UNKNOWN_ERROR);
+          } else if (value.equalsIgnoreCase("auto")) {
+             GuildInfoUtil.enableGameGrouping(guild);
+             GuildInfoUtil.getGuildInfo(guild).setGroupMappingsAutomatic(true);
+
+             GameGroupUtil.getGameGroupUtil(guild).startAutoGrouping();
+
+             return gi.isGroupingGames() && gi.gameGroupsAutomatic() ?
+                 new CommandUtilResponse(true, CommandResponseMessage.SUCCESS) :
+                 new CommandUtilResponse(false, CommandResponseMessage.UNKNOWN_ERROR);
+          } else {
              return new CommandUtilResponse(false, CommandResponseMessage.INVALID_ARG);
           }
        } else {

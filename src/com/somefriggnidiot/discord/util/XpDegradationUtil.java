@@ -7,6 +7,7 @@ import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
+import com.somefriggnidiot.discord.util.daemons.DailyRunnerDaemon;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
