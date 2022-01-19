@@ -21,7 +21,7 @@ public class DailyRunnerDaemon {
     * @param dailyTask the Runnable task to be executed each day.
     * @param runThreadName name of the thread for the daily task to be run on.
     */
-   DailyRunnerDaemon(Calendar timeOfDay, Runnable dailyTask, String runThreadName) {
+   public DailyRunnerDaemon(Calendar timeOfDay, Runnable dailyTask, String runThreadName) {
       this.dailyTask = dailyTask;
       this.hour = timeOfDay.get(Calendar.HOUR_OF_DAY);
       this.minute = timeOfDay.get(Calendar.MINUTE);
