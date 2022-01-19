@@ -61,6 +61,7 @@ public class GameGroupUtil {
     */
 
    public void startAutoGrouping() {
+      logger.info(format("[%s] Starting auto groups.", guild));
       GuildInfo guildInfo = GuildInfoUtil.getGuildInfo(guild);
       guildInfo.setGroupMappingsAutomatic(true);
       activeAutoGroups.clear();
@@ -72,6 +73,7 @@ public class GameGroupUtil {
    }
 
    private void updateAutoGrouping() {
+      logger.info(format("[%s] Updating auto groups.", guild));
       activeAutoGroups.putAll(detectNewAutoGroups());
       pruneAutoGroups();
       refreshAutoGroupAssignments();
@@ -101,6 +103,7 @@ public class GameGroupUtil {
 
          allActivities.addAll(memberGames);
       }
+      logger.info(format("[%s] Discovered %s activities.", guild, allActivities.size()));
 
       HashMap<String, Role> newAutoGroups = new HashMap<>();
       List<Activity> eligibleActivities = filterDuplicateActivities(allActivities);
@@ -110,6 +113,8 @@ public class GameGroupUtil {
             //Create role to associate with game.
             Role newGroupRole = createGameGroup(activity.getName());
             newAutoGroups.put(activity.getName(), newGroupRole);
+            logger.info(format("[%s] Adding activity to auto groups: %s", guild, activity
+                .toString()));
          }
       }
 
@@ -120,6 +125,8 @@ public class GameGroupUtil {
       for (Role activityRole : activeAutoGroups.values()) {
          List<Member> players = guild.getMembersWithRoles(activityRole);
          if (players.size() < 2) {
+            logger.info(format("[%s] Removing activity from auto groups: %s",
+                guild, activityRole.getName()));
             activeAutoGroups.remove(activityRole.getName());
             activityRole.delete().queue();
          }
@@ -130,6 +137,8 @@ public class GameGroupUtil {
       GuildInfo guildInfo = GuildInfoUtil.getGuildInfo(guild);
       List<Member> guildMembers = guild.getMembers();
 
+      logger.info(format("[%s] Refreshing all auto group assignments.", guild));
+
       if (guildInfo.isGroupingGames() && guildInfo.gameGroupsAutomatic()) {
          guildMembers.forEach(this::refreshMemberAutoGroups);
       }
@@ -138,6 +147,8 @@ public class GameGroupUtil {
    public void refreshMemberAutoGroups(Member member) {
       List<Role> addRoles = new ArrayList<>();
       List<Role> deleteRoles = new ArrayList<>(activeAutoGroups.values());
+      logger.info(format("[%s] Refreshing auto group roles for %s.",
+          guild, member.getEffectiveName()));
 
       for (Role memberActivityRole : getMemberActivityRoles(member)) {
          addRoles.add(memberActivityRole);
@@ -154,6 +165,9 @@ public class GameGroupUtil {
             memberActivityRoles.add(activeAutoGroups.get(activity.getName()));
          }
       }
+
+      logger.info(format("[%s] %s is active in %s roles: %s",
+          guild, member.getEffectiveName(), memberActivityRoles.size(), memberActivityRoles.toArray()));
 
       return memberActivityRoles;
    }
