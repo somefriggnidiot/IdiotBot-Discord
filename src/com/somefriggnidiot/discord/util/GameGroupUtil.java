@@ -84,8 +84,8 @@ public class GameGroupUtil {
 
    private void updateAutoGrouping() {
       logger.debug(format("[%s] Updating auto groups.", guild));
-      activeAutoGroups.putAll(detectNewAutoGroups());
       pruneAutoGroups();
+      activeAutoGroups.putAll(detectNewAutoGroups());
       refreshAutoGroupAssignments();
    }
 
