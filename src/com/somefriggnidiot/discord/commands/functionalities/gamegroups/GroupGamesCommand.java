@@ -177,6 +177,10 @@ public class GroupGamesCommand extends Command {
          if (gi.gameGroupsAutomatic()) {
             eb.setColor(Color.BLACK)
                 .addField("Status", "ACTIVE - AUTOMATIC", false)
+                .addField("AUTOMATIC GAME GROUPS", "Game groups are created and added "
+                        + "automatically based on the number of members detected playing the same "
+                        + "game simultaneously.",
+                false)
                 .addBlankField(false);
          } else {
             eb.setColor(Color.GREEN)
@@ -186,18 +190,13 @@ public class GroupGamesCommand extends Command {
       }
 
       if (gi.isGroupingGames() && gi.gameGroupsAutomatic()) {
-         eb.addField("AUTOMATIC GAME GROUPS", "Game groups are created and added automatically "
-             + "based on the number of members detected playing the same game simultaneously. To "
-                 + "avoid confusion and potential data loss, it is strongly suggested to not have "
-                 + "other roles configured to match game names.",
-             false);
          String activeGameGroupsDisplay = "";
          for (String group : GameGroupUtil
              .getGameGroupUtil(event.getGuild()).getActiveAutoGroups()) {
             activeGameGroupsDisplay = activeGameGroupsDisplay.concat(group + ", ");
          }
          activeGameGroupsDisplay = activeGameGroupsDisplay
-             .substring(0, activeGameGroupsDisplay.length() - 1);
+             .substring(0, activeGameGroupsDisplay.length() - 2);
          eb.addField("Active Auto Groups", activeGameGroupsDisplay, false);
       } else {
          HashMap<String, String> mappings = gi.getGameGroupMappings();
