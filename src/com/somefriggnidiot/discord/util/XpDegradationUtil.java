@@ -76,10 +76,17 @@ public class XpDegradationUtil {
                         Integer daysInactive = Math.toIntExact(
                             ChronoUnit.DAYS
                                 .between(dbu.getLatestGain().toInstant(), Instant.now()));
+                        Double modifier = 1.0;
+
                         if (daysInactive <= 1) {
                            continue;
+                        } else if (daysInactive <= 7) {
+                           modifier = 0.01 * daysInactive;
+                        } else if (daysInactive <= 30) {
+                           modifier = 1.1;
+                        } else {
+                           modifier = 1.5;
                         }
-                        Double modifier = daysInactive * 1.1;
 
                         degradeAmountAbs = XpUtil.getLevelForXp(xpBefore) * 10 + 10;
                         degradeAmountAbs = Math.toIntExact(Math.round(degradeAmountAbs * modifier));
@@ -92,8 +99,6 @@ public class XpDegradationUtil {
                             daysInactive,
                             levelBefore
                         ));
-
-
                      }
 
                      Integer xpAfter = xpBefore - degradeAmountAbs;
