@@ -28,11 +28,17 @@ public class GroupGamesCommand extends Command {
    public GroupGamesCommand() {
       this.name = "gamegroups";
       this.aliases = new String[]{"groupbygame", "groupgames", "gamegroupings"};
-      this.arguments = "<toggle/status/enable/disable/create> [create: gameName]";
+      this.arguments = "<status/create> [create: gameName]";
       this.category = new Category("Game Groups");
-      this.help = "Toggles whether or not this guild groups mambers by what game they are playing"
-          + ". Members are \"grouped\" by being added to the specified group when Discord shows "
-          + "them as playing the specified game.";
+      this.help = "Displays the current status of Game Groups, or can be used to create a new one"
+          + ". Members are \"grouped\" by being added to the specified role when Discord shows "
+          + "them as playing the specified game. This functionality can be modified using the "
+          + "`!config` command, and may be set to manual configuration (default) or automatic"
+          + "configuration. \n"
+          + "When Game Groups are set to automatic configuration, roles will be created and "
+          + "removed as necessary based on how many members are playing the same game. **To "
+          + "ensure roles are not mistakenly deleted, please ensure no roles bear the same name as "
+          + "a game prior to enabling automatic game groups.**";
       this.botPermissions = new Permission[]{Permission.MANAGE_ROLES, Permission.MESSAGE_READ,
           Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
       this.guildOnly = true;
@@ -162,39 +168,59 @@ public class GroupGamesCommand extends Command {
    private void printInfo(CommandEvent event) {
       GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild().getIdLong());
 
-      //Handle
+      //Add Status
       if (!gi.isGroupingGames()) {
-         //Prepare message.
          eb.setColor(Color.RED)
              .addField("Status", "INACTIVE", false)
              .addBlankField(false);
       } else {
-         //Prepare message.
-         eb.setColor(Color.GREEN)
-             .addField("Status", "ACTIVE", false)
-             .addBlankField(false);
+         if (gi.gameGroupsAutomatic()) {
+            eb.setColor(Color.BLACK)
+                .addField("Status", "ACTIVE - AUTOMATIC", false)
+                .addBlankField(false);
+         } else {
+            eb.setColor(Color.GREEN)
+                .addField("Status", "ACTIVE", false)
+                .addBlankField(false);
+         }
       }
 
-      HashMap<String, String> mappings = gi.getGameGroupMappings();
-      if (mappings == null || mappings.isEmpty()) {
-         eb.addField("Active Game Groups", "There are currently no active game groups.", true);
-      } else {
-         HashMap<String, String> gameList = new HashMap<>();
-
-         eb.addField("Active Game Groups", "", false);
-         for (String mappingKey : mappings.keySet()) {
-            String role = mappings.get(mappingKey);
-            String games = gameList.get(role);
-            if (games == null || games.isEmpty()) {
-               games = mappingKey;
-            } else {
-               games += ", " + mappingKey;
-            }
-            gameList.put(role, games);
+      if (gi.isGroupingGames() && gi.gameGroupsAutomatic()) {
+         eb.addField("AUTOMATIC GAME GROUPS", "Game groups are created and added automatically "
+             + "based on the number of members detected playing the same game simultaneously. To "
+                 + "avoid confusion and potential data loss, it is strongly suggested to not have "
+                 + "other roles configured to match game names.",
+             false);
+         String activeGameGroupsDisplay = "";
+         for (String group : GameGroupUtil
+             .getGameGroupUtil(event.getGuild()).getActiveAutoGroups()) {
+            activeGameGroupsDisplay = activeGameGroupsDisplay.concat(group + ", ");
          }
+         activeGameGroupsDisplay = activeGameGroupsDisplay
+             .substring(0, activeGameGroupsDisplay.length() - 1);
+         eb.addField("Active Auto Groups", activeGameGroupsDisplay, false);
+      } else {
+         HashMap<String, String> mappings = gi.getGameGroupMappings();
+         if (mappings == null || mappings.isEmpty()) {
+            eb.addField("Active Game Groups", "There are currently no active game groups.", true);
+         } else {
+            HashMap<String, String> gameList = new HashMap<>();
 
-         for (String role : gameList.keySet()) {
-            eb.addField(role, gameList.get(role), true);
+            eb.addField("Active Game Groups", "", false);
+            for (String mappingKey : mappings.keySet()) {
+               String role = mappings.get(mappingKey);
+               String games = gameList.get(role);
+               if (games == null || games.isEmpty()) {
+                  games = mappingKey;
+               } else {
+                  games += ", " + mappingKey;
+               }
+               gameList.put(role, games);
+            }
+
+            for (String role : gameList.keySet()) {
+               eb.addField(role, gameList.get(role), true);
+            }
          }
       }
 

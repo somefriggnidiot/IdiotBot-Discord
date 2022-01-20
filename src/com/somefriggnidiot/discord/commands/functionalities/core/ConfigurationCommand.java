@@ -36,9 +36,7 @@ public class ConfigurationCommand extends Command {
    @Override
    protected void execute(final CommandEvent event) {
       /*
-         TODO
-         - Allow enabling/disabling of GameGroups.
-         - Allow enabling/disabling of Luck Bonus
+         TODO Allow enabling/disabling of Luck Bonus
        */
 
       String[] params = event.getMessage().getContentDisplay().split("\\s", 4);

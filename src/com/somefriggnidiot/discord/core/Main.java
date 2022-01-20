@@ -80,6 +80,7 @@ public class Main {
       EventWaiter waiter = new EventWaiter();
       ownerId = args[1];
 
+      //TODO Migrate commands to slash-commands.
       try {
          CommandClientBuilder client = new CommandClientBuilder()
              .setActivity(Activity.playing("Bot-it League"))

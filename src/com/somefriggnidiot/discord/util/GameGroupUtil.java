@@ -60,6 +60,10 @@ public class GameGroupUtil {
           new GameGroupUtil(guild);
    }
 
+   public List<String> getActiveAutoGroups() {
+      return new ArrayList<>(activeAutoGroups.keySet());
+   }
+
    /**
     * Initiates Auto-Grouping game groups for a guild. Auto-Grouping will persist
     * until it is turned off, even between executions. <br />
@@ -82,21 +86,13 @@ public class GameGroupUtil {
           TimeUnit.MINUTES);
    }
 
-   private void updateAutoGrouping() {
-      logger.debug(format("[%s] Updating auto groups.", guild));
-      pruneAutoGroups();
-      activeAutoGroups.putAll(detectNewAutoGroups());
-      refreshAutoGroupAssignments();
-   }
-
    /**
-    * Initiates shutdown of all
+    * Initiates shutdown of all Auto Groups.
     */
    public void stopAutoGrouping() {
       executorService.shutdown();
 
       GuildInfoUtil.setGroupMappingsAutomatic(guild, false);
-
 
       Collection<Role> oldRoles = activeAutoGroups.values();
       activeAutoGroups.clear();
@@ -107,7 +103,14 @@ public class GameGroupUtil {
       }
    }
 
-   public HashMap<String, Role> detectNewAutoGroups() {
+   private void updateAutoGrouping() {
+      logger.debug(format("[%s] Updating auto groups.", guild));
+      pruneAutoGroups();
+      activeAutoGroups.putAll(detectNewAutoGroups());
+      refreshAutoGroupAssignments();
+   }
+
+   private HashMap<String, Role> detectNewAutoGroups() {
       //Get list of every game being played by multiple people.
       List<Activity> allActivities = new ArrayList<>();
       for (Member member : guild.getMembers()) {
@@ -133,10 +136,10 @@ public class GameGroupUtil {
       return newAutoGroups;
    }
 
-   public void pruneAutoGroups() {
+   private void pruneAutoGroups() {
       for (Role activityRole : activeAutoGroups.values()) {
          List<Member> players = guild.getMembersWithRoles(activityRole);
-         if (players.size() < 2) {
+         if (players.size() < 1) {
             logger.info(format("[%s] Removing activity from auto groups: %s",
                 guild, activityRole.getName()));
             activeAutoGroups.remove(activityRole.getName());
@@ -145,7 +148,7 @@ public class GameGroupUtil {
       }
    }
 
-   public void refreshAutoGroupAssignments() {
+   private void refreshAutoGroupAssignments() {
       GuildInfo guildInfo = GuildInfoUtil.getGuildInfo(guild);
       List<Member> guildMembers = guild.getMembers();
 
