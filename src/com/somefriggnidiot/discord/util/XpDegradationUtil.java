@@ -52,7 +52,7 @@ public class XpDegradationUtil {
                logger.info(format("[%s] Started daily XP degradation.", guildDegrading));
                GuildInfo gi = GuildInfoUtil.getGuildInfo(guildDegrading);
                Long degradeValue = gi.getXpDegradeAmount();
-               Integer degradeAmountAbs = gi.getXpDegradeAmount().intValue();
+               int degradeAmountAbs = gi.getXpDegradeAmount().intValue();
                List<Member> members = Main.jda.getGuildById(guildDegrading.getIdLong())
                    .getMembers();
 
@@ -71,21 +71,21 @@ public class XpDegradationUtil {
                      }
 
                      if (degradeValue == -2L) {
-                        //Progressive degredation, losing more the longer they're inactive.
+                        //
                         Integer levelBefore = XpUtil.getLevelForXp(xpBefore);
-                        Integer daysInactive = Math.toIntExact(
+                        int daysInactive = Math.toIntExact(
                             ChronoUnit.DAYS
                                 .between(dbu.getLatestGain().toInstant(), Instant.now()));
-                        Double modifier = 1.0;
+                        double modifier;
 
                         if (daysInactive <= 1) {
                            continue;
                         } else if (daysInactive <= 7) {
-                           modifier = 0.01 * daysInactive;
+                           modifier = 0.5 + (0.01 * daysInactive);
                         } else if (daysInactive <= 30) {
-                           modifier = 1.1;
+                           modifier = 1.0 + (0.01 * daysInactive);
                         } else {
-                           modifier = 1.5;
+                           modifier = 1.0 + (0.02 * daysInactive);
                         }
 
                         degradeAmountAbs = XpUtil.getLevelForXp(xpBefore) * 10 + 10;
@@ -101,7 +101,7 @@ public class XpDegradationUtil {
                         ));
                      }
 
-                     Integer xpAfter = xpBefore - degradeAmountAbs;
+                     int xpAfter = xpBefore - degradeAmountAbs;
                      Integer levelAfter = XpUtil.getLevelForXp(xpAfter);
                      if (xpAfter <= 0) { //Make sure user doesn't go negative.
                         xpAfter = 0;
