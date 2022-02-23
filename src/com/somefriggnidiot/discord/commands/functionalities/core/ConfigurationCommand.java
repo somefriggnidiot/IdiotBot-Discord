@@ -276,8 +276,9 @@ public class ConfigurationCommand extends Command {
           + "Only applies when `xpDegrades` is `true`. \n"
           + "**Special Values:** \n"
           + "`LINEAR` removes a base of 10xp, plus an additional 10 xp per level for the user.\n"
-          + "`PROGRESSIVE` acts the same as LINEAR, but with an additional 10% removed for each "
-          + "day the user has been inactive.");
+          + "`PROGRESSIVE` utilizes the same XP calculation as LINEAR, but with modifiers based "
+          + "on duration of inactivity. Degradation is reduced for the first week, then ramps "
+          + "dramatically after 30 days of inactivity.");
       config.put("gameGroupsStatus", "**Requires:** staffRole\n"
           + "**Accepts:** `ON`/`OFF`/`AUTO`\n"
           + "**Description:** Controls whether and how users will be grouped based on the game "

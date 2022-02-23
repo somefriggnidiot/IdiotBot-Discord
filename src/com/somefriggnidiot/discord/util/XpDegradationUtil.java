@@ -25,8 +25,8 @@ public class XpDegradationUtil {
 
    public static void startDegraderDaemon() {
       Calendar timeOfDay = Calendar.getInstance();
-      timeOfDay.set(Calendar.HOUR_OF_DAY, 0);
-      timeOfDay.set(Calendar.MINUTE, 30);
+      timeOfDay.set(Calendar.HOUR_OF_DAY, 13);
+      timeOfDay.set(Calendar.MINUTE, 45);
       timeOfDay.set(Calendar.SECOND, 0);
 
       new DailyRunnerDaemon(timeOfDay, getXpDegraderTask(), "degrader").start();
