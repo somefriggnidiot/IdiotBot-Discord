@@ -25,8 +25,8 @@ public class XpDegradationUtil {
 
    public static void startDegraderDaemon() {
       Calendar timeOfDay = Calendar.getInstance();
-      timeOfDay.set(Calendar.HOUR_OF_DAY, 13);
-      timeOfDay.set(Calendar.MINUTE, 45);
+      timeOfDay.set(Calendar.HOUR_OF_DAY, 0);
+      timeOfDay.set(Calendar.MINUTE, 30);
       timeOfDay.set(Calendar.SECOND, 0);
 
       new DailyRunnerDaemon(timeOfDay, getXpDegraderTask(), "degrader").start();
@@ -84,8 +84,10 @@ public class XpDegradationUtil {
                            modifier = 0.5 + (0.01 * daysInactive);
                         } else if (daysInactive <= 30) {
                            modifier = 1.0 + (0.01 * daysInactive);
-                        } else {
+                        } else if (daysInactive <= 60) {
                            modifier = 1.0 + (0.02 * daysInactive);
+                        } else {
+                           modifier = 1.0 + (0.1 * daysInactive);
                         }
 
                         degradeAmountAbs = XpUtil.getLevelForXp(xpBefore) * 10 + 10;
