@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -111,14 +112,26 @@ public class XpUtil {
              .collect(Collectors.toList());
          List<Role> applicableRoles = new ArrayList<>();
          applicableRoleIds.forEach(e -> applicableRoles.add(guild.getRoleById(e)));
-         Member member = guild.getMemberById(userId);
-         List<Role> newRoles = applicableRoles.stream()
-             .filter(role -> !member.getRoles().contains(role))
-             .collect(Collectors.toList());
+         Optional<Member> member = Optional.of(guild.getMemberById(userId));
 
-         newRoles.forEach(r -> guild.addRoleToMember(member, r).queue());
+         if (member.isPresent()) {
+            List<Role> newRoles = applicableRoles.stream()
+                .filter(role -> !member.get().getRoles().contains(role))
+                .collect(Collectors.toList());
 
-         return newRoles;
+            newRoles.forEach(r -> {
+               try {
+                  guild.addRoleToMember(member.get(), r).queue();
+               } catch (Exception e) {
+                  logger.error(format("[%s] Error when adding %s to %s role: ", guild, member, r), e);
+               }
+            });
+
+            return newRoles;
+         } else {
+            logger.warn(format("[%s] Member not found for ID: %s", guild, userId));
+         }
+
       }
 
       return null;
