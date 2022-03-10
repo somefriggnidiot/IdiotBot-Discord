@@ -37,9 +37,10 @@ public class RefreshRoleLevelAssignmentsCommand extends Command {
         event.reply("You do not have the necessary permissions to use this command.");
         return;
       }
-
-      XpUtil.updateLevelRoleAssignments(event.getGuild());
       event.reply("Initiated refresh of Role Level assignments.");
       logger.info(format("[%s] Started refresh of Role Level assignments.", event.getGuild()));
+      XpUtil.updateLevelRoleAssignments(event.getGuild());
+      event.reply("Role Level assignments up-to-date.");
+
    }
 }

@@ -38,10 +38,10 @@ import org.slf4j.LoggerFactory;
 public class GameGroupUtil {
 
    private static final Logger logger = LoggerFactory.getLogger(MessageListener.class);
-   private static HashMap<Guild, GameGroupUtil> guildGameGroups  = new HashMap<>();
+   private static final HashMap<Guild, GameGroupUtil> guildGameGroups  = new HashMap<>();
    private final Guild guild;
-   private HashMap<String, Role> activeAutoGroups = new HashMap<>();
-   private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+   private final HashMap<String, Role> activeAutoGroups = new HashMap<>();
+   private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 
    private GameGroupUtil(Guild guild) {
       this.guild = guild;

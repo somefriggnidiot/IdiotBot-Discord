@@ -1,5 +1,7 @@
 package com.somefriggnidiot.discord.events;
 
+import static java.lang.String.format;
+
 import com.somefriggnidiot.discord.data_access.models.BotModeEntry;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
@@ -12,6 +14,7 @@ import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -75,16 +78,35 @@ public class MessageListener extends ListenerAdapter {
           !event.getChannel().getName().equalsIgnoreCase("log")) {
 
          String userName;
-         if (guild == null || guild.getMember(author) == null) {
+         if (guild.getMember(author) == null) {
             userName = author.getName();
          } else {
             userName = guild.getMember(author).getEffectiveName();
          }
-         logger.info(String.format("[%s] [#%s] %s: %s",
-             guild == null ? "DIRECT MESSAGE" : event.getGuild(),
-             channel.getName(),
-             userName,
-             msg));
+
+         if (event.getMessage().getEmbeds().size() > 0) {
+            String embedDisplay = "[EMBEDS] ";
+            List<MessageEmbed> embeds = event.getMessage().getEmbeds();
+
+            for (MessageEmbed embed : embeds) {
+               embedDisplay = embedDisplay.concat(
+                   format("TITLE: %s \n CONTENT: %s",
+                       embed.getTitle(),
+                       embed.getDescription()));
+            }
+
+            logger.info(format("[%s] [#%s] %s: %s",
+                guild == null ? "DIRECT MESSAGE" : event.getGuild(),
+                channel.getName(),
+                userName,
+                embedDisplay));
+         } else {
+            logger.info(format("[%s] [#%s] %s: %s",
+                guild == null ? "DIRECT MESSAGE" : event.getGuild(),
+                channel.getName(),
+                userName,
+                msg));
+         }
       }
    }
 
