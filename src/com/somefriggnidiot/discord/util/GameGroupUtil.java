@@ -103,7 +103,7 @@ public class GameGroupUtil {
       }
    }
 
-   private void updateAutoGrouping() {
+   public void updateAutoGrouping() {
       logger.debug(format("[%s] Updating auto groups.", guild));
       pruneAutoGroups();
       activeAutoGroups.putAll(detectNewAutoGroups());

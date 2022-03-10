@@ -32,6 +32,9 @@ public class ReconnectedEventListener extends ListenerAdapter {
          if (gi.isGroupingGames()) {
             logger.info(String.format("[%s] Started Game Groups tracking. Refreshing role "
                 + "assignments.", guild));
+            if (gi.gameGroupsAutomatic()) {
+               GameGroupUtil.getGameGroupUtil(guild).updateAutoGrouping();
+            }
             GameGroupUtil.refreshGameGroups(guild);
          }
       }

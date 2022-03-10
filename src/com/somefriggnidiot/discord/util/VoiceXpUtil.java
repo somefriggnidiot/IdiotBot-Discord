@@ -246,10 +246,10 @@ public class VoiceXpUtil {
        */
       if (voiceState.inVoiceChannel() && channel.getMembers().size() > 1) {
          GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
-         Integer base = 0;
-         Double bonus = 3.0 * (executions > 100 ? 100 : executions);
-         Double multiplier = 0.9 + (0.05 * channel.getMembers().size());
-         Double voiceMultiplier = new GuildInfoUtil(guild.getIdLong()).getVoiceXpMultiplier();
+         int base = 0;
+         double bonus = 3.0 * (executions > 100 ? 100 : executions);
+         double multiplier = 0.9 + (0.05 * channel.getMembers().size());
+         double voiceMultiplier = new GuildInfoUtil(guild.getIdLong()).getVoiceXpMultiplier();
          Integer level = DatabaseUserUtil.getUser(user.getIdLong()).getLevelMap()
              .get(guild.getIdLong());
          if (level != null) {
@@ -279,13 +279,22 @@ public class VoiceXpUtil {
          List<Role> userRoles = guild.getMember(user).getRoles();
          Role gameGroupRole = null;
          try {
-            gameGroupRole = userRoles.stream()
-                .filter(role -> gi.getGameGroupMappings().values().stream()
-                    .distinct()
-                    .collect(Collectors.toList())
-                    .contains(role.getName()))
-                .collect(Collectors.toList())
-                .get(0);
+            if (gi.gameGroupsAutomatic()) {
+               List<String> groups = GameGroupUtil.getGameGroupUtil(guild).getActiveAutoGroups();
+               for (Role userRole : userRoles) {
+                  if (groups.contains(userRole.getName())) {
+                     gameGroupRole = userRole;
+                  }
+               }
+            } else {
+               gameGroupRole = userRoles.stream()
+                   .filter(role -> gi.getGameGroupMappings().values().stream()
+                       .distinct()
+                       .collect(Collectors.toList())
+                       .contains(role.getName()))
+                   .collect(Collectors.toList())
+                   .get(0);
+            }
          } catch (Exception e) {
             logger.debug(format("[%s] VoiceXP: %s is not in a game group role. Game: %s",
                 guild,
@@ -295,7 +304,7 @@ public class VoiceXpUtil {
          }
 
          Integer usersInGame = usersPlayingTogether(channel, gameGroupRole);
-         multiplier += (0.05 * usersInGame);
+         multiplier += (0.15 * usersInGame);
 
          //Check for Luck Bonus
          Boolean luckMultActive = XpUtil.luckMultiplierActivated();
@@ -364,11 +373,11 @@ public class VoiceXpUtil {
     * Group {@link Role}.
     */
    private static Integer usersPlayingTogether(VoiceChannel channel, Role gameGroup) {
-      Long count = channel.getMembers()
+      long count = channel.getMembers()
           .stream()
           .filter(member -> member.getRoles().contains(gameGroup))
           .count();
 
-      return Integer.valueOf(count.toString());
+      return Integer.valueOf(Long.toString(count));
    }
 }
