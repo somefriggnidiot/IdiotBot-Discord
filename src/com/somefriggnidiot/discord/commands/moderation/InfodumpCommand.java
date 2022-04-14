@@ -49,20 +49,20 @@ public class InfodumpCommand extends Command {
          logger.info(format("[%s] SERVER HISTORY - CHANNEL %s", guild, channel.getName()));
          logger.info(format("[%s] SERVER HISTORY - CHANNEL %s", guild, channel.getName()));
          channel.getIterableHistory()
-             .takeAsync(1000)
-             .thenApply(list -> list
-                 .stream()
-                 .filter(message -> message.getTimeCreated().isAfter(OffsetDateTime.now().minusYears(1)))
-                 .forEach(recent -> recent.getTimeCreated());
-//                 .forEach(history -> {
-//                    if (history.getTimeCreated().isAfter(OffsetDateTime.now().minusYears(1)))
-//
-//                       if (history.getEmbeds().size() > 0) {
-//                          logEmbed(history);
-//                       } else {
-//                          logMessage(history);
-//                       }
-//                 }););
+//             .takeAsync(1000)
+//             .thenApply(list -> list
+//                 .stream()
+//                 .filter(message -> message.getTimeCreated().isAfter(OffsetDateTime.now().minusYears(1)))
+//                 .forEach(recent -> recent.getTimeCreated());
+                 .forEach(history -> {
+                    if (history.getTimeCreated().isAfter(OffsetDateTime.now().minusYears(1)))
+
+                       if (history.getEmbeds().size() > 0) {
+                          logEmbed(history);
+                       } else {
+                          logMessage(history);
+                       }
+                 });
       }
    }
 
