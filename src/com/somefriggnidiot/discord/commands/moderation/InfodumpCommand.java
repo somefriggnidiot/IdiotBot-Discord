@@ -1,12 +1,18 @@
 package com.somefriggnidiot.discord.commands.moderation;
 
+import static java.lang.String.format;
+
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.core.Main;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
+import java.time.OffsetDateTime;
 import java.util.List;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,8 +43,56 @@ public class InfodumpCommand extends Command {
       List<TextChannel> channels = guild.getTextChannels();
 
       for (TextChannel channel : channels) {
+         logger.info(format("[%s] SERVER HISTORY - CHANNEL %s", guild, channel.getName()));
+         logger.info(format("[%s] SERVER HISTORY - CHANNEL %s", guild, channel.getName()));
+         logger.info(format("[%s] SERVER HISTORY - CHANNEL %s", guild, channel.getName()));
+         logger.info(format("[%s] SERVER HISTORY - CHANNEL %s", guild, channel.getName()));
+         logger.info(format("[%s] SERVER HISTORY - CHANNEL %s", guild, channel.getName()));
          channel.getIterableHistory()
-             .forEach(history -> logger.info(history.getContentDisplay()));
+             .takeAsync(1000)
+             .thenApply(list -> list
+                 .stream()
+                 .filter(message -> message.getTimeCreated().isAfter(OffsetDateTime.now().minusYears(1)))
+                 .forEach(recent -> recent.getTimeCreated());
+//                 .forEach(history -> {
+//                    if (history.getTimeCreated().isAfter(OffsetDateTime.now().minusYears(1)))
+//
+//                       if (history.getEmbeds().size() > 0) {
+//                          logEmbed(history);
+//                       } else {
+//                          logMessage(history);
+//                       }
+//                 }););
+      }
+   }
+
+   private void logMessage(Message message) {
+      logger.info(format("\t[%s] %s [%s] %s", message.getChannel(),
+          message.getTimeCreated().toLocalDateTime(),
+          message.getAuthor().getName(), message.getContentDisplay()));
+   }
+
+
+   private void logEmbed(Message message) {
+      String embedFormat = "\tTITLE: %s \n"
+          + "\t\tLINK: %s \n"
+          + "\t\tCONTENT: %s \n"
+          + "\t\tFIELDS: [%s]";
+      String display;
+
+      for (MessageEmbed embed : message.getEmbeds()) {
+         String fields = "";
+
+         for (Field field : embed.getFields()) {
+            fields = fields.concat(format("[Title: %s, Value: %s]", field.getName(), field.getValue()));
+         }
+
+         display = format(embedFormat, embed.getTitle(), embed.getUrl(), embed.getDescription(),
+             fields);
+
+         logger.info(format("\t[%s] %s [%s] %s", message.getChannel(),
+             message.getTimeCreated().toLocalDateTime(),
+             message.getAuthor().getName(), display));
       }
    }
 }
