@@ -1,5 +1,7 @@
 package com.somefriggnidiot.discord.events;
 
+import static com.somefriggnidiot.discord.core.Main.cmm;
+import static com.somefriggnidiot.discord.core.Main.gClient;
 import static java.lang.String.format;
 
 import com.somefriggnidiot.discord.data_access.models.BotModeEntry;
@@ -31,6 +33,7 @@ public class MessageListener extends ListenerAdapter {
       MessageChannel channel = event.getChannel();
       String msg = event.getMessage().getContentDisplay();
 
+      gdBridgeTest(event);
       logEvent(event, author, channel, msg);
       handleXp(event, msg);
       handleBotChannel(event);
@@ -137,6 +140,23 @@ public class MessageListener extends ListenerAdapter {
          if (!allowed) {
             event.getMessage().delete().queue();
          }
+      }
+   }
+
+   private void gdBridgeTest(final MessageReceivedEvent event) {
+      if (event.getMember().getIdLong() == 486265419762630656L) return;
+      if (event.getChannel().getIdLong() == 976593263119204372L) {
+         String content = event.getMessage().getContentRaw();
+         String authorName = event.getMember().getEffectiveName();
+         String channelName = event.getChannel().getName();
+         String format = "**[#%s]** %s: %s";
+         gClient.getChatMessageManager().createChannelMessage(
+             "da353090-ce72-4284-bb07-1eb5567491e3",
+             format(format, channelName, authorName, content),
+             null,
+             null,
+             null,
+             null);
       }
    }
 

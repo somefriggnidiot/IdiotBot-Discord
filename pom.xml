@@ -17,11 +17,30 @@
       <repository>
         <id>objectdb</id>
         <name>ObjectDB Repository</name>
-        <url>http://m2.objectdb.com</url>
+        <url>https://m2.objectdb.com</url>
+      </repository>
+      <repository>
+        <id>guilded4j</id>
+        <name>Guilded4J</name>
+        <url>https://maven.floatationdevice.vip</url>
       </repository>
     </repositories>
 
     <dependencies>
+      <!-- MySql / Hibernate -->
+      <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-core</artifactId>
+        <version>6.0.1.Final</version>
+      </dependency>
+
+      <!-- Guilded -->
+      <dependency>
+        <groupId>vip.floatationdevice</groupId>
+        <artifactId>guilded4j</artifactId>
+        <version>0.9.0</version>
+      </dependency>
+
         <!-- JDA -->
         <dependency>
             <groupId>com.jagrosh</groupId>
@@ -49,7 +68,6 @@
         <artifactId>querydsl-apt</artifactId>
         <version>4.2.1</version>
       </dependency>
-
       <dependency>
         <groupId>com.querydsl</groupId>
         <artifactId>querydsl-jpa</artifactId>

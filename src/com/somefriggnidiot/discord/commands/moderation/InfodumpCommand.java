@@ -6,7 +6,12 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.core.Main;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.util.Date;
 import java.util.List;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
@@ -14,12 +19,14 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.requests.restaction.pagination.MessagePaginationAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class InfodumpCommand extends Command {
 
    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+   private PrintWriter writer;
 
    public InfodumpCommand() {
       this.name = "infodump";
@@ -37,44 +44,87 @@ public class InfodumpCommand extends Command {
    @Override
    protected void execute(final CommandEvent event) {
       String[] args = event.getMessage().getContentDisplay().split("\\s", 2);
-      GuildInfoUtil giu = new GuildInfoUtil(Long.valueOf(args[1]));
       Guild guild = Main.jda.getGuildById(args[1]);
 
       List<TextChannel> channels = guild.getTextChannels();
+      String guildName = guild.getName().replaceAll("\\s", "");
+      String time = format("%s%s%s",
+          OffsetDateTime.now().getYear(),
+          OffsetDateTime.now().getMonth(),
+          OffsetDateTime.now().getDayOfMonth());
 
       for (TextChannel channel : channels) {
-         logger.info(format("[%s] SERVER HISTORY - CHANNEL %s", guild, channel.getName()));
-         logger.info(format("[%s] SERVER HISTORY - CHANNEL %s", guild, channel.getName()));
-         logger.info(format("[%s] SERVER HISTORY - CHANNEL %s", guild, channel.getName()));
-         logger.info(format("[%s] SERVER HISTORY - CHANNEL %s", guild, channel.getName()));
-         logger.info(format("[%s] SERVER HISTORY - CHANNEL %s", guild, channel.getName()));
-         channel.getIterableHistory()
-//             .takeAsync(1000)
-//             .thenApply(list -> list
-//                 .stream()
-//                 .filter(message -> message.getTimeCreated().isAfter(OffsetDateTime.now().minusYears(1)))
-//                 .forEach(recent -> recent.getTimeCreated());
-                 .forEach(history -> {
-                    if (history.getTimeCreated().isAfter(OffsetDateTime.now().minusYears(1)))
+         try {
+            writer = new PrintWriter(
+                format("%s_%s_%s.txt",
+                    guildName,
+                    channel.getName().replaceAll("\\s", ""),
+                    time),
+                "UTF-8");
+            writer.println(format("[%s] SERVER HISTORY - CHANNEL %s", guild, channel.getName()));
+         } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+         }
 
-                       if (history.getEmbeds().size() > 0) {
-                          logEmbed(history);
-                       } else {
-                          logMessage(history);
-                       }
-                 });
+         MessagePaginationAction channelIterableHistory = channel.getIterableHistory();
+         for (Message history : channelIterableHistory) {
+            if (history.getTimeCreated().isAfter(OffsetDateTime.now().minusYears(1))) {
+               if (history.getEmbeds().size() > 0) {
+                  logEmbed(history, writer);
+               } else {
+                  logMessage(history, writer);
+               }
+            }
+         }
+
+         writer.close();
+//         channelIterableHistory
+//             .takeAsync(1000)
+//             .thenApply(list -> {
+//                list.forEach(history -> {
+//                   if (history.getTimeCreated().isAfter(OffsetDateTime.now().minusYears(2))) {
+//                      if (history.getEmbeds().size() > 0) {
+//                         logEmbed(history, writer);
+//                      } else {
+//                         logMessage(history, writer);
+//                      }
+//                   }
+//                });
+//                writer.close();
+//                return null;
+//             });
+
+//         for (Message history : channel.getIterableHistory()) {
+//            if (history.getTimeCreated().isAfter(OffsetDateTime.now().minusYears(1))) {
+//               if (history.getEmbeds().size() > 0) {
+//                  logEmbed(history, writer);
+//               } else {
+//                  logMessage(history, writer);
+//               }
+//            }
+//         }
       }
    }
 
-   private void logMessage(Message message) {
-      logger.info(format("\t[%s] %s [%s] %s", message.getChannel(),
+   private void logMessage(Message message, PrintWriter writer) {
+      String user = message.getAuthor().getName();
+
+      try {
+         user = message.getMember().getEffectiveName();
+      } catch (Exception ignored) {
+
+      }
+      String str = format("[%s] %s [%s] %s",
+          message.getChannel().getName(),
           message.getTimeCreated().toLocalDateTime(),
-          message.getAuthor().getName(), message.getContentDisplay()));
+          user,
+          message.getContentDisplay());
+      writer.println(str);
    }
 
 
-   private void logEmbed(Message message) {
-      String embedFormat = "\tTITLE: %s \n"
+   private void logEmbed(Message message, PrintWriter writer) {
+      String embedFormat = "TITLE: %s \n"
           + "\t\tLINK: %s \n"
           + "\t\tCONTENT: %s \n"
           + "\t\tFIELDS: [%s]";
@@ -90,9 +140,12 @@ public class InfodumpCommand extends Command {
          display = format(embedFormat, embed.getTitle(), embed.getUrl(), embed.getDescription(),
              fields);
 
-         logger.info(format("\t[%s] %s [%s] %s", message.getChannel(),
+         String str = format("\t[%s] %s [%s] %s", message.getChannel().getName(),
              message.getTimeCreated().toLocalDateTime(),
-             message.getAuthor().getName(), display));
+             message.getAuthor().getName(), display);
+
+         logger.info(str);
+         writer.println(str);
       }
    }
 }

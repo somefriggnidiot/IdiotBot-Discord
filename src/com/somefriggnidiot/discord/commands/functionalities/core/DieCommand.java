@@ -1,5 +1,8 @@
 package com.somefriggnidiot.discord.commands.functionalities.core;
 
+import static com.somefriggnidiot.discord.core.Main.gClient;
+import static com.somefriggnidiot.discord.core.Main.msc;
+
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
@@ -53,6 +56,9 @@ public class DieCommand extends Command {
                        }
 
                        jda.shutdown();
+                       gClient.ws.close();
+                       msc.shutdown();
+                       Main.session.close();
                        System.exit(0);
                     } else {
                        event.reply("Shutdown aborted.");

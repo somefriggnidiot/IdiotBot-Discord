@@ -1,5 +1,7 @@
 package com.somefriggnidiot.discord.core;
 
+import static java.lang.String.format;
+
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
@@ -44,6 +46,8 @@ import com.somefriggnidiot.discord.commands.moderation.InfodumpCommand;
 import com.somefriggnidiot.discord.commands.moderation.RemoveAllUsersFromRoleCommand;
 import com.somefriggnidiot.discord.commands.moderation.TagLogCommand;
 import com.somefriggnidiot.discord.commands.moderation.WarningCommand;
+import com.somefriggnidiot.discord.data_access.MySqlConnector;
+import com.somefriggnidiot.discord.data_access.models.BridgeObject;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.GuildMemberListener;
@@ -51,6 +55,7 @@ import com.somefriggnidiot.discord.events.GuildVoiceListener;
 import com.somefriggnidiot.discord.events.MessageListener;
 import com.somefriggnidiot.discord.events.ReconnectedEventListener;
 import com.somefriggnidiot.discord.events.UserUpdateGameListener;
+import com.somefriggnidiot.discord.gdbridge.GDBridgeListener;
 import com.somefriggnidiot.discord.util.GameGroupUtil;
 import com.somefriggnidiot.discord.util.VoiceXpUtil;
 import com.somefriggnidiot.discord.util.XpDegradationUtil;
@@ -66,19 +71,40 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Icon;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import vip.floatationdevice.guilded4j.G4JClient;
+import vip.floatationdevice.guilded4j.G4JWebSocketClient;
+import vip.floatationdevice.guilded4j.rest.ChatMessageManager;
 
 public class Main {
 
    public static JDA jda;
    public static String ownerId;
 
+   // START - Guilded Bridge Test
+   static String GTOKEN = "gapi_nI+wF/5WMksp2ixTEQxJB6pM2+QGv0f59OiNyJFVBXT0bQleDKHwK49e8kGL5eIY5VwTA7iqmIdOni3bnbArvQ==";
+   public static G4JClient gClient = new G4JClient(GTOKEN);
+   public static ChatMessageManager cmm;
+   public static MySqlConnector msc;
+   public static Session session;
+   // END - Guilded Bridge Test
+
+   /**
+    *
+    * @param args Discord Client Token, Bot Owner Discord ID, MySQL Password
+    */
    public static void main(String[] args) {
       System.setProperty("log4j.configurationFile", "resources/log4j2.xml");
       final Logger logger = LoggerFactory.getLogger(Main.class);
       EventWaiter waiter = new EventWaiter();
       ownerId = args[1];
+      msc = new MySqlConnector(args[2]);
 
       //TODO Migrate commands to slash-commands.
       try {
@@ -184,7 +210,7 @@ public class Main {
             }
          }
 
-         logger.info(String.format("I'm live in %s guilds, serving %s users and %s bots!",
+         logger.info(format("I'm live in %s guilds, serving %s users and %s bots!",
              jda.getGuilds().size(),
              users,
              jda.getUsers().size() - users));
@@ -201,11 +227,11 @@ public class Main {
 
             if (gi.isGroupingGames()) {
                if (gi.gameGroupsAutomatic()) {
-                  logger.info(String.format("[%s] Starting Auto Groups tracking. Refreshing role "
+                  logger.info(format("[%s] Starting Auto Groups tracking. Refreshing role "
                       + "assignments.", guild));
                   GameGroupUtil.getGameGroupUtil(guild).startAutoGrouping();
                } else {
-                  logger.info(String.format("[%s] Started Game Groups tracking. Refreshing role "
+                  logger.info(format("[%s] Started Game Groups tracking. Refreshing role "
                       + "assignments.", guild));
                   GameGroupUtil.refreshGameGroups(guild);
                }
@@ -216,66 +242,29 @@ public class Main {
       } catch (InterruptedException e2) {
          logger.error("Operation interrupted!", e2);
       }
+
+      // START - Guilded Bridge Test
+      session = startMysqlSession(args[2]);
+      BridgeObject bridgeObject = session.get(BridgeObject.class, 1);
+      logger.info(format("BridgeObjectTest: %s %s %s %s %s", bridgeObject.getId(),
+          bridgeObject.getDiscordChannelId(), bridgeObject.getDiscordServerId(),
+          bridgeObject.getGuildedServerId(), bridgeObject.getGuildedChannelId()));
+      gClient.ws.eventBus.register(new GDBridgeListener());
+      gClient.ws.connect();
+      // END - Guilded Bridge Test
    }
 
-   private List<Command> listCommands() {
-      ArrayList<Command> commands = new ArrayList<>();
-      EventWaiter waiter = new EventWaiter();
+   private static Session startMysqlSession(String mysqlPassword) {
+      Configuration config = new Configuration();
+      config.setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
+      config.setProperty("hibernate.connection.url",
+          "jdbc:mysql://localhost:3306/idiotbot_discord");
+      config.setProperty("hibernate.connection.username", "idiotbot");
+      config.setProperty("hibernate.connection.password", mysqlPassword);
+      config.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
+      config.addAnnotatedClass(BridgeObject.class);
 
-      //Channels
-      commands.add(new CreatePrivateChannelCommand(waiter));
-//          new CreatePrivateChannelCommand(waiter),
-//          new InviteToPrivateChannelCommand()
-//          .addCommands( //Fun
-//              new CatCommand(),
-//              new DieCommand(),
-//              new DogCommand(),
-//              new DogeCommand(),
-//              new EchoCommand()
-//          )
-//          .addCommands( // Functionalities - GameGroups
-//              new AddGameGroupCommand(),
-//              new GroupGamesCommand(),
-//              new RemoveGameGroupCommand()
-//          )
-//          .addCommands( // Raffles
-//              new CloseRaffleCommand(),
-//              new CreateRaffleCommand(),
-//              new DrawRaffleCommand(),
-//              new EnterRaffleCommand(),
-//              new ListRafflesCommand()
-//          )
-//          .addCommands( // Tokens
-//              new AdjustTokensCommand(),
-//              new ResetAllTokensCommand()
-//          )
-//          .addCommands( //XP - Moderation
-//              new AdjustXpCommand(),
-//              new ClearXpCommand(),
-//              new SetVoiceSpecialCommand(),
-//              new ToggleXpGainCommand(),
-//              new ToggleLuckBonusCommand()
-//          )
-//          .addCommands( //XP - Role Levels
-//              new AddRoleLevelCommand(),
-//              new RemoveRoleLevelCommand()
-//          )
-//          .addCommands( // XP - XpInfo
-//              new ShowXpCommand(),
-//              new XpLeaderboardCommand()
-//          )
-//          .addCommands( //Moderation
-//              new AddAllUsersToRoleCommand(),
-//              new GetWarningsCommand(),
-//              new RemoveAllUsersFromRoleCommand(),
-//              new WarningCommand(),
-//              new TagLogCommand()
-//          )
-////             .addCommand(new KarmaCommand())
-//          .addCommand(new ProfileCommand())
-//          .addCommand(new StatusCommand());
-
-      return commands;
+      SessionFactory factory = config.buildSessionFactory();
+      return factory.openSession();
    }
-
 }
