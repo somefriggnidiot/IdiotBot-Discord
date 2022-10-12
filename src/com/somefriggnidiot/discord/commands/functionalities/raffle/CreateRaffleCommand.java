@@ -3,11 +3,13 @@ package com.somefriggnidiot.discord.commands.functionalities.raffle;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.models.RaffleObject;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.data_access.util.RaffleUtil;
+import com.somefriggnidiot.discord.util.command_util.CommandUtil;
 import java.util.List;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Role;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,13 +28,18 @@ public class CreateRaffleCommand extends Command {
           + "specified maximum in entries.";
       this.botPermissions = new Permission[]{Permission.MESSAGE_READ, Permission.MESSAGE_WRITE};
       this.guildOnly = true;
-      this.requiredRole = "Staff";
       this.cooldown = 1;
       this.cooldownScope = CooldownScope.USER;
    }
 
    @Override
    protected void execute(final CommandEvent event) {
+      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
+      if (!CommandUtil.checkPermissions(event.getMember(), giu.getStaffRole())) {
+         event.reply("You do not have the necessary permissions to use this command.");
+         return;
+      }
+
       this.event = event;
       Long guildId = event.getGuild().getIdLong();
       Long requiredRoleId;
@@ -69,6 +76,9 @@ public class CreateRaffleCommand extends Command {
       EmbedBuilder eb = new EmbedBuilder()
           .setDescription("Created by " + event.getAuthor().getName())
           .setTitle("**New Raffle: **" + raffleObject.getRaffleName())
+          .setFooter("Provided to you by IdiotBot. The most idiotic of bots.",
+              "http://www.foundinaction.com/wp-content/uploads/2018/08/"
+                  + "Neon_600x600_Transparent.png")
           .addField("Ticket Cost", String.format("%s Tokens", raffleObject.getTicketCost()), false)
           .addField("Max Tickets / User", raffleObject.getMaxTicketsPerPerson().toString(), false);
 

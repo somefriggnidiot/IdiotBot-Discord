@@ -6,7 +6,8 @@ import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.MessageListener;
 import com.somefriggnidiot.discord.util.VoiceXpUtil;
-import net.dv8tion.jda.core.Permission;
+import com.somefriggnidiot.discord.util.command_util.CommandUtil;
+import net.dv8tion.jda.api.Permission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,10 +31,16 @@ public class ToggleXpGainCommand extends Command {
 
    @Override
    protected void execute(final CommandEvent event) {
+      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
+      if (!CommandUtil.checkPermissions(event.getMember(), giu.getStaffRole())) {
+         event.reply("You do not have the necessary permissions to use this command.");
+         return;
+      }
+
       GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild().getIdLong());
 
       if (gi.isGrantingMessageXp()) {
-         GuildInfoUtil.setXpTracking(event.getGuild().getIdLong(), false);
+         giu.setXpTracking(false);
          logger.info(String.format("[%s] Guild is no longer granting message xp.",
              event.getGuild()));
 
@@ -43,7 +50,7 @@ public class ToggleXpGainCommand extends Command {
 
          event.reply("XP tracking disabled.");
       } else {
-         GuildInfoUtil.setXpTracking(event.getGuild().getIdLong(), true);
+         giu.setXpTracking(true);
          logger.info(String.format("[%s] Guild is now granting message xp.",
              event.getGuild()));
 

@@ -8,8 +8,8 @@ import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.data_access.util.RaffleUtil;
 import java.awt.Color;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 
 public class StatusCommand extends Command {
 
@@ -29,7 +29,7 @@ public class StatusCommand extends Command {
    @Override
    protected void execute(final CommandEvent event) {
       GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild().getIdLong());
-      Long ping = event.getGuild().getJDA().getPing();
+      Long ping = event.getGuild().getJDA().getGatewayPing();
       Long userCount = event.getGuild().getMembers().stream().filter(member -> !member.getUser
           ().isBot()).count();
       Long botCount = event.getGuild().getMembers().stream().filter(member -> member.getUser()
@@ -52,8 +52,11 @@ public class StatusCommand extends Command {
 
       EmbedBuilder eb = new EmbedBuilder();
       eb.setTitle(format("%s Information", event.getGuild().getName()));
-      eb.setColor(Color.GREEN);//ThreadLocalRandom.current().nextInt(0, 16777216));
+      eb.setColor(Color.GREEN);
       eb.setThumbnail(event.getGuild().getIconUrl());
+      eb.setFooter("Provided to you by IdiotBot. The most idiotic of bots.",
+          "http://www.foundinaction.com/wp-content/uploads/2018/08/"
+              + "Neon_600x600_Transparent.png");
       eb.addField("**Users**", userCount.toString(), true);
       eb.addField("**Bots**", botCount.toString(), true);
       eb.addField("**Ping**", format("%s ms", ping), true);

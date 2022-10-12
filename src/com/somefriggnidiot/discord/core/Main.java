@@ -1,5 +1,6 @@
 package com.somefriggnidiot.discord.core;
 
+import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.somefriggnidiot.discord.commands.ProfileCommand;
@@ -9,9 +10,13 @@ import com.somefriggnidiot.discord.commands.channels.InviteToPrivateChannelComma
 import com.somefriggnidiot.discord.commands.fun.CatCommand;
 import com.somefriggnidiot.discord.commands.fun.DogCommand;
 import com.somefriggnidiot.discord.commands.fun.DogeCommand;
+import com.somefriggnidiot.discord.commands.fun.EchoCommand;
+import com.somefriggnidiot.discord.commands.functionalities.core.ConfigurationCommand;
+import com.somefriggnidiot.discord.commands.functionalities.core.DieCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.AddGameGroupCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.GroupGamesCommand;
 import com.somefriggnidiot.discord.commands.functionalities.gamegroups.RemoveGameGroupCommand;
+import com.somefriggnidiot.discord.commands.functionalities.gamegroups.StreamerFeatureCommand;
 import com.somefriggnidiot.discord.commands.functionalities.raffle.CloseRaffleCommand;
 import com.somefriggnidiot.discord.commands.functionalities.raffle.CreateRaffleCommand;
 import com.somefriggnidiot.discord.commands.functionalities.raffle.DrawRaffleCommand;
@@ -25,13 +30,18 @@ import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.SetVoi
 import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.ToggleLuckBonusCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.moderation.ToggleXpGainCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.AddRoleLevelCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.ListRoleLevelsCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.RefreshRoleLevelAssignmentsCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.rolelevels.RemoveRoleLevelCommand;
+import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.LatestXpLeaderboardCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.ShowXpCommand;
 import com.somefriggnidiot.discord.commands.functionalities.xp.xpinfo.XpLeaderboardCommand;
 import com.somefriggnidiot.discord.commands.moderation.AddAllUsersToRoleCommand;
+import com.somefriggnidiot.discord.commands.moderation.AllowCommand;
+import com.somefriggnidiot.discord.commands.moderation.BotModeCommand;
 import com.somefriggnidiot.discord.commands.moderation.GetWarningsCommand;
+import com.somefriggnidiot.discord.commands.moderation.InfodumpCommand;
 import com.somefriggnidiot.discord.commands.moderation.RemoveAllUsersFromRoleCommand;
-import com.somefriggnidiot.discord.commands.moderation.SoftBanCommand;
 import com.somefriggnidiot.discord.commands.moderation.TagLogCommand;
 import com.somefriggnidiot.discord.commands.moderation.WarningCommand;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
@@ -39,36 +49,49 @@ import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.GuildMemberListener;
 import com.somefriggnidiot.discord.events.GuildVoiceListener;
 import com.somefriggnidiot.discord.events.MessageListener;
+import com.somefriggnidiot.discord.events.ReconnectedEventListener;
 import com.somefriggnidiot.discord.events.UserUpdateGameListener;
 import com.somefriggnidiot.discord.util.GameGroupUtil;
 import com.somefriggnidiot.discord.util.VoiceXpUtil;
+import com.somefriggnidiot.discord.util.XpDegradationUtil;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import javax.security.auth.login.LoginException;
-import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.entities.Game;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Icon;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Icon;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Main {
 
-   private final static Logger logger = LoggerFactory.getLogger(Main.class);
    public static JDA jda;
+   public static String ownerId;
 
    public static void main(String[] args) {
-      System.setProperty("log4j.configurationFile", "./resources/log4j2.xml");
+      System.setProperty("log4j.configurationFile", "resources/log4j2.xml");
+      final Logger logger = LoggerFactory.getLogger(Main.class);
       EventWaiter waiter = new EventWaiter();
+      ownerId = args[1];
 
+      //TODO Migrate commands to slash-commands.
       try {
          CommandClientBuilder client = new CommandClientBuilder()
-             .setGame(Game.playing("Bot-it League"))
-             .setOwnerId(args[1])
+             .setActivity(Activity.playing("Bot-it League"))
+             .setOwnerId(ownerId)
              .setPrefix("!")
              .setHelpWord("help")
+             .addCommands( //Core
+                 new ConfigurationCommand(),
+                 new DieCommand(waiter),
+                 new StatusCommand()
+             )
              .addCommands( //Channels
                  new CreatePrivateChannelCommand(waiter),
                  new InviteToPrivateChannelCommand()
@@ -76,12 +99,14 @@ public class Main {
              .addCommands( //Fun
                  new CatCommand(),
                  new DogCommand(),
-                 new DogeCommand()
+                 new DogeCommand(),
+                 new EchoCommand()
              )
              .addCommands( // Functionalities - GameGroups
                  new AddGameGroupCommand(),
                  new GroupGamesCommand(),
-                 new RemoveGameGroupCommand()
+                 new RemoveGameGroupCommand(),
+                 new StreamerFeatureCommand()
              )
              .addCommands( // Raffles
                  new CloseRaffleCommand(),
@@ -96,6 +121,7 @@ public class Main {
              )
              .addCommands( //XP - Moderation
                  new AdjustXpCommand(),
+                 new BotModeCommand(),
                  new ClearXpCommand(),
                  new SetVoiceSpecialCommand(),
                  new ToggleXpGainCommand(),
@@ -103,31 +129,37 @@ public class Main {
               )
              .addCommands( //XP - Role Levels
                  new AddRoleLevelCommand(),
-                 new RemoveRoleLevelCommand()
+                 new RemoveRoleLevelCommand(),
+                 new ListRoleLevelsCommand(),
+                 new RefreshRoleLevelAssignmentsCommand()
              )
              .addCommands( // XP - XpInfo
                  new ShowXpCommand(),
+                 new LatestXpLeaderboardCommand(),
                  new XpLeaderboardCommand()
              )
              .addCommands( //Moderation
                  new AddAllUsersToRoleCommand(),
+                 new AllowCommand(),
                  new GetWarningsCommand(),
                  new RemoveAllUsersFromRoleCommand(),
                  new WarningCommand(),
-                 new TagLogCommand(),
-                 new SoftBanCommand()
+                 new TagLogCommand()
              )
-//             .addCommand(new KarmaCommand())
              .addCommand(new ProfileCommand())
-             .addCommand(new StatusCommand());
+             .addCommand(new InfodumpCommand());
 
-         jda = new JDABuilder(args[0])
-             .addEventListener(new MessageListener())
-             .addEventListener(new UserUpdateGameListener())
-             .addEventListener(new GuildVoiceListener())
-             .addEventListener(new GuildMemberListener())
-             .addEventListener(waiter)
-             .addEventListener(client.build())
+         jda = new JDABuilder().addEventListeners(
+             new MessageListener(),
+             new UserUpdateGameListener(),
+             new GuildVoiceListener(),
+             new GuildMemberListener(),
+             new ReconnectedEventListener(),
+             waiter,
+             client.build())
+             .setAutoReconnect(true)
+             .setEnabledIntents(EnumSet.allOf(GatewayIntent.class))
+             .setToken(args[0])
              .build();
 
          jda.awaitReady();
@@ -140,7 +172,7 @@ public class Main {
             jda.getSelfUser().getManager().setAvatar(icon).queue();
             logger.info("Avatar set successfully.");
          } catch (Exception e) {
-            logger.error("Error while setting avatar", e);
+            logger.error("Error while setting avatar: ", e.getMessage());
          }
 
          Integer users = 0;
@@ -157,20 +189,26 @@ public class Main {
              users,
              jda.getUsers().size() - users));
 
+         //General Startup
+         XpDegradationUtil.startDegraderDaemon();
          //Start up Guilds
          for (Guild guild : jda.getGuilds()) {
             GuildInfo gi = GuildInfoUtil.getGuildInfo(guild.getIdLong());
 
             if (gi.isGrantingMessageXp()) {
                VoiceXpUtil.startTimer(guild.getIdLong());
-               logger.info(String.format("[%s] Started voice XP timer.",
-                   guild));
             }
 
             if (gi.isGroupingGames()) {
-               logger.info(String.format("[%s] Started Game Groups tracking. Refreshing role "
-                   + "assignments.", guild));
-               GameGroupUtil.refreshGameGroups(guild);
+               if (gi.gameGroupsAutomatic()) {
+                  logger.info(String.format("[%s] Starting Auto Groups tracking. Refreshing role "
+                      + "assignments.", guild));
+                  GameGroupUtil.getGameGroupUtil(guild).startAutoGrouping();
+               } else {
+                  logger.info(String.format("[%s] Started Game Groups tracking. Refreshing role "
+                      + "assignments.", guild));
+                  GameGroupUtil.refreshGameGroups(guild);
+               }
             }
          }
       } catch (LoginException e) {
@@ -178,6 +216,66 @@ public class Main {
       } catch (InterruptedException e2) {
          logger.error("Operation interrupted!", e2);
       }
+   }
+
+   private List<Command> listCommands() {
+      ArrayList<Command> commands = new ArrayList<>();
+      EventWaiter waiter = new EventWaiter();
+
+      //Channels
+      commands.add(new CreatePrivateChannelCommand(waiter));
+//          new CreatePrivateChannelCommand(waiter),
+//          new InviteToPrivateChannelCommand()
+//          .addCommands( //Fun
+//              new CatCommand(),
+//              new DieCommand(),
+//              new DogCommand(),
+//              new DogeCommand(),
+//              new EchoCommand()
+//          )
+//          .addCommands( // Functionalities - GameGroups
+//              new AddGameGroupCommand(),
+//              new GroupGamesCommand(),
+//              new RemoveGameGroupCommand()
+//          )
+//          .addCommands( // Raffles
+//              new CloseRaffleCommand(),
+//              new CreateRaffleCommand(),
+//              new DrawRaffleCommand(),
+//              new EnterRaffleCommand(),
+//              new ListRafflesCommand()
+//          )
+//          .addCommands( // Tokens
+//              new AdjustTokensCommand(),
+//              new ResetAllTokensCommand()
+//          )
+//          .addCommands( //XP - Moderation
+//              new AdjustXpCommand(),
+//              new ClearXpCommand(),
+//              new SetVoiceSpecialCommand(),
+//              new ToggleXpGainCommand(),
+//              new ToggleLuckBonusCommand()
+//          )
+//          .addCommands( //XP - Role Levels
+//              new AddRoleLevelCommand(),
+//              new RemoveRoleLevelCommand()
+//          )
+//          .addCommands( // XP - XpInfo
+//              new ShowXpCommand(),
+//              new XpLeaderboardCommand()
+//          )
+//          .addCommands( //Moderation
+//              new AddAllUsersToRoleCommand(),
+//              new GetWarningsCommand(),
+//              new RemoveAllUsersFromRoleCommand(),
+//              new WarningCommand(),
+//              new TagLogCommand()
+//          )
+////             .addCommand(new KarmaCommand())
+//          .addCommand(new ProfileCommand())
+//          .addCommand(new StatusCommand());
+
+      return commands;
    }
 
 }

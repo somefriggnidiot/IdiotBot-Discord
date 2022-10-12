@@ -6,18 +6,17 @@ import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.MessageListener;
 import com.somefriggnidiot.discord.util.GameGroupUtil;
+import com.somefriggnidiot.discord.util.command_util.CommandUtil;
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Game;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.managers.GuildController;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.requests.restaction.RoleAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,12 +28,17 @@ public class GroupGamesCommand extends Command {
    public GroupGamesCommand() {
       this.name = "gamegroups";
       this.aliases = new String[]{"groupbygame", "groupgames", "gamegroupings"};
-      this.arguments = "<toggle/status/enable/disable>";
-      this.requiredRole = "Staff";
+      this.arguments = "<status/create> [create: gameName]";
       this.category = new Category("Game Groups");
-      this.help = "Toggles whether or not this guild groups mambers by what game they are playing"
-          + ". Members are \"grouped\" by being added to the specified group when Discord shows "
-          + "them as playing the specified game.";
+      this.help = "Displays the current status of Game Groups, or can be used to create a new one"
+          + ". Members are \"grouped\" by being added to the specified role when Discord shows "
+          + "them as playing the specified game. This functionality can be modified using the "
+          + "`!config` command, and may be set to manual configuration (default) or automatic"
+          + "configuration. \n"
+          + "When Game Groups are set to automatic configuration, roles will be created and "
+          + "removed as necessary based on how many members are playing the same game. **To "
+          + "ensure roles are not mistakenly deleted, please ensure no roles bear the same name as "
+          + "a game prior to enabling automatic game groups.**";
       this.botPermissions = new Permission[]{Permission.MANAGE_ROLES, Permission.MESSAGE_READ,
           Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
       this.guildOnly = true;
@@ -44,8 +48,14 @@ public class GroupGamesCommand extends Command {
 
    @Override
    protected void execute(final CommandEvent event) {
+      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
+      if (!CommandUtil.checkPermissions(event.getMember(), giu.getStaffRole())) {
+         event.reply("You do not have the necessary permissions to use this command.");
+         return;
+      }
+
       Guild guild = event.getGuild();
-      String[] args = event.getMessage().getContentDisplay().split("\\s", 2);
+      String[] args = event.getMessage().getContentDisplay().split("\\s", 3);
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
 
       eb = new EmbedBuilder()
@@ -61,9 +71,9 @@ public class GroupGamesCommand extends Command {
             case "update":
             case "check":
                try {
-                  update(event);
+                  GameGroupUtil.refreshGameGroups(guild);
                } catch (Exception e) {
-                  event.reply("Cannot modify roles of a higher rank.");
+                  logger.error(e.getMessage(), e);
                }
                return;
             case "toggle":
@@ -79,6 +89,9 @@ public class GroupGamesCommand extends Command {
             case "stop":
                toggle(event, false);
                return;
+            case "create":
+               create(event);
+               return;
             case "info":
             case "status":
             default:
@@ -91,25 +104,13 @@ public class GroupGamesCommand extends Command {
 
    private void toggle(CommandEvent event, Boolean enable) {
       Guild guild = event.getGuild();
-      GuildController gc = guild.getController();
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
-      List<Member> members = guild.getMembers();
-      Collection<String> roleNames = gi.getGameGroupMappings().values();
-      Collection<Role> roles = new ArrayList<>();
-
-      for (String roleName : roleNames) {
-         roles.add(guild.getRolesByName(roleName, false).get(0));
-      }
 
       //Handle
       if (!enable) {
          //Disable
          GuildInfoUtil.disableGameGrouping(guild);
-
-         //Remove from roles.
-         for (Member member : members) {
-            gc.removeRolesFromMember(member, roles).queue();
-         }
+         GameGroupUtil.refreshGameGroups(guild);
 
          //Log
          logger.info(String.format("[%s] Game Grouping Disabled by %s.",
@@ -123,14 +124,7 @@ public class GroupGamesCommand extends Command {
       } else {
          //Enable
          GuildInfoUtil.enableGameGrouping(guild);
-
-         //Add to roles.
-         for (Member member : members) {
-            if (member.getGame() != null) {
-               GameGroupUtil.handleRoleAssignment(guild, gi.getGameGroupMappings(),
-                   member.getGame().getName(), member);
-            }
-         }
+         GameGroupUtil.refreshGameGroups(guild);
 
          //Log
          logger.info(String.format("[%s] Game Grouping Enabled by %s.",
@@ -174,39 +168,58 @@ public class GroupGamesCommand extends Command {
    private void printInfo(CommandEvent event) {
       GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild().getIdLong());
 
-      //Handle
+      //Add Status
       if (!gi.isGroupingGames()) {
-         //Prepare message.
          eb.setColor(Color.RED)
              .addField("Status", "INACTIVE", false)
              .addBlankField(false);
       } else {
-         //Prepare message.
-         eb.setColor(Color.GREEN)
-             .addField("Status", "ACTIVE", false)
-             .addBlankField(false);
+         if (gi.gameGroupsAutomatic()) {
+            eb.setColor(Color.BLACK)
+                .addField("Status", "ACTIVE - AUTOMATIC", false)
+                .addField("AUTOMATIC GAME GROUPS", "Game groups are created and added "
+                        + "automatically based on the number of members detected playing the same "
+                        + "game simultaneously.",
+                false)
+                .addBlankField(false);
+         } else {
+            eb.setColor(Color.GREEN)
+                .addField("Status", "ACTIVE", false)
+                .addBlankField(false);
+         }
       }
 
-      HashMap<String, String> mappings = gi.getGameGroupMappings();
-      if (mappings == null || mappings.isEmpty()) {
-         eb.addField("Active Game Groups", "There are currently no active game groups.", true);
-      } else {
-         HashMap<String, String> gameList = new HashMap<>();
-
-         eb.addField("Active Game Groups", "", false);
-         for (String mappingKey : mappings.keySet()) {
-            String role = mappings.get(mappingKey);
-            String games = gameList.get(role);
-            if (games == null || games.isEmpty()) {
-               games = mappingKey;
-            } else {
-               games += ", " + mappingKey;
-            }
-            gameList.put(role, games);
+      if (gi.isGroupingGames() && gi.gameGroupsAutomatic()) {
+         String activeGameGroupsDisplay = "";
+         for (String group : GameGroupUtil
+             .getGameGroupUtil(event.getGuild()).getActiveAutoGroups()) {
+            activeGameGroupsDisplay = activeGameGroupsDisplay.concat(group + ", ");
          }
+         activeGameGroupsDisplay = activeGameGroupsDisplay
+             .substring(0, activeGameGroupsDisplay.length() - 2);
+         eb.addField("Active Auto Groups", activeGameGroupsDisplay, false);
+      } else {
+         HashMap<String, String> mappings = gi.getGameGroupMappings();
+         if (mappings == null || mappings.isEmpty()) {
+            eb.addField("Active Game Groups", "There are currently no active game groups.", true);
+         } else {
+            HashMap<String, String> gameList = new HashMap<>();
 
-         for (String role : gameList.keySet()) {
-            eb.addField(role, gameList.get(role), true);
+            eb.addField("Active Game Groups", "", false);
+            for (String mappingKey : mappings.keySet()) {
+               String role = mappings.get(mappingKey);
+               String games = gameList.get(role);
+               if (games == null || games.isEmpty()) {
+                  games = mappingKey;
+               } else {
+                  games += ", " + mappingKey;
+               }
+               gameList.put(role, games);
+            }
+
+            for (String role : gameList.keySet()) {
+               eb.addField(role, gameList.get(role), true);
+            }
          }
       }
 
@@ -214,80 +227,54 @@ public class GroupGamesCommand extends Command {
       event.getChannel().sendMessage(eb.build()).queue();
    }
 
-   private void update(CommandEvent event) {
+   private void create(CommandEvent event) {
+      String gameName = event.getMessage().getContentDisplay().split("\\s", 3)[2];
+
+      //Create group for game.
       Guild guild = event.getGuild();
-      GuildController gc = guild.getController();
+      RoleAction role = guild.createRole();
+      role.setName(gameName)
+          .setMentionable(false)
+          .setHoisted(true)
+          .setPermissions(Collections.EMPTY_SET)
+          .queue();
+
       GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
-      List<Member> members = guild.getMembers();
-      Collection<String> roleNames = gi.getGameGroupMappings().values();
-      Collection<Role> roles = new ArrayList<>();
+      List<String> gameGroups = new ArrayList<>(gi.getGameGroupMappings().values());
+      Role firstGameGroup = guild.getRolesByName(gameGroups.get(0), true).get(0);
+      Integer lastGameGroupPosition = guild.modifyRolePositions(false)
+          .selectPosition(firstGameGroup).getSelectedPosition() + gameGroups.size();
 
-      for (String roleName : roleNames) {
-         roles.add(guild.getRolesByName(roleName, false).get(0));
+      //Move group to bottom of grouped games list.
+      try {
+         Thread.sleep(500);
+      } catch (InterruptedException e) {
+         logger.error("Sleep interrupted during GameGroupsCommand create.");
       }
+      guild.modifyRolePositions(false)
+          .selectPosition(guild.getRolesByName(gameName, true).get(0))
+          .moveTo(lastGameGroupPosition)
+          .queue();
 
-      if (gi.isGroupingGames()) { //Only do if guild is grouping.
-         for (Member member : members) { //For each
-            // member
-            logger.trace(String.format("[%s] Member: %s\nGame: %s",
-                guild,
-                member.toString(),
-                member.getGame()));
-            Game game = member.getGame();
+      //Add group as GameGroup.
+      try {
+         GuildInfoUtil.addGameRoleMapping(guild.getIdLong(), gameName, gameName);
 
-            if(game == null || game.getName().isEmpty()) { //If not playing game
-               gc.removeRolesFromMember(member, roles).queue(); //Remove game roles.
-               logger.debug(String.format("[%s] %s is not playing any game, removing all game "
-                   + "roles.",
-                   guild,
-                   member.getEffectiveName()));
-            } else { //Playing game
-
-               //So check if they have a game role
-               List<Role> memberRoles = member.getRoles();
-
-               Boolean next = false;
-
-               for (Role role : memberRoles) {
-                  if (roles.contains(role)) { //User's role is a game role.
-                     if (GameGroupUtil.getGameRole(guild, game) == role) { //User has correct role.
-                        logger.info(String.format("[%s] %s already has the correct role.",
-                            guild,
-                            member.getEffectiveName()));
-                     } else {
-                        if (GameGroupUtil.isValidGame(gi.getGameGroupMappings(), game.getName())) {
-                           gc.addSingleRoleToMember(member, GameGroupUtil.getGameRole(guild, game))
-                               .queue();
-                           logger.info(String.format("[%s] Removing %s from existing game roles and "
-                                   + "adding to %s.",
-                               guild,
-                               member.getEffectiveName(),
-                               GameGroupUtil.getGameRole(guild, game)));
-                        } else {
-                           gc.removeRolesFromMember(member, roles).queue();
-                           logger.info(String.format("[%s] Removing %s from existing game roles.",
-                               guild,
-                               member.getEffectiveName()));
-                        }
-                     }
-                     next = true;
-                  }
-               }
-
-               if (!next) {
-                  GameGroupUtil.handleRoleAssignment(guild, gi.getGameGroupMappings(),
-                      game.getName(), member);
-               }
-            }
+         // Refresh to apply new game groups.
+         if (GuildInfoUtil.getGuildInfo(guild.getIdLong()).isGroupingGames()) {
+            GameGroupUtil.refreshGameGroups(guild);
          }
-      } else {
-         //Report that it can't be done.
-         logger.warn(String.format("[%s] Attempted to refresh gamegroups but guild does not have "
-             + "grouping enabled. Removing all game roles from members.",
-             guild));
-         for (Member member : members) {
-            gc.removeRolesFromMember(member, roles);
-         }
+
+         event.reply(String.format("New game group created!\nUsers playing \"%s\" will now be "
+                 + "added to the role \"%s\".",
+             gameName,
+             gameName));
+      } catch (Exception e) {
+         logger.error(String.format("[%s] Error adding game role mapping: "
+                 + "\nGameName: \"%s\"\nRoleName: \"%s\"",
+             event.getGuild(),
+             gameName,
+             gameName));
       }
    }
 }

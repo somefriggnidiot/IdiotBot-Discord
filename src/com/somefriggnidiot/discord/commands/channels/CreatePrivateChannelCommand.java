@@ -7,20 +7,22 @@ import com.jagrosh.jdautilities.menu.ButtonMenu;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector.Table;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
-import com.somefriggnidiot.discord.events.MessageListener;
+import com.somefriggnidiot.discord.data_access.models.GuildInfo;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
+import com.somefriggnidiot.discord.util.command_util.CommandUtil;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Channel;
-import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.requests.restaction.ChannelAction;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CreatePrivateChannelCommand extends Command {
 
-   private final Logger logger = LoggerFactory.getLogger(MessageListener.class);
+   private final Logger logger = LoggerFactory.getLogger(this.getClass());
    private final EventWaiter waiter;
 
    public CreatePrivateChannelCommand(EventWaiter waiter) {
@@ -29,15 +31,21 @@ public class CreatePrivateChannelCommand extends Command {
       this.help = "Creates a private voice channel for use by a user and those invited to it.";
       this.arguments = "<owner> <name>";
       this.aliases = new String[]{"cpc", "createprivatechannel"};
-      this.ownerCommand = true;
       this.botPermissions = new Permission[]{Permission.MANAGE_SERVER, Permission.MANAGE_CHANNEL};
       this.category = new Category("VIP");
       this.cooldown = 1;
       this.cooldownScope = CooldownScope.USER;
+      this.guildOnly = true;
    }
 
    @Override
    protected void execute(final CommandEvent event) {
+      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
+      if (!CommandUtil.checkPermissions(event.getMember(), giu.getStaffRole())) {
+         event.reply("You do not have the necessary permissions to use this command.");
+         return;
+      }
+
       User channelOwner = event.getMessage().getMentionedUsers().get(0);
 
       if (hasChannel(channelOwner)) {
@@ -70,13 +78,20 @@ public class CreatePrivateChannelCommand extends Command {
           name,
           channelOwner.getName()));
 
-      List<Permission> allowed = new ArrayList<>();
-      allowed.add(Permission.MANAGE_CHANNEL);
-      allowed.add(Permission.VOICE_CONNECT);
-      allowed.add(Permission.VOICE_SPEAK);
-      allowed.add(Permission.VIEW_CHANNEL);
+      List<Permission> vipAllowed = new ArrayList<>();
+      vipAllowed.add(Permission.MANAGE_CHANNEL);
+      vipAllowed.add(Permission.VOICE_CONNECT);
+      vipAllowed.add(Permission.VOICE_SPEAK);
+      vipAllowed.add(Permission.VIEW_CHANNEL);
+      vipAllowed.add(Permission.CREATE_INSTANT_INVITE);
+      vipAllowed.add(Permission.MANAGE_PERMISSIONS);
+      vipAllowed.add(Permission.VOICE_MUTE_OTHERS);
+      vipAllowed.add(Permission.VOICE_DEAF_OTHERS);
+      vipAllowed.add(Permission.VOICE_MOVE_OTHERS);
+      vipAllowed.add(Permission.VOICE_USE_VAD);
+      vipAllowed.add(Permission.PRIORITY_SPEAKER);
 
-      List<Permission> denied = new ArrayList<>();
+      List<Permission> emptyList = new ArrayList<>();
 
       List<Permission> allDenied = new ArrayList<>();
       allDenied.add(Permission.VOICE_CONNECT);
@@ -86,23 +101,31 @@ public class CreatePrivateChannelCommand extends Command {
       ChannelAction action =
           event.getGuild().getCategoriesByName("\uD83D\uDE0E VIP", true).get(0)
               .createVoiceChannel(name)
-              .addPermissionOverride(event.getGuild().getMember(channelOwner), allowed, denied)
-              .addPermissionOverride(event.getGuild().getPublicRole(), denied, allDenied)
+              .addPermissionOverride(event.getGuild().getMember(channelOwner), vipAllowed, emptyList)
+              .addPermissionOverride(event.getGuild().getPublicRole(), emptyList, allDenied)
               .setBitrate(64000);
 
-      action.queue(channel -> {
-         logger.info(String.format("[%s] Created voice channel named \"%s\" for %s",
-             event.getGuild(),
-             name,
-             channelOwner.getName()));
+      action.queue();
+      try {
+         Thread.sleep(500L);
+      } catch (InterruptedException e) {
+         logger.error("Wait interrupted when trying to create VIP channel!");
+      }
 
-         updateDatabase(channelOwner, channel);
+      VoiceChannel channel = event.getGuild().getVoiceChannelsByName(name, false).get(0);
 
-         logger.info(String.format("[%s] Added %s as private channel of %s.",
-             event.getGuild(),
-             channel,
-             channelOwner.getName()));
-      });
+      updateDatabase(channelOwner,
+          event.getGuild().getVoiceChannelsByName(name, false).get(0));
+
+      logger.info(String.format("[%s] Created voice channel named \"%s\" for %s",
+          event.getGuild(),
+          name,
+          channelOwner.getName()));
+
+      logger.info(String.format("[%s] Added %s as private channel of %s.",
+          event.getGuild(),
+          channel,
+          channelOwner.getName()));
    }
 
    private boolean hasChannel(User user) {
@@ -114,7 +137,7 @@ public class CreatePrivateChannelCommand extends Command {
       return dbu != null && dbu.getPrivateChannel() != null;
    }
 
-   private void updateDatabase(User user, Channel channel) {
+   private void updateDatabase(User user, VoiceChannel channel) {
       DatabaseConnector c = new DatabaseConnector();
       EntityManager em = c.getEntityManager(Table.DATABASE_USER);
 

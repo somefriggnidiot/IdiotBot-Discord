@@ -6,6 +6,7 @@ import com.somefriggnidiot.discord.data_access.DatabaseConnector;
 import com.somefriggnidiot.discord.data_access.DatabaseConnector.Table;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.models.UserWarning;
+import com.somefriggnidiot.discord.data_access.util.UserWarningUtil;
 import java.awt.Color;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -14,8 +15,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.User;
 
 public class GetWarningsCommand extends Command {
 
@@ -42,8 +43,7 @@ public class GetWarningsCommand extends Command {
 
          if (warningIds != null && !warningIds.isEmpty()) {
             for (String id : warningIds) {
-               EntityManager em2 = new DatabaseConnector().getEntityManager(Table.USER_WARNING);
-               UserWarning warning = em2.find(UserWarning.class, id);
+               UserWarning warning = UserWarningUtil.getWarning(id);
 
                if (warning != null) { //Ensure warning is returned.
                   warnings.add(warning);
@@ -67,7 +67,7 @@ public class GetWarningsCommand extends Command {
       if (!warnings.isEmpty()) {
          for (UserWarning warning : warnings) {
             String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                .format(Date.from((warning.getTimestamp().toInstant()))); //FIXME throwing NPEs
+                .format(warning.getTimestamp());
             if (warning.getExpires().after(Timestamp.valueOf(LocalDateTime.now()))) {
                eb.addField(timestamp,
                    String.format("**Warned By: ** %s\n **Expires:** %s\n **Reason:** %s",

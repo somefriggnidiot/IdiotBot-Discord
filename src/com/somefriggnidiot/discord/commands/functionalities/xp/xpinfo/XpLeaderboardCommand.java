@@ -11,12 +11,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 
 public class XpLeaderboardCommand extends Command {
 
@@ -43,6 +41,9 @@ public class XpLeaderboardCommand extends Command {
              .getContentDisplay().split("\\s", 2)[1]);
       } catch (IndexOutOfBoundsException ex) {
          count = 10;
+      } catch (NumberFormatException nf) {
+         event.reply("Invalid request. Arguments must be positive integer.");
+         return;
       }
 
       Guild guild = event.getGuild();
@@ -59,7 +60,7 @@ public class XpLeaderboardCommand extends Command {
       for (DatabaseUser dbu : dbus) {
          Integer xp = dbu.getXpMap().get(guild.getIdLong()) == null ? 0 : dbu.getXpMap()
              .get(guild.getIdLong());
-         highScoreObjects.add(new HighscoreObject(dbu, xp));
+         highScoreObjects.add(new HighscoreObject(dbu, xp, dbu.getLatestGain()));
       }
 
       //Sort the scores.
@@ -93,8 +94,10 @@ public class XpLeaderboardCommand extends Command {
               startRank,
               rank - 1,
               guild.getName()))
-          .setDescription(top);
-//          .addField("", top, true);
+          .setDescription(top)
+          .setFooter("Provided to you by IdiotBot. The most idiotic of bots.",
+              "http://www.foundinaction.com/wp-content/uploads/2018/08/"
+                  + "Neon_600x600_Transparent.png");
 
       event.getChannel().sendMessage(eb.build()).queue();
    }

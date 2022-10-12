@@ -10,12 +10,12 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Channel;
-import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.requests.restaction.PermissionOverrideAction;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.requests.restaction.PermissionOverrideAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +63,7 @@ public class InviteToPrivateChannelCommand extends Command {
              + "please contact " + event.getGuild().getOwner().getAsMention());
       } else {
          //Get invoker's channel.
-         Channel userChannel = event.getGuild().getVoiceChannelById(getChannelId(invoker));
+         VoiceChannel userChannel = event.getGuild().getVoiceChannelById(getChannelId(invoker));
 
          //Set perm overrides.
          List<Permission> denied = new ArrayList<>();

@@ -6,13 +6,16 @@ import com.somefriggnidiot.discord.data_access.DatabaseConnector.Table;
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.util.HighscoreObject;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 public class GuildInfoUtil {
 
@@ -48,6 +51,50 @@ public class GuildInfoUtil {
       return level;
    }
 
+   public void setOwnerId(Long ownerId) {
+      em.getTransaction().begin();
+      gi.setOwnerRoleId(ownerId);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public Role getOwnerRole() {
+      return guild.getRoleById(gi.getOwnerRoleId());
+   }
+
+   public void setModeratorId(Long moderatorId) {
+      em.getTransaction().begin();
+      gi.setModeratorRoleId(moderatorId);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public void setGuestRoleId(Long guestRoleId) {
+      em.getTransaction().begin();
+      gi.setGuestRoleId(guestRoleId);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public Role getGuestRole() {
+      return guild.getRoleById(gi.getGuestRoleId());
+   }
+
+   public Role getStaffRole() {
+      return guild.getRoleById(gi.getModeratorRoleId());
+   }
+
+   public void setBotTextChannelId(Long botTextChannelId) {
+      em.getTransaction().begin();
+      gi.setBotTextChannelId(botTextChannelId);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public TextChannel getBotTextChannel() {
+      return guild.getTextChannelById(gi.getBotTextChannelId());
+   }
+
    public void setVoiceXpMultiplier(double multiplier) {
       em.getTransaction().begin();
       gi.setVoiceXpMultiplier(multiplier);
@@ -67,7 +114,7 @@ public class GuildInfoUtil {
       members.forEach(member -> dbus
           .add(DatabaseUserUtil.getUser(member.getUser().getIdLong())));
       dbus.forEach(dbu -> rankedList.add(new HighscoreObject(dbu, dbu.getXpMap().get(guild
-          .getIdLong()) == null ? 0 : dbu.getXpMap().get(guild.getIdLong()))));
+          .getIdLong()) == null ? 0 : dbu.getXpMap().get(guild.getIdLong()), dbu.getLatestGain())));
 
       return rankedList.stream()
           .sorted(Comparator.comparing(HighscoreObject::getXp).reversed())
@@ -87,6 +134,19 @@ public class GuildInfoUtil {
 
          em.getTransaction().begin();
          em.persist(getGuildInfo(guild.getIdLong()));
+         em.getTransaction().commit();
+      }
+   }
+
+   public void addBotModeEntryId(Instant bmeId) {
+      List<Instant> bmeIds = getGuildInfo(guild).getBotModeEntryIds();
+
+      if (!bmeIds.contains(bmeId)) {
+         bmeIds.add(bmeId);
+         getGuildInfo(guild).setBotModeEntryIds(bmeIds);
+
+         em.getTransaction().begin();
+         em.persist(getGuildInfo(guild));
          em.getTransaction().commit();
       }
    }
@@ -138,15 +198,75 @@ public class GuildInfoUtil {
       em.getTransaction().commit();
    }
 
-   public static void setXpTracking(Long guildId, Boolean isActive) {
+   public static void setGroupMappingsAutomatic(Guild guild, Boolean active) {
+      GuildInfo gi = getDatabaseObject(guild.getIdLong());
+
+      em.getTransaction().begin();
+      gi.setGroupMappingsAutomatic(active);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public static Boolean getGroupMappingsAutomatic(Guild guild) {
+      return getGuildInfo(guild).gameGroupsAutomatic();
+   }
+
+   public static void setStreamerRoleId(Long guildId, Long streamerRoleId) {
       GuildInfo gi = getGuildInfo(guildId);
 
+      em.getTransaction().begin();
+      gi.setStreamerRoleId(streamerRoleId);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public static Long getStreamerRoleId(Long guildId) {
+      return getGuildInfo(guildId).getStreamerRoleId();
+   }
+
+   public static void addStreamerMemberId(Long guildId, Long streamerMemberId) {
+      GuildInfo gi = getDatabaseObject(guildId);
+
+      em.getTransaction().begin();
+      gi.addStreamerMemberId(streamerMemberId);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public static List<Long> getStreamerMemberIds(Long guildId) {
+      GuildInfo gi = getDatabaseObject(guildId);
+      return gi.getStreamerMemberIds();
+   }
+
+   public static void removeStreamerMemberId(Long guildId, Long streamerMemberId) {
+      GuildInfo gi = getDatabaseObject(guildId);
+
+      em.getTransaction().begin();
+      gi.removeStreamerMemberId(streamerMemberId);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public void setXpTracking(Boolean isActive) {
       em.getTransaction().begin();
       gi.setGrantingMessageXp(isActive);
       em.persist(gi);
       em.getTransaction().commit();
    }
 
+   public void setXpDegradeAmount(Long amount) {
+      em.getTransaction().begin();
+      gi.setXpDegradeAmount(amount);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
+
+   public void setXpDegrades(Boolean isActive) {
+      em.getTransaction().begin();
+      gi.setXpDegrades(isActive);
+      em.persist(gi);
+      em.getTransaction().commit();
+   }
    public static void setLuckBonusActive(Long guildId, Boolean isActive) {
       GuildInfo gi = getGuildInfo(guildId);
 

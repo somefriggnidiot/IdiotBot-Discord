@@ -1,7 +1,6 @@
 package com.somefriggnidiot.discord.data_access.models;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -11,24 +10,29 @@ import javax.persistence.Id;
 public class UserWarning {
 
    @Id
-   private final String id;
-   private final Long userId;
-   private final Timestamp timestamp;
-   private final Long warnerId;
+   private String id;
+   private Long userId;
+   private Timestamp warnStart;
+   private Long warnerId;
    private String reason;
    private Timestamp expires;
 
-   public UserWarning(Long userId, String reason, Long warnerId) {
+   public UserWarning(Long userId, String reason, Long warnerId, Timestamp warnStart, Timestamp
+       expires) {
       this.id = UUID.randomUUID().toString();
       this.userId = userId;
       this.reason = reason;
-      this.timestamp = Timestamp.valueOf(LocalDateTime.now().plusDays(0));
-      this.expires = Timestamp.valueOf(LocalDateTime.now().plusDays(30));
+      this.warnStart = warnStart;
+      this.expires = expires;
       this.warnerId = warnerId;
    }
 
    public String getId() {
       return id;
+   }
+
+   public Long getUserId() {
+      return userId;
    }
 
    public String getReason() {
@@ -40,7 +44,7 @@ public class UserWarning {
    }
 
    public Timestamp getTimestamp() {
-      return timestamp;
+      return warnStart;
    }
 
    public Long getWarnerId() {

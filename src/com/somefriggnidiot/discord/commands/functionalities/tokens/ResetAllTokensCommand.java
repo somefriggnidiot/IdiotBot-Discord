@@ -3,9 +3,11 @@ package com.somefriggnidiot.discord.commands.functionalities.tokens;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.data_access.util.DatabaseUserUtil;
+import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
+import com.somefriggnidiot.discord.util.command_util.CommandUtil;
 import java.util.List;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +30,12 @@ public class ResetAllTokensCommand extends Command {
 
    @Override
    protected void execute(final CommandEvent event) {
+      GuildInfoUtil giu = new GuildInfoUtil(event.getGuild());
+      if (!CommandUtil.checkPermissions(event.getMember(), giu.getOwnerRole())) {
+         event.reply("You do not have the necessary permissions to use this command.");
+         return;
+      }
+
       Long guildId = event.getGuild().getIdLong();
       List<Member> guildMembers = event.getGuild().getMembers();
 

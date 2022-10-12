@@ -13,6 +13,7 @@ public class DatabaseConnector {
    private static final String USER_WARNING_TABLE = "./db/user_warnings.odb";
    private static final String GUILD_INFO = "./db/guild_info.odb";
    private static final String RAFFLE = "./db/raffles.odb";
+   private static final String BOT_MODE_ENTRY = "./db/bot_mode_entries.odb";
    private EntityManager manager;
 
    /**
@@ -40,6 +41,10 @@ public class DatabaseConnector {
             managerFactory = Persistence.createEntityManagerFactory(RAFFLE);
             this.manager = managerFactory.createEntityManager();
             break;
+         case BOT_MODE_ENTRY:
+            managerFactory = Persistence.createEntityManagerFactory(BOT_MODE_ENTRY);
+            this.manager = managerFactory.createEntityManager();
+            break;
       }
 
       return manager;
@@ -49,6 +54,6 @@ public class DatabaseConnector {
     * Existing database tables in use by this program.
     */
    public enum Table {
-      DATABASE_USER, USER_WARNING, GUILD_INFO, RAFFLE
+      DATABASE_USER, USER_WARNING, GUILD_INFO, RAFFLE, BOT_MODE_ENTRY
    }
 }

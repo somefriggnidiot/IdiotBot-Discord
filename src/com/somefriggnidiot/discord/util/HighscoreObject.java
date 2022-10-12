@@ -1,6 +1,7 @@
 package com.somefriggnidiot.discord.util;
 
 import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
+import java.sql.Timestamp;
 
 /**
  * Model used to depict an entry on the XP Leaderboard.
@@ -10,6 +11,7 @@ import com.somefriggnidiot.discord.data_access.models.DatabaseUser;
 public class HighscoreObject {
    private DatabaseUser user;
    private Integer xp;
+   private Timestamp lastGain;
 
    /**
     * Creates a new {@link HighscoreObject} mapping a {@link DatabaseUser} to an XP value.
@@ -17,9 +19,10 @@ public class HighscoreObject {
     * @param user the {@link DatabaseUser}.
     * @param xp the {@code DatabaseUser}'s XP balance.
     */
-   public HighscoreObject(DatabaseUser user, Integer xp) {
+   public HighscoreObject(DatabaseUser user, Integer xp, Timestamp latestGain) {
       this.user = user;
       this.xp = xp;
+      this.lastGain = user.getLatestGain();
    }
 
    /**
@@ -34,5 +37,13 @@ public class HighscoreObject {
     */
    public DatabaseUser getUser() {
       return user;
+   }
+
+   public Timestamp getJoinDate() {
+      return user.getCreated();
+   }
+
+   public Timestamp getLastGain() {
+      return lastGain;
    }
 }

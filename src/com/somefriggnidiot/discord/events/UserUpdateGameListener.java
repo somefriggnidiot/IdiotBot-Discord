@@ -1,11 +1,20 @@
 package com.somefriggnidiot.discord.events;
 
+import static java.lang.String.format;
+
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
-import java.util.HashMap;
-import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.events.user.update.UserUpdateGameEvent;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import com.somefriggnidiot.discord.util.GameGroupUtil;
+import java.util.List;
+import net.dv8tion.jda.api.entities.Activity.ActivityType;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.events.user.UserActivityEndEvent;
+import net.dv8tion.jda.api.events.user.UserActivityStartEvent;
+import net.dv8tion.jda.api.events.user.update.UserUpdateActivityOrderEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.entities.Role;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,165 +23,95 @@ public class UserUpdateGameListener extends ListenerAdapter {
    private final Logger logger = LoggerFactory.getLogger(MessageListener.class);
 
    @Override
-   public void onUserUpdateGame(UserUpdateGameEvent event) {
+   public void onUserActivityStart(@NotNull UserActivityStartEvent event) {
+      Guild guild = event.getGuild();
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
+      Member member = event.getMember();
 
-      GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild().getIdLong());
-      final HashMap<String, String> groupMappings = gi.getGameGroupMappings();
+      if (gi.isGroupingGames() && gi.gameGroupsAutomatic()) {
+         GameGroupUtil.getGameGroupUtil(guild).refreshMemberAutoGroups(member);
+      } else {
+         GameGroupUtil.refreshMemberGameGroups(event.getMember());
+      }
 
-      if (gi.isGroupingGames()) {
+      if (event.getNewActivity().getType().equals(ActivityType.STREAMING)) {
+         List<Long> featuredStreamers = gi.getStreamerMemberIds();
 
-         try {
-            if (event.getNewGame() != null && event.getOldGame() != null) {
-               // started playing from another game, ignore updates to same game
-               if (event.getNewGame().getName().equalsIgnoreCase(event.getOldGame().getName())) {
+         if (featuredStreamers != null && featuredStreamers.contains(member.getIdLong())) {
+            Role streamerRole = guild.getRoleById(gi.getStreamerRoleId());
+
+            if (streamerRole != null && !member.getRoles().contains(streamerRole)) {
+               guild.addRoleToMember(member, streamerRole).queue();
+               new GuildInfoUtil(guild).getBotTextChannel()
+                   .sendMessage(format(
+                       "%s has gone live! Use `!streamers` for more details.",
+                       member.getEffectiveName())).queue();
+               logger.info(format("[%s] %s has gone live: %s",
+                   guild,
+                   member.getEffectiveName(),
+                   event.getNewActivity().getName()));
+            } else if (streamerRole != null) {
+               guild.addRoleToMember(member, streamerRole).queue();
+            } else {
+               try {
+                  guild.getTextChannelById(gi.getBotTextChannelId()).sendMessage("A featured "
+                          + "streamer has gone live, but no streamer role has been configured!")
+                      .queue();
+               } catch (Exception e) {
                   return;
                }
-
-               handleSwap(event, groupMappings, event.getOldGame().getName(), event.getNewGame()
-                   .getName());
-            } else if (event.getNewGame() != null && event.getOldGame() == null) {
-               // started playing from nothing
-               handleRoleAssignment(event, groupMappings, event.getNewGame().getName(), true);
-            } else {
-               // done gaming
-               handleRoleAssignment(event, groupMappings, event.getOldGame().getName(), false);
+               logger.error(format("[%s] Attempted to add %s to Featured Streamer role, but no "
+                   + "role was found for RoleID %s",
+                   guild,
+                   member.getEffectiveName(),
+                   gi.getStreamerRoleId()));
             }
-         } catch (IllegalArgumentException e) {
-            logger.error(
-                String.format("Excption thrown with %s on %s", event.getUser(), event.getGuild()));
-            logger.error("Trace: ", e);
          }
       }
    }
 
-   private boolean isValidGame(HashMap<String, String> gameMap, String gameName) {
-      return gameMap.get(gameName) != null;
-   }
+   @Override
+   public void onUserActivityEnd(@NotNull UserActivityEndEvent event) {
+      Guild guild = event.getGuild();
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(guild);
+      Member member = event.getMember();
 
-   private void handleRoleAssignment(UserUpdateGameEvent event, HashMap<String, String> gameMap,
-       String gameName, Boolean assign) {
-      if (!isValidGame(gameMap, gameName)) {
-         return;
-      }
-      String groupName = gameMap.get(gameName);
-
-      // Get role
-      Role role = null;
-      try {
-         role = event.getGuild().getRolesByName(groupName, false).get(0);
-
-         if (role == null) {
-            logger.warn(String.format("[%s] No GameGroup set for \"%s\"", event.getGuild(),
-                groupName));
-            return;
-         }
-      } catch (IndexOutOfBoundsException e) {
-         logger.debug(String.format("%s does not have a role matching %s", event.getGuild()
-             .getName(), groupName));
-      }
-
-      // Do the actual role shit.
-      if (assign) {
-         logger.info(String.format("[%s] %s has started playing %s.",
-             event.getGuild(),
-             event.getMember().getEffectiveName(),
-             event.getNewGame().getName()));
-
-         try {
-            event.getGuild().getController().addSingleRoleToMember(event.getMember(), role)
-                .queue();
-         } catch (Exception e) {
-            logger.warn(String.format("[%s] Role not found: %s", event.getGuild(), role));
-         }
+      if (gi.isGroupingGames() && gi.gameGroupsAutomatic()) {
+         GameGroupUtil.getGameGroupUtil(guild).refreshMemberAutoGroups(member);
       } else {
-         logger.info(String.format("[%s] %s has stopped playing %s.",
-             event.getGuild(),
-             event.getMember().getEffectiveName(),
-             event.getOldGame().getName()));
+         GameGroupUtil.refreshMemberGameGroups(event.getMember());
+      }
 
-         try {
-            event.getGuild().getController().removeSingleRoleFromMember(event.getMember(), role)
-                .queue();
-         } catch (Exception e) {
-            logger.warn(String.format("[%s] Role not found for \"%s\"", event.getGuild(), role));
+      if (event.getOldActivity().getType().equals(ActivityType.STREAMING)) {
+         List<Long> featuredStreamers = gi.getStreamerMemberIds();
+
+         if (featuredStreamers != null && featuredStreamers.contains(member.getIdLong())) {
+            Role streamerRole = guild.getRoleById(gi.getStreamerRoleId());
+
+            if (streamerRole != null && member.getRoles().contains(streamerRole)) {
+               guild.removeRoleFromMember(member, streamerRole).queue();
+               logger.info(format("[%s] %s has stopped streaming.",
+                   guild,
+                   member.getEffectiveName()));
+            } else {
+               logger.error(format("[%s] Attempted to remove %s from Featured Streamer role, but "
+                       + "no role was found for RoleID %s",
+                   guild,
+                   member.getEffectiveName(),
+                   gi.getStreamerRoleId()));
+            }
          }
       }
    }
 
-   private void handleSwap(UserUpdateGameEvent event, HashMap<String, String> gameMap,
-       String oldGameName, String newGameName) {
-      //If both old and new are invalid, skip.
-      if (!isValidGame(gameMap, oldGameName) && !isValidGame(gameMap, newGameName)) {
-         return;
-      }
+   @Override
+   public void onUserUpdateActivityOrder(@NotNull UserUpdateActivityOrderEvent event) {
+      GuildInfo gi = GuildInfoUtil.getGuildInfo(event.getGuild().getIdLong());
 
-      //Check for old role.
-      Role oldRole;
-      try {
-         oldRole = event.getGuild().getRolesByName(oldGameName, false).get(0);
-
-         if (oldRole == null) {
-            logger
-                .warn(String.format("[%s] Role not found for previous game: \"%s\"",
-                    event.getGuild(),
-                    oldGameName));
-            return;
-         } else {
-            //Log it
-            logger.info(String.format("[%s] %s has stopped playing %s.",
-                event.getGuild(),
-                event.getMember().getEffectiveName(),
-                event.getOldGame().getName()));
-
-            //Revoke role
-            try {
-               event.getGuild().getController()
-                   .removeSingleRoleFromMember(event.getMember(), oldRole)
-                   .queue();
-            } catch (Exception e) {
-               logger.warn(String.format("[%s] Role has gone missing: %s",
-                   event.getGuild(),
-                   oldRole));
-            }
-         }
-      } catch (IndexOutOfBoundsException e) {
-         logger
-             .debug(String.format("[%s] Previous game not present: \"%s\"",
-                 event.getGuild(),
-                 oldGameName));
-      }
-
-      Role newRole;
-      try {
-         newRole = event.getGuild().getRolesByName(newGameName, false).get(0);
-
-         if (newRole == null) {
-            logger
-                .info(String.format("[%s] Game Group not found for new role: \"%s\"",
-                    event.getGuild(),
-                    newGameName));
-         } else {
-            //Log it
-            logger.info(String.format("[%s] %s has started playing %s.",
-                event.getGuild(),
-                event.getMember().getEffectiveName(),
-                event.getNewGame().getName()));
-
-            //Assign role
-            try {
-               event.getGuild().getController().addSingleRoleToMember(event.getMember(), newRole)
-                   .queue();
-            } catch (Exception e) {
-               logger.warn(String.format("[%s] Role has gone missing: %s", event
-                   .getGuild(), newRole));
-               logger.error(event.toString(), e);
-            }
-         }
-      } catch (IndexOutOfBoundsException e) { //No role found for new game.
-         logger
-             .info(String.format("[%s] New game not present: \"%s\"",
-                 event.getGuild(),
-                 newGameName));
+      if (gi.isGroupingGames() && gi.gameGroupsAutomatic()) {
+         GameGroupUtil.getGameGroupUtil(event.getGuild()).refreshMemberAutoGroups(event.getMember());
+      } else if (gi.isGroupingGames()) {
+         GameGroupUtil.refreshMemberGameGroups(event.getMember());
       }
    }
 }
