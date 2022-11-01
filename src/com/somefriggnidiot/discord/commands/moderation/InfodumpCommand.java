@@ -5,14 +5,19 @@ import static java.lang.String.format;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.somefriggnidiot.discord.core.Main;
-import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.time.Instant;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -26,14 +31,15 @@ import org.slf4j.LoggerFactory;
 public class InfodumpCommand extends Command {
 
    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-   private PrintWriter writer;
+   private int channelsDone = 0;
+   private int channelsTotal;
 
    public InfodumpCommand() {
       this.name = "infodump";
       this.aliases = new String[]{"dump", "dox"};
       this.arguments = "<guildId>";
       this.category = new Category("Owner");
-      this.help = "Dumps all server info into the console log.";
+      this.help = "Dumps all server messages into channel-specific files.";
       this.botPermissions = new Permission[]{Permission.ADMINISTRATOR};
       this.guildOnly = false;
       this.cooldown = 1;
@@ -45,85 +51,81 @@ public class InfodumpCommand extends Command {
    protected void execute(final CommandEvent event) {
       String[] args = event.getMessage().getContentDisplay().split("\\s", 2);
       Guild guild = Main.jda.getGuildById(args[1]);
-
       List<TextChannel> channels = guild.getTextChannels();
-      String guildName = guild.getName().replaceAll("\\s", "");
-      String time = format("%s%s%s",
-          OffsetDateTime.now().getYear(),
-          OffsetDateTime.now().getMonth(),
-          OffsetDateTime.now().getDayOfMonth());
+      channelsTotal = channels.size();
 
       for (TextChannel channel : channels) {
-         try {
-            writer = new PrintWriter(
-                format("%s_%s_%s.txt",
-                    guildName,
-                    channel.getName().replaceAll("\\s", ""),
-                    time),
-                "UTF-8");
-            writer.println(format("[%s] SERVER HISTORY - CHANNEL %s", guild, channel.getName()));
-         } catch (FileNotFoundException | UnsupportedEncodingException e) {
-            e.printStackTrace();
-         }
-
-         MessagePaginationAction channelIterableHistory = channel.getIterableHistory();
-         for (Message history : channelIterableHistory) {
-            if (history.getTimeCreated().isAfter(OffsetDateTime.now().minusYears(1))) {
-               if (history.getEmbeds().size() > 0) {
-                  logEmbed(history, writer);
-               } else {
-                  logMessage(history, writer);
-               }
-            }
-         }
-
-         writer.close();
-//         channelIterableHistory
-//             .takeAsync(1000)
-//             .thenApply(list -> {
-//                list.forEach(history -> {
-//                   if (history.getTimeCreated().isAfter(OffsetDateTime.now().minusYears(2))) {
-//                      if (history.getEmbeds().size() > 0) {
-//                         logEmbed(history, writer);
-//                      } else {
-//                         logMessage(history, writer);
-//                      }
-//                   }
-//                });
-//                writer.close();
-//                return null;
-//             });
-
-//         for (Message history : channel.getIterableHistory()) {
-//            if (history.getTimeCreated().isAfter(OffsetDateTime.now().minusYears(1))) {
-//               if (history.getEmbeds().size() > 0) {
-//                  logEmbed(history, writer);
-//               } else {
-//                  logMessage(history, writer);
-//               }
-//            }
-//         }
+         new Thread(() -> logChannelHistory(channel)).start();
       }
    }
 
-   private void logMessage(Message message, PrintWriter writer) {
+   private void logChannelHistory(TextChannel channel) {
+      MessagePaginationAction channelIterableHistory = channel.getIterableHistory();
+      List<Message> messages =
+          channelIterableHistory.stream()
+              .filter(msg -> msg.getTimeCreated().isAfter(OffsetDateTime.now().minusYears(1)))
+              .collect(Collectors.toList());
+
+      List<String> channelLog = new ArrayList<>();
+      messages.forEach(msg -> {
+         if (msg.getEmbeds().size() > 0) {
+            channelLog.addAll(logEmbed(msg));
+         } else {
+            channelLog.add(logMessage(msg));
+         }
+      });
+
+      //Write at once.
+      Guild guild = channel.getGuild();
+      String guildName = guild.getName().replaceAll("\\s", "");
+      String time = format("%s%s%s",
+          OffsetDateTime.now().getYear(),
+          OffsetDateTime.now().getMonthValue(),
+          OffsetDateTime.now().getDayOfMonth());
+
+      Path channelFile = Paths.get(format("%s_%s_%s.txt",
+              guildName,
+              channel.getName().replaceAll("\\s", ""),
+              time));
+
+      try {
+         Collections.reverse(channelLog);
+         Files.write(channelFile, channelLog, StandardCharsets.UTF_8);
+         channelsDone++;
+         logger.info(format("Channel logging has completed %s of %s channels.",
+             channelsDone, channelsTotal));
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
+   }
+
+   private String logMessage(Message message) {
       String user = message.getAuthor().getName();
 
       try {
          user = message.getMember().getEffectiveName();
       } catch (Exception ignored) {
-
       }
-      String str = format("[%s] %s [%s] %s",
+
+      final String[] messageContent = {""};
+
+      if (message.getAttachments().size() > 0) {
+         messageContent[0] = message.getContentDisplay();
+         message.getAttachments().forEach(atch -> messageContent[0] = messageContent[0]
+             .concat("\n\t Attachment: "  + atch.getUrl()));
+      } else {
+         messageContent[0] = message.getContentDisplay();
+      }
+
+      return format("[%s] %s [%s] %s",
           message.getChannel().getName(),
           message.getTimeCreated().toLocalDateTime(),
           user,
-          message.getContentDisplay());
-      writer.println(str);
+          messageContent[0]);
    }
 
-
-   private void logEmbed(Message message, PrintWriter writer) {
+   private List<String> logEmbed(Message message) {
+      List<String> embedList = new ArrayList<>();
       String embedFormat = "TITLE: %s \n"
           + "\t\tLINK: %s \n"
           + "\t\tCONTENT: %s \n"
@@ -140,12 +142,14 @@ public class InfodumpCommand extends Command {
          display = format(embedFormat, embed.getTitle(), embed.getUrl(), embed.getDescription(),
              fields);
 
-         String str = format("\t[%s] %s [%s] %s", message.getChannel().getName(),
+         String str = format("[%s] %s [%s] %s", message.getChannel().getName(),
              message.getTimeCreated().toLocalDateTime(),
              message.getAuthor().getName(), display);
 
-         logger.info(str);
-         writer.println(str);
+//         logger.info(str);
+         embedList.add(str);
       }
+
+      return embedList;
    }
 }

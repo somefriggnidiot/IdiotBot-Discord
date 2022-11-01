@@ -30,7 +30,7 @@ public class ReconnectedEventListener extends ListenerAdapter {
          }
 
          if (gi.isGroupingGames()) {
-            logger.info(String.format("[%s] Started Game Groups tracking. Refreshing role "
+            logger.debug(String.format("[%s] Started Game Groups tracking. Refreshing role "
                 + "assignments.", guild));
             if (gi.gameGroupsAutomatic()) {
                GameGroupUtil.getGameGroupUtil(guild).updateAutoGrouping();
@@ -53,7 +53,7 @@ public class ReconnectedEventListener extends ListenerAdapter {
          }
 
          if (gi.isGroupingGames()) {
-            logger.info(String.format("[%s] Started Game Groups tracking. Refreshing role "
+            logger.debug(String.format("[%s] Started Game Groups tracking. Refreshing role "
                 + "assignments.", guild));
             GameGroupUtil.refreshGameGroups(guild);
          }

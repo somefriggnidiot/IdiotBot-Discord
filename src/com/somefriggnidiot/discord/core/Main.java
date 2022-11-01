@@ -2,7 +2,6 @@ package com.somefriggnidiot.discord.core;
 
 import static java.lang.String.format;
 
-import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.somefriggnidiot.discord.commands.ProfileCommand;
@@ -47,7 +46,6 @@ import com.somefriggnidiot.discord.commands.moderation.RemoveAllUsersFromRoleCom
 import com.somefriggnidiot.discord.commands.moderation.TagLogCommand;
 import com.somefriggnidiot.discord.commands.moderation.WarningCommand;
 import com.somefriggnidiot.discord.data_access.MySqlConnector;
-import com.somefriggnidiot.discord.data_access.models.BridgeObject;
 import com.somefriggnidiot.discord.data_access.models.GuildInfo;
 import com.somefriggnidiot.discord.data_access.util.GuildInfoUtil;
 import com.somefriggnidiot.discord.events.GuildMemberListener;
@@ -60,7 +58,6 @@ import com.somefriggnidiot.discord.util.GameGroupUtil;
 import com.somefriggnidiot.discord.util.VoiceXpUtil;
 import com.somefriggnidiot.discord.util.XpDegradationUtil;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import javax.security.auth.login.LoginException;
@@ -72,14 +69,9 @@ import net.dv8tion.jda.api.entities.Icon;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.boot.registry.StandardServiceRegistry;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.cfg.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vip.floatationdevice.guilded4j.G4JClient;
-import vip.floatationdevice.guilded4j.G4JWebSocketClient;
 import vip.floatationdevice.guilded4j.rest.ChatMessageManager;
 
 public class Main {
@@ -104,7 +96,6 @@ public class Main {
       final Logger logger = LoggerFactory.getLogger(Main.class);
       EventWaiter waiter = new EventWaiter();
       ownerId = args[1];
-      msc = new MySqlConnector(args[2]);
 
       //TODO Migrate commands to slash-commands.
       try {
@@ -227,11 +218,11 @@ public class Main {
 
             if (gi.isGroupingGames()) {
                if (gi.gameGroupsAutomatic()) {
-                  logger.info(format("[%s] Starting Auto Groups tracking. Refreshing role "
+                  logger.debug(format("[%s] Starting Auto Groups tracking. Refreshing role "
                       + "assignments.", guild));
                   GameGroupUtil.getGameGroupUtil(guild).startAutoGrouping();
                } else {
-                  logger.info(format("[%s] Started Game Groups tracking. Refreshing role "
+                  logger.debug(format("[%s] Started Game Groups tracking. Refreshing role "
                       + "assignments.", guild));
                   GameGroupUtil.refreshGameGroups(guild);
                }
@@ -244,27 +235,8 @@ public class Main {
       }
 
       // START - Guilded Bridge Test
-      session = startMysqlSession(args[2]);
-      BridgeObject bridgeObject = session.get(BridgeObject.class, 1);
-      logger.info(format("BridgeObjectTest: %s %s %s %s %s", bridgeObject.getId(),
-          bridgeObject.getDiscordChannelId(), bridgeObject.getDiscordServerId(),
-          bridgeObject.getGuildedServerId(), bridgeObject.getGuildedChannelId()));
       gClient.ws.eventBus.register(new GDBridgeListener());
       gClient.ws.connect();
       // END - Guilded Bridge Test
-   }
-
-   private static Session startMysqlSession(String mysqlPassword) {
-      Configuration config = new Configuration();
-      config.setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
-      config.setProperty("hibernate.connection.url",
-          "jdbc:mysql://localhost:3306/idiotbot_discord");
-      config.setProperty("hibernate.connection.username", "idiotbot");
-      config.setProperty("hibernate.connection.password", mysqlPassword);
-      config.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
-      config.addAnnotatedClass(BridgeObject.class);
-
-      SessionFactory factory = config.buildSessionFactory();
-      return factory.openSession();
    }
 }

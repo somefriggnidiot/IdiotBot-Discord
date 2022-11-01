@@ -60,7 +60,7 @@ public class VoiceXpUtil {
          logger.info(String.format("[%s] VoiceXP: Started voice XP timer.",
              Main.jda.getGuildById(guildId)));
       } else {
-         logger.warn(format("[%s] VoiceXP: Attempted to start a voice XP timer, but one already "
+         logger.debug(format("[%s] VoiceXP: Attempted to start a voice XP timer, but one already "
                  + "existed for this guild.",
              Main.jda.getGuildById(guildId)));
       }

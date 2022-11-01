@@ -1,6 +1,5 @@
 package com.somefriggnidiot.discord.events;
 
-import static com.somefriggnidiot.discord.core.Main.cmm;
 import static com.somefriggnidiot.discord.core.Main.gClient;
 import static java.lang.String.format;
 
@@ -17,11 +16,14 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import vip.floatationdevice.guilded4j.object.Embed;
+import vip.floatationdevice.guilded4j.object.misc.EmbedField;
 
 public class MessageListener extends ListenerAdapter {
 
@@ -143,21 +145,98 @@ public class MessageListener extends ListenerAdapter {
       }
    }
 
+   //D->G
    private void gdBridgeTest(final MessageReceivedEvent event) {
-      if (event.getMember().getIdLong() == 486265419762630656L) return;
-      if (event.getChannel().getIdLong() == 976593263119204372L) {
+      if (event.getChannel().getIdLong() != 742782354933940265L &&
+         event.getChannel().getIdLong() != 976593263119204372L) return;
+//      if (null != event.getMember() && event.getMember().getIdLong() == 486265419762630656L) return;
+
+      if (event.isWebhookMessage()) {
          String content = event.getMessage().getContentRaw();
-         String authorName = event.getMember().getEffectiveName();
          String channelName = event.getChannel().getName();
          String format = "**[#%s]** %s: %s";
+         List<Embed> embeds = new ArrayList<>();
+
+         for (MessageEmbed embed : event.getMessage().getEmbeds()) {
+            embeds.add(castDiscordEmbedToGuilded(embed));
+         }
+
+         gClient.getChatMessageManager().createChannelMessage(
+             "da353090-ce72-4284-bb07-1eb5567491e3",
+             format(format, channelName, event.getAuthor(), content),
+             embeds.size() > 0 ? embeds.toArray(new Embed[0]) : null,
+             null,
+             null,
+             null);
+      } else {
+         String content = event.getMessage().getContentRaw();
+         String authorName = event.getAuthor().getName();
+         String channelName = event.getChannel().getName();
+         String format = "**[#%s]** %s: %s";
+         List<Embed> embeds = new ArrayList<>();
+
+         for (MessageEmbed embed : event.getMessage().getEmbeds()) {
+            embeds.add(castDiscordEmbedToGuilded(embed));
+         }
+
          gClient.getChatMessageManager().createChannelMessage(
              "da353090-ce72-4284-bb07-1eb5567491e3",
              format(format, channelName, authorName, content),
-             null,
+             embeds.size() > 0 ? embeds.toArray(new Embed[0]) : null,
              null,
              null,
              null);
       }
+   }
+
+   private Embed castDiscordEmbedToGuilded(MessageEmbed discEmbed) {
+      Embed embed = new Embed();
+      if (null != discEmbed.getAuthor()) {
+         embed.setAuthorIconUrl(discEmbed.getAuthor().getIconUrl());
+         embed.setAuthorName(discEmbed.getAuthor().getName());
+         embed.setAuthorUrl(discEmbed.getAuthor().getUrl());
+      }
+      if (discEmbed.getColorRaw() <= 16777215 && discEmbed.getColorRaw() > 0) {
+         embed.setColor(discEmbed.getColorRaw());
+      }
+
+      if (null != discEmbed.getDescription() && !discEmbed.getDescription().isEmpty()) {
+         embed.setDescription(discEmbed.getDescription());
+      }
+
+      if (null != discEmbed.getFooter()) {
+         embed.setFooterIconUrl(discEmbed.getFooter().getIconUrl());
+         embed.setFooterText(discEmbed.getFooter().getText());
+      }
+
+      if (null != discEmbed.getImage()) {
+         embed.setImageUrl(discEmbed.getImage().getUrl());
+      }
+
+      if (null != discEmbed.getThumbnail()) {
+         embed.setThumbnailUrl(discEmbed.getThumbnail().getUrl());
+      }
+
+      if (null != discEmbed.getTitle()) {
+         embed.setTitle(discEmbed.getTitle());
+      }
+
+      if (null != discEmbed.getUrl()) {
+         embed.setUrl(discEmbed.getUrl());
+      }
+
+      if (discEmbed.getFields().size() > 0) {
+         List<EmbedField> fields = new ArrayList<>();
+         for (Field field : discEmbed.getFields()) {
+            fields.add(new EmbedField()
+                .setInline(field.isInline())
+                .setName(field.getName())
+                .setValue(field.getValue()));
+         }
+         embed.setFields(fields.toArray(new EmbedField[0]));
+      }
+
+      return embed;
    }
 
    /**

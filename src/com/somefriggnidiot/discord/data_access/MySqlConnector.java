@@ -10,12 +10,18 @@ import org.slf4j.LoggerFactory;
 
 public class MySqlConnector {
    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-   final String mysqlUrl = "jdbc:mysql://localhost:3306/idiotbot_discord";
+   final String mysqlUrl = "jdbc:mysql://192.168.86.57:3306/idiotbot_discord";
    final String username = "idiotbot";
    final String password;
    final Connection connection;
 
    public MySqlConnector(String password) {
+      try {
+         Class.forName("com.mysql.cj.jdbc.Driver");
+      } catch (ClassNotFoundException e) {
+         e.printStackTrace();
+      }
+
       this.password = password;
       try {
          connection = DriverManager.getConnection(mysqlUrl, username, password);
